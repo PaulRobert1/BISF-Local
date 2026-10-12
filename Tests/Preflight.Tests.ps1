@@ -1,4 +1,5 @@
 BeforeAll {
+    Set-StrictMode -Version Latest
     $root = Split-Path $PSScriptRoot -Parent
     foreach ($name in 'Configuration','Preflight','Runner') {
         $p = "$root/Modules/Private/$name.ps1"
@@ -47,5 +48,29 @@ Describe 'Platform and plan validation' {
         $c.ConfigurationManager.CloneTrustedRootKeyReset=$true
         $c.ConfigurationManager.PrepareIdentityReset=$true
         (@(Get-BISFPlan $c Personalize).Id -join ',') | Should -Be 'CloneGuard,CMCloneReset,CMStart,Complete'
+    }
+}
+Describe 'Enabled integration dependencies' {
+    BeforeAll {
+        . "$root/Modules/Private/Operations.ps1"
+        . "$root/Modules/Private/Lifecycle.ps1"
+    }
+    BeforeEach {
+        $c=Read-BISFConfig "$root/GlobalConfig.xml" $root
+        Mock Test-BISFPlatform {}
+        Mock Test-BISFProtectedLocation {}
+        Mock Test-BISFTaskOwnership {}
+    }
+    It 'does not require client or scheduler commands when their features are disabled' {
+        Mock Get-Command { throw 'unneeded dependency query' }
+        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Not -Throw
+    }
+    It 'accepts ScheduledTasks commands implemented as CDXML functions' {
+        $c.Personalization.Enabled=$true
+        Mock Get-Command {
+            if (($CommandType -band [System.Management.Automation.CommandTypes]::Function) -eq 0) { throw 'ScheduledTasks CDXML command is a Function, not a Cmdlet' }
+            [pscustomobject]@{Name=$Name;CommandType='Function'}
+        }
+        { Test-BISFPreflight $c Prepare @(Get-BISFPlan $c Prepare) $root "$root/GlobalConfig.xml" $null } | Should -Not -Throw
     }
 }

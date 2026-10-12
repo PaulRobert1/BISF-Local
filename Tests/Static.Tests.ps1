@@ -1,4 +1,5 @@
 BeforeAll {
+    Set-StrictMode -Version Latest
     $root=Split-Path $PSScriptRoot -Parent
     if (Test-Path "$PSScriptRoot/SourceAudit.ps1") { . "$PSScriptRoot/SourceAudit.ps1" }
 }

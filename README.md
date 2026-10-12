@@ -123,7 +123,12 @@ Personalize requires a changed computer name plus at least one changed valid Mac
 or SMBIOS UUID. The master is refused. Clones with copied identifiers are deliberately
 blocked as ambiguous: resolve the provisioning identity behavior rather than weakening
 this check. The same completed clone/generation becomes a no-op on later boots. A
-failure does not mark completion; rerun after fixing the underlying issue.
+failure does not commit completion; rerun after fixing the underlying issue.
+Protected `Prepare.pending` and `Personalize.pending` files guard incomplete runs,
+including failures where the JSON state cannot be rewritten. An incomplete Prepare
+blocks personalization: retry Prepare on the master and recapture. An incomplete
+Personalize makes the same clone retry rather than trust a staged completion. Never
+remove these markers manually to force success.
 
 For automatic startup, script/module/schema/config/state files and their parent paths
 must be local, free of reparse points and protected against modification by untrusted
@@ -135,7 +140,10 @@ your package ACLs. It sets restricted ACLs only on its own new state files/direc
 The reserved task is `\BISF-Local-Personalize`, runs as SYSTEM at startup and uses the
 built-in Windows PowerShell host. An unrelated task with that name is never overwritten.
 The task remains installed; completion state makes later runs no-ops. A reboot of the
-master will cause personalization to refuse the master, which is expected.
+master will cause personalization to refuse the master, which is expected. Changing
+Personalization.Enabled to false stops future registration; it does not uninstall a
+previous task. To stop an existing task, use `Disable-ScheduledTask -TaskName
+BISF-Local-Personalize -TaskPath "\"` in an elevated PowerShell session.
 
 If nonpersistent storage discards state, personalization can run again at every boot.
 This is not a universal once-per-machine guarantee for PVS/MCS. Verify actual persistence
@@ -147,9 +155,18 @@ and Configuration Manager identity behavior for your deployment technology.
 - `1`: configuration/preflight/identity/locking failure before apply.
 - `2`: apply failure or a declined required operation.
 
-Operations report Completed, Skipped, Preview or Failed. Confirmation is collected
+Operations report Completed, Skipped, Preview or Failed. Log entries saying "Ready
+for state commit" are not a committed lifecycle success; check the exit status and
+absence of the pending marker. Confirmation is collected
 before apply; one declined operation prevents the whole plan. A failure stops later
-operations and prevents shutdown. Completed deletions are not rolled back. The runner
+operations and prevents a not-yet-requested shutdown. All fallible file logging
+finishes before shutdown is requested. The final pending-marker deletion occurs
+after an accepted shutdown request when one is configured: if that deletion fails,
+the machine may already be shutting down, exit status is 2, and clones remain blocked.
+There is no transactional filesystem-and-power API; the script does not restart
+services or write further logs after shutdown is accepted. Prefer FinalAction=None
+when you want to inspect final state before manually shutting down. Completed
+deletions are not rolled back. The runner
 attempts to restore the previous CcmExec running state after failed preparation and
 reports restoration failures. A prepared client remains stopped on success; capture
 without restarting it, or personalize after deployment. Review failures before retrying.

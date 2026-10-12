@@ -1,4 +1,5 @@
 BeforeAll {
+    Set-StrictMode -Version Latest
     $root=Split-Path $PSScriptRoot -Parent
     foreach ($n in 'Operations','Lifecycle') { if (Test-Path "$root/Modules/Private/$n.ps1") { . "$root/Modules/Private/$n.ps1" } }
     if (-not (Get-Command Get-Acl -ErrorAction SilentlyContinue)) { function Get-Acl { param($LiteralPath) } }
@@ -76,5 +77,30 @@ Describe 'Protected locations and startup ownership' {
     It 'rejects an unrelated task with the reserved name' {
         Mock Get-ScheduledTask { [pscustomobject]@{TaskName='BISF-Local-Personalize';Description='Someone else'} }
         { Test-BISFTaskOwnership 'C:\BISF' 'C:\BISF\GlobalConfig.xml' } | Should -Throw '*unrelated*'
+    }
+}
+Describe 'Persistent incomplete-run journals' {
+    BeforeEach {
+        Mock Test-BISFProtectedLocation {}
+        Mock Set-BISFPrivateAcl {}
+        $package=Join-Path $TestDrive ([guid]::NewGuid().ToString())
+    }
+    It 'retains an incomplete preparation until final commit' {
+        $p=Enter-BISFJournal $package Prepare
+        (Get-BISFJournalStatus $package).PreparationPending | Should -BeTrue
+        (Get-BISFJournalStatus $package).PersonalizationPending | Should -BeFalse
+        Clear-BISFJournal $p
+        (Get-BISFJournalStatus $package).PreparationPending | Should -BeFalse
+    }
+    It 'separates retryable personalization from master preparation' {
+        $p=Enter-BISFJournal $package Personalize
+        (Get-BISFJournalStatus $package).PersonalizationPending | Should -BeTrue
+        (Get-BISFJournalStatus $package).PreparationPending | Should -BeFalse
+    }
+    It 'does not erase an incomplete marker when permission verification fails' {
+        $p=Enter-BISFJournal $package Prepare
+        Mock Test-BISFProtectedLocation { throw 'permission check failed' }
+        { Clear-BISFJournal $p } | Should -Throw
+        Test-Path $p | Should -BeTrue
     }
 }

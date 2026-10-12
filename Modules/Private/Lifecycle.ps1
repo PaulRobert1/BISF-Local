@@ -163,3 +163,34 @@ function Register-BISFStartupTask {
     $settings=New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes 30) -StartWhenAvailable
     $null=Register-ScheduledTask -TaskName 'BISF-Local-Personalize' -TaskPath '\' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description (Get-BISFTaskMarker $root $ConfigPath) -Force -ErrorAction Stop
 }
+function Get-BISFJournalStatus {
+    param([string]$ScriptRoot)
+    $status=[pscustomobject]@{PreparationPending=$false;PersonalizationPending=$false}
+    foreach ($entry in @(@('Prepare','PreparationPending'),@('Personalize','PersonalizationPending'))) {
+        $path=Join-Path $ScriptRoot ('state/'+$entry[0]+'.pending')
+        Test-BISFProtectedLocation $path
+        $status.($entry[1])=Test-Path -LiteralPath $path
+    }
+    $status
+}
+function Enter-BISFJournal {
+    param([string]$ScriptRoot,[ValidateSet('Prepare','Personalize')][string]$Mode)
+    $dir=Join-Path $ScriptRoot 'state'
+    Test-BISFProtectedLocation $dir
+    if (-not (Test-Path -LiteralPath $dir)) {
+        [void][IO.Directory]::CreateDirectory($dir)
+        Set-BISFPrivateAcl $dir
+    }
+    $path=Join-Path $dir ($Mode+'.pending')
+    Test-BISFProtectedLocation $path
+    # A retained marker is intentionally not removed on failure. It remains
+    # authoritative even if a later attempt to invalidate JSON state also fails.
+    [IO.File]::WriteAllText($path,'Incomplete run; retry the same mode. Do not remove manually.',(New-Object Text.UTF8Encoding($false)))
+    Set-BISFPrivateAcl $path
+    $path
+}
+function Clear-BISFJournal {
+    param([string]$Path)
+    Test-BISFProtectedLocation $Path
+    [IO.File]::Delete($Path)
+}

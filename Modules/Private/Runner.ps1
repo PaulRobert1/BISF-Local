@@ -33,7 +33,7 @@ function Invoke-BISFLocal {
     $results=New-Object 'System.Collections.Generic.List[object]'
     $logger=$null; $lock=$null; $state=$null; $previousCM=$null
     $exitCode=0; $errorMessage=$null; $applying=$false; $stateTouched=$false
-    $completionTouched=$false
+    $completionTouched=$false; $journal=$null; $shutdownRequested=$false; $journalStatus=$null
     $currentStep='Preflight'
     try {
         $ScriptRoot=[IO.Path]::GetFullPath($ScriptRoot)
@@ -46,6 +46,9 @@ function Invoke-BISFLocal {
         $statePath=Join-Path $ScriptRoot 'state/lifecycle.json'
         if ($Mode -ne 'Validate' -and -not $WhatIfPreference) { $lock=Enter-BISFLock }
         if ($Mode -eq 'Personalize') {
+            $journalStatus=Get-BISFJournalStatus $ScriptRoot
+            if ($journalStatus.PreparationPending) { throw 'Incomplete preparation journal found. Retry Prepare on the master and recapture.' }
+            Test-BISFProtectedLocation $statePath
             $state=Read-BISFState $statePath
             if ($state.Status -ne 'Prepared') { throw 'Preparation did not complete successfully; refusing personalization.' }
             if ($state.ConfigHash -ne $hash) { throw 'Configuration changed since preparation. Prepare the master again with the intended configuration.' }
@@ -53,7 +56,7 @@ function Invoke-BISFLocal {
         }
         $logger=New-BISFLogger $config $Mode
         Write-BISFLog $logger Info Inventory ("OS={0}; Build={1}; Computer={2}; CcmExec={3}; Mode={4}" -f $inventory.Caption,$inventory.Build,$inventory.Identity.Name,$inventory.CMInstalled,$Mode)
-        if ($Mode -eq 'Personalize' -and (Test-BISFCompletion $state $inventory.Identity)) {
+        if ($Mode -eq 'Personalize' -and -not $journalStatus.PersonalizationPending -and (Test-BISFCompletion $state $inventory.Identity)) {
             $results.Add([pscustomobject]@{Id='Personalize';Status='Skipped';Message='This clone already completed this preparation generation.'})
             Write-BISFLog $logger Info Personalize 'Skipped: already completed this generation.'
         } elseif ($Mode -eq 'Validate') {
@@ -84,7 +87,8 @@ function Invoke-BISFLocal {
             } else {
                 $applying=$true
                 if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during preflight.' }
-                $needsState=($Mode -eq 'Prepare' -and (@($plan.Id) -contains 'Lifecycle'))
+                $needsState=($Mode -eq 'Prepare' -and (@($plan | ForEach-Object { $_.Id }) -contains 'Lifecycle'))
+                if ($needsState -or $Mode -eq 'Personalize' -or (Test-Path -LiteralPath $statePath)) { $journal=Enter-BISFJournal $ScriptRoot $Mode }
                 if ($needsState) {
                     $state=New-BISFState $inventory.Identity $hash $config.ConfigurationManager.PrepareIdentityReset
                     $stateTouched=$true
@@ -97,6 +101,7 @@ function Invoke-BISFLocal {
                 }
                 $protected=@($ScriptRoot,$ConfigPath,(Join-Path $ScriptRoot 'state'),$config.Logging.Path)
                 foreach ($step in $plan) {
+                    if ($step.Id -eq 'Shutdown') { continue }
                     $currentStep=$step.Id
                     Write-BISFLog $logger Info $step.Id ('Starting: '+$step.Description)
                     switch ($step.Id) {
@@ -113,8 +118,7 @@ function Invoke-BISFLocal {
                         'CMPrepare' { $previousCM=Invoke-BISFCMPrepare }
                         'Lifecycle' {
                             if ($config.Personalization.Enabled) { Register-BISFStartupTask (Join-Path $ScriptRoot 'Invoke-BISF.ps1') $ConfigPath }
-                            $state.Status='Prepared'
-                            Write-BISFState $statePath $state
+                            # Commit eligibility only after operation diagnostics have succeeded.
                         }
                         'CloneGuard' { Test-BISFCloneIdentity $state.Master $inventory.Identity }
                         'CMCloneReset' { Invoke-BISFCMCloneReset }
@@ -122,21 +126,42 @@ function Invoke-BISFLocal {
                         'Complete' {
                             $completionTouched=$true
                             $state.Completion=[pscustomobject]@{Generation=$state.Generation;Identity=$inventory.Identity}
-                            Write-BISFState $statePath $state
+                            # Completion is committed in finalization, after diagnostics.
                         }
-                        'Shutdown' { Stop-Computer -Confirm:$false -ErrorAction Stop }
+                        'Shutdown' { }
                     }
-                    $results.Add([pscustomobject]@{Id=$step.Id;Status='Completed';Message=$step.Description})
-                    Write-BISFLog $logger Info $step.Id 'Completed.'
+                    if ($step.Id -in @('Lifecycle','Complete')) { Write-BISFLog $logger Info $step.Id 'Ready for state commit.' }
+                    else {
+                        $results.Add([pscustomobject]@{Id=$step.Id;Status='Completed';Message=$step.Description})
+                        Write-BISFLog $logger Info $step.Id 'Completed.'
+                    }
                 }
                 if ($plan.Count -eq 0) { Write-BISFLog $logger Info Prepare 'No image operations enabled. Nothing was sealed or captured.' }
+                $currentStep='Finalize'
+                if ($needsState) { $state.Status='Prepared'; Write-BISFState $statePath $state }
+                if ($Mode -eq 'Personalize') { Write-BISFState $statePath $state }
+                if (@($plan | ForEach-Object { $_.Id }) -contains 'Shutdown') {
+                    $currentStep='Shutdown'
+                    Write-BISFLog $logger Info Shutdown 'Requesting shutdown. No further log writes follow an accepted request.'
+                    Stop-Computer -Confirm:$false -ErrorAction Stop
+                    $shutdownRequested=$true
+                    $results.Add([pscustomobject]@{Id='Shutdown';Status='Completed';Message='Shutdown request accepted.'})
+                }
+                # This final deletion is the success commit. If shutdown was already
+                # accepted and deletion fails, keep the clone blocked; do not try to
+                # restore services or write diagnostic files during shutdown.
+                if ($null -ne $journal) { Clear-BISFJournal $journal }
+                foreach ($step in $plan) {
+                    if ($step.Id -in @('Lifecycle','Complete')) { $results.Add([pscustomobject]@{Id=$step.Id;Status='Completed';Message=$step.Description}) }
+                }
+
             }
         }
     } catch {
         $errorMessage=$_.Exception.Message
         if ($applying) { $exitCode=2 } else { $exitCode=1 }
         $results.Add([pscustomobject]@{Id=$currentStep;Status='Failed';Message=$errorMessage})
-        if ($Mode -eq 'Prepare' -and $stateTouched) {
+        if ($Mode -eq 'Prepare' -and $stateTouched -and -not $shutdownRequested) {
             try { $state.Status='Failed'; $state.Completion=$null; Write-BISFState $statePath $state }
             catch { Write-Warning "Could not invalidate preparation state: $($_.Exception.Message)" }
         }
@@ -144,12 +169,15 @@ function Invoke-BISFLocal {
             try { $state.Completion=$null; Write-BISFState $statePath $state }
             catch { Write-Warning "Could not clear clone completion state: $($_.Exception.Message)" }
         }
-        if ($null -ne $previousCM) {
+        if ($null -ne $previousCM -and -not $shutdownRequested) {
             try { Restore-BISFCMService $previousCM }
             catch { Write-Warning "Could not restore CcmExec: $($_.Exception.Message)" }
         }
-        try { Write-BISFLog $logger Error $currentStep $errorMessage }
-        catch { Write-Warning "Log write failed. Original error: $errorMessage" }
+        if ($shutdownRequested) { Write-Warning "Shutdown was accepted, but finalization failed; the incomplete-run journal remains. $errorMessage" }
+        else {
+            try { Write-BISFLog $logger Error $currentStep $errorMessage }
+            catch { Write-Warning "Log write failed. Original error: $errorMessage" }
+        }
     } finally {
         Close-BISFLogger $logger
         Exit-BISFLock $lock

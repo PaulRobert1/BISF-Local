@@ -1,4 +1,5 @@
 BeforeAll {
+    Set-StrictMode -Version Latest
     $root = Split-Path $PSScriptRoot -Parent
     $file = Join-Path $root 'Modules/Private/Configuration.ps1'
     if (Test-Path $file) { . $file }

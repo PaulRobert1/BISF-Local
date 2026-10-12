@@ -1,4 +1,5 @@
 BeforeAll {
+    Set-StrictMode -Version Latest
     $root = Split-Path $PSScriptRoot -Parent
     foreach ($name in 'Preflight','Operations') {
         if (Test-Path "$root/Modules/Private/$name.ps1") { . "$root/Modules/Private/$name.ps1" }

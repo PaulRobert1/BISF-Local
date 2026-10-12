@@ -62,7 +62,7 @@ function Test-BISFPreflight {
     }
     if ($Config.Personalization.Enabled) {
         foreach ($cmd in 'Get-ScheduledTask','Register-ScheduledTask','New-ScheduledTaskAction','New-ScheduledTaskTrigger','New-ScheduledTaskPrincipal','New-ScheduledTaskSettingsSet') {
-            $null = Get-Command $cmd -CommandType Cmdlet -ErrorAction Stop
+            $null = Get-Command $cmd -Module ScheduledTasks -CommandType Cmdlet,Function -ErrorAction Stop
         }
         Test-BISFProtectedLocation $ScriptRoot
         Test-BISFProtectedLocation $ConfigPath

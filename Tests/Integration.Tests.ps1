@@ -1,6 +1,10 @@
 BeforeAll {
+    Set-StrictMode -Version Latest
     $root=Split-Path $PSScriptRoot -Parent
     foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Runner') { . "$root/Modules/Private/$n.ps1" }
+    foreach ($n in 'Enter-BISFJournal','Clear-BISFJournal','Get-BISFJournalStatus') {
+        if (-not (Get-Command $n -ErrorAction SilentlyContinue)) { Set-Item -Path ('Function:'+ $n) -Value {} }
+    }
     if (-not (Get-Command Stop-Computer -ErrorAction SilentlyContinue)) { function Stop-Computer { [CmdletBinding(SupportsShouldProcess)]param() } }
     if (-not (Get-Command Start-Service -ErrorAction SilentlyContinue)) { function Start-Service { param($Name) } }
 }
@@ -9,10 +13,15 @@ Describe 'Full workflow safety and results' {
         $cfg=Join-Path $TestDrive ([guid]::NewGuid().ToString()+'.xml')
         (Get-Content "$root/GlobalConfig.xml" -Raw).Replace('<Enabled>true</Enabled>','<Enabled>false</Enabled>') | Set-Content $cfg
         $script:trace=New-Object 'System.Collections.Generic.List[string]'
+        $script:pending=$false; $script:lastCompletion=$null
+        Mock Enter-BISFJournal { $script:pending=$true; 'journal' }
+        Mock Clear-BISFJournal { $script:pending=$false }
+        Mock Get-BISFJournalStatus { [pscustomobject]@{PreparationPending=$false;PersonalizationPending=$false} }
         $master=[pscustomobject]@{Name='MASTER';MachineGuid='11111111-1111-1111-1111-111111111111';SmbiosUuid='22222222-2222-2222-2222-222222222222'}
         $clone=[pscustomobject]@{Name='CLONE';MachineGuid=$master.MachineGuid;SmbiosUuid='33333333-3333-3333-3333-333333333333'}
         Mock Get-BISFInventory { [pscustomobject]@{Caption='Test Windows';Build=26100;Identity=$master;CMInstalled=$true} }
         Mock Test-BISFPreflight {}
+        Mock Test-BISFProtectedLocation {}
         Mock Write-BISFState { $script:trace.Add('state:'+$State.Status) }
         Mock Register-BISFStartupTask { $script:trace.Add('task') }
         Mock Invoke-BISFCMPrepare { $script:trace.Add('prepare'); 'Running' }
@@ -129,7 +138,7 @@ Describe 'Full workflow safety and results' {
     }
     It 'a late log failure suppresses shutdown and invalidates preparation' {
         (Get-Content $cfg -Raw).Replace('<PrepareIdentityReset>false','<PrepareIdentityReset>true').Replace('<FinalAction>None','<FinalAction>Shutdown') | Set-Content $cfg
-        Mock Write-BISFLog { if ($Operation -eq 'Lifecycle' -and $Message -eq 'Completed.') { throw 'late log failure' } }
+        Mock Write-BISFLog { if ($Operation -eq 'Lifecycle' -and $Message -eq 'Ready for state commit.') { throw 'late log failure' } }
         $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
         $r.ExitCode | Should -Be 2
         $script:trace | Should -Not -Contain 'shutdown'
@@ -155,10 +164,70 @@ Describe 'Full workflow safety and results' {
         Mock Get-BISFInventory { [pscustomobject]@{Caption='Test Windows';Build=26100;Identity=$clone;CMInstalled=$true} }
         Mock Read-BISFState { $s=New-BISFState $master ((Get-FileHash $cfg).Hash) $false; $s.Status='Prepared'; $s }
         Mock Write-BISFState { $script:lastCompletion=$State.Completion }
-        Mock Write-BISFLog { if ($Operation -eq 'Complete' -and $Message -eq 'Completed.') { throw 'log lost' } }
+        Mock Write-BISFLog { if ($Operation -eq 'Complete' -and $Message -eq 'Ready for state commit.') { throw 'log lost' } }
         $r=Invoke-BISFLocal $cfg $root Personalize -Confirm:$false
         $r.ExitCode | Should -Be 2
         $script:lastCompletion | Should -BeNullOrEmpty
+    }
+    It 'rejects an unsafe lifecycle state file before clone actions' {
+        Mock Get-BISFInventory { [pscustomobject]@{Caption='Test Windows';Build=26100;Identity=$clone;CMInstalled=$true} }
+        Mock Read-BISFState { $s=New-BISFState $master ((Get-FileHash $cfg).Hash) $false; $s.Status='Prepared'; $s }
+        Mock Test-BISFProtectedLocation { if ($Path -like '*lifecycle.json') { throw 'state writable by nonadmin' } }
+        $r=Invoke-BISFLocal $cfg $root Personalize -Confirm:$false
+        $r.ExitCode | Should -Be 1
+        $script:trace.Count | Should -Be 0
+    }
+    It 'performs no fallible log writes after requesting shutdown' {
+        (Get-Content $cfg -Raw).Replace('<FinalAction>None','<FinalAction>Shutdown') | Set-Content $cfg
+        Mock Write-BISFLog { if ($script:trace -contains 'shutdown') { throw 'too late to abort' } }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 0
+        ($script:trace -join ',') | Should -Be 'shutdown'
+    }
+    It 'retains a pending guard if shutdown and state invalidation both fail' {
+        (Get-Content $cfg -Raw).Replace('<PrepareIdentityReset>false','<PrepareIdentityReset>true').Replace('<FinalAction>None','<FinalAction>Shutdown') | Set-Content $cfg
+        Mock Stop-Computer { throw 'power request failed' }
+        Mock Write-BISFState { if ($State.Status -eq 'Failed') { throw 'disk inaccessible' } }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $script:pending | Should -BeTrue
+    }
+    It 'blocks clones captured with an incomplete preparation journal' {
+        Mock Get-BISFInventory { [pscustomobject]@{Caption='Test Windows';Build=26100;Identity=$clone;CMInstalled=$true} }
+        Mock Read-BISFState { $s=New-BISFState $master ((Get-FileHash $cfg).Hash) $false; $s.Status='Prepared'; $s }
+        Mock Get-BISFJournalStatus { [pscustomobject]@{PreparationPending=$true;PersonalizationPending=$false} }
+        $r=Invoke-BISFLocal $cfg $root Personalize -Confirm:$false
+        $r.ExitCode | Should -Be 1
+        $script:trace.Count | Should -Be 0
+    }
+    It 'a failed final journal clear leaves clone blocked without restoring services after shutdown' {
+        (Get-Content $cfg -Raw).Replace('<PrepareIdentityReset>false','<PrepareIdentityReset>true').Replace('<FinalAction>None','<FinalAction>Shutdown') | Set-Content $cfg
+        Mock Clear-BISFJournal { throw 'cannot clear journal' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $script:pending | Should -BeTrue
+        $script:trace | Should -Contain 'shutdown'
+        $script:trace | Should -Not -Contain 'restore'
+    }
+    It 'retries a clone whose completion write succeeded but journal clear failed previously' {
+        Mock Get-BISFInventory { [pscustomobject]@{Caption='Test Windows';Build=26100;Identity=$clone;CMInstalled=$true} }
+        Mock Read-BISFState {
+            $s=New-BISFState $master ((Get-FileHash $cfg).Hash) $false
+            $s.Status='Prepared'; $s.Completion=[pscustomobject]@{Generation=$s.Generation;Identity=$clone}; $s
+        }
+        Mock Get-BISFJournalStatus { [pscustomobject]@{PreparationPending=$false;PersonalizationPending=$true} }
+        $r=Invoke-BISFLocal $cfg $root Personalize -Confirm:$false
+        $r.ExitCode | Should -Be 0
+        $script:trace | Should -Contain 'state:Prepared'
+        $script:pending | Should -BeFalse
+    }
+    It 'does not report completion when the durable state commit fails' {
+        Mock Get-BISFInventory { [pscustomobject]@{Caption='Test Windows';Build=26100;Identity=$clone;CMInstalled=$true} }
+        Mock Read-BISFState { $s=New-BISFState $master ((Get-FileHash $cfg).Hash) $false; $s.Status='Prepared'; $s }
+        Mock Write-BISFState { if ($null -ne $State.Completion) { throw 'state write failed' } }
+        $r=Invoke-BISFLocal $cfg $root Personalize -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        @($r.Results | Where-Object { $_.Id -eq 'Complete' -and $_.Status -eq 'Completed' }).Count | Should -Be 0
     }
     It 'rejects concurrent apply lock acquisition before mutation' {
         Mock Enter-BISFLock { throw 'Another run active' }
