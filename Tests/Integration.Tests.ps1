@@ -1,7 +1,7 @@
 BeforeAll {
     Set-StrictMode -Version Latest
     $root=Split-Path $PSScriptRoot -Parent
-    foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Runner') { . "$root/Modules/Private/$n.ps1" }
+    foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Citrix','Runner') { . "$root/Modules/Private/$n.ps1" }
     foreach ($n in 'Enter-BISFJournal','Clear-BISFJournal','Get-BISFJournalStatus') {
         if (-not (Get-Command $n -ErrorAction SilentlyContinue)) { Set-Item -Path ('Function:'+ $n) -Value {} }
     }
@@ -21,6 +21,7 @@ Describe 'Full workflow safety and results' {
         $clone=[pscustomobject]@{Name='CLONE';MachineGuid=$master.MachineGuid;SmbiosUuid='33333333-3333-3333-3333-333333333333'}
         Mock Get-BISFInventory { [pscustomobject]@{Caption='Test Windows';Build=26100;Identity=$master;CMInstalled=$true} }
         Mock Test-BISFPreflight {}
+        Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=$null} }
         Mock Test-BISFProtectedLocation {}
         Mock Write-BISFState { $script:trace.Add('state:'+$State.Status) }
         Mock Register-BISFStartupTask { $script:trace.Add('task') }
@@ -234,5 +235,81 @@ Describe 'Full workflow safety and results' {
         $r=Invoke-BISFLocal $cfg $root Prepare
         $r.ExitCode | Should -Be 1
         $script:trace.Count | Should -Be 0
+    }
+}
+
+Describe 'Citrix final shutdown boundary' {
+    BeforeEach {
+        $cfg=Join-Path $TestDrive ([guid]::NewGuid().ToString()+'.xml')
+        [xml]$xml=Get-Content "$root/GlobalConfig.xml" -Raw
+        $xml.BISF.Logging.Enabled='false'
+        $xml.BISF.Citrix.VDA.StopBeforeShutdown='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        $script:trace=New-Object 'System.Collections.Generic.List[string]'
+        Mock Get-BISFInventory { [pscustomobject]@{Caption='Test';Build=26100;Identity=[pscustomobject]@{Name='MASTER'};CMInstalled=$false} }
+        Mock Test-BISFPreflight {}
+        Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=[pscustomobject]@{Version='2507';CachePath="$TestDrive/cache";CacheExists=$true}} }
+        Mock Get-BISFVDARunningState { 'Running' }
+        Mock Stop-BISFVDA { $script:trace.Add('vda-stop') }
+        Mock Restore-BISFVDA { $script:trace.Add('vda-restore:'+$PreviousState) }
+        Mock Stop-Computer { $script:trace.Add('shutdown') }
+        Mock Write-BISFLog { if ($script:trace -contains 'vda-stop') { $script:trace.Add('late-log') } }
+    }
+    It 'does not stop or shut down in Validate or WhatIf' {
+        (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0
+        (Invoke-BISFLocal $cfg $root Prepare -WhatIf).ExitCode | Should -Be 0
+        $script:trace.Count | Should -Be 0
+    }
+    It 'stops immediately before power with no intervening log writes' {
+        (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 0
+        ($script:trace -join ',') | Should -Be 'vda-stop,shutdown'
+        Should -Invoke Restore-BISFVDA -Times 0
+    }
+    It 'restores a running VDA after a failed shutdown request' {
+        Mock Stop-Computer { throw 'power denied' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $r.Error | Should -Be 'power denied'
+        $script:trace | Should -Contain 'vda-restore:Running'
+    }
+    It 'attempts recovery even when service stop partially fails' {
+        Mock Stop-BISFVDA { throw 'stop timed out' }
+        (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2
+        $script:trace | Should -Contain 'vda-restore:Running'
+        Should -Invoke Stop-Computer -Times 0
+    }
+    It 'preserves originally stopped state on recovery' {
+        Mock Get-BISFVDARunningState { 'Stopped' }
+        Mock Stop-Computer { throw 'power denied' }
+        (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2
+        $script:trace | Should -Contain 'vda-restore:Stopped'
+    }
+    It 'does not stop the VDA if earlier cleanup fails' {
+        (Get-Content $cfg -Raw).Replace('<WindowsTemp>false','<WindowsTemp>true') | Set-Content $cfg
+        Mock Get-BISFTempRoots { [pscustomobject]@{WindowsTemp="$TestDrive/temp"} }
+        Mock Get-BISFCleanupCandidates { throw 'cleanup failed' }
+        (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2
+        Should -Invoke Stop-BISFVDA -Times 0
+        Should -Invoke Stop-Computer -Times 0
+    }
+    It 'protects the detected WEM cache from temp cleanup' {
+        (Get-Content $cfg -Raw).Replace('<WindowsTemp>false','<WindowsTemp>true') | Set-Content $cfg
+        Mock Get-BISFTempRoots { [pscustomobject]@{WindowsTemp="$TestDrive/temp"} }
+        Mock Get-BISFCleanupCandidates {}
+        Mock Remove-BISFTempFiles {}
+        (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 0
+        Should -Invoke Get-BISFCleanupCandidates -Times 1 -ParameterFilter { $ProtectedPaths -contains "$TestDrive/cache" }
+    }
+    It 'does not restore after accepted shutdown even if journal finalization fails' {
+        (Get-Content $cfg -Raw).Replace('<PrepareIdentityReset>false','<PrepareIdentityReset>true') | Set-Content $cfg
+        Mock Enter-BISFJournal { 'journal' }
+        Mock Clear-BISFJournal { throw 'journal failure' }
+        Mock Write-BISFState {}
+        Mock Invoke-BISFCMPrepare { 'Stopped' }
+        Mock Restore-BISFCMService {}
+        (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2
+        Should -Invoke Restore-BISFVDA -Times 0
+        Should -Invoke Restore-BISFCMService -Times 0
     }
 }

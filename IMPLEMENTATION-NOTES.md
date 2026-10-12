@@ -55,6 +55,26 @@ Completed only after the final commit. No minor findings were deferred.
 - Cleanup is intended for a quiescent administrator-controlled master, not as a security
   sandbox against hostile concurrent path replacement. Static links and changed files
   are rejected, but hostile races require stronger OS-level containment.
-- PVS/MCS provisioning and vendor sealing remain outside the package as explicitly
-  approved. A successful run does not establish that an image meets those products'
+- PVS/MCS capture/provisioning and executable-based vendor sealing remain outside
+  the package. Citrix readiness checks and optional VDA shutdown preparation are included. A successful run does not establish that an image meets those products'
   deployment requirements.
+
+
+## Approved Citrix extension
+
+VDA/WEM 2507 validation is enabled in the shipped XML. Legacy configs that omit Citrix
+remain compatible with both checks disabled. The four-digit release is configurable,
+but internal component versions are not guessed into marketing releases. A missing or
+ambiguous installation fails before any image operations. Pure read-only service/CIM,
+registry and binary version-resource discovery uses no vendor executable or policy keys.
+
+WEM cache handling remains with the installed agent. The detected path is protected
+from cleanup; there is no host service restart, cache reset, deployment-mode change or
+endpoint override. Cache existence is reported without demanding a connected deployment
+from Basic mode. Actual cache health/persistence must be checked on an MCS clone.
+
+A separate Citrix code review found that blocking Stop-Service could prevent reaching
+the timeout. Fixed with NoWait plus a bounded status wait. Recovery uses ServiceController
+Start and bounded status waits, without changing startup type. Focused regression tests
+exercise these wrappers as well as runner ordering, partial-stop failure, shutdown failure
+and no recovery after shutdown acceptance. The reviewer found no other definite issues.

@@ -18,3 +18,22 @@ Describe 'Exported module under production strict mode' {
         }
     }
 }
+Describe 'Citrix production module strict mode' {
+    It 'discovers and reports an enabled VDA without relying on dot-source test scope' {
+        InModuleScope BISF.Local {
+            $package=Split-Path (Split-Path (Get-Module BISF.Local).Path -Parent) -Parent
+            $c=Read-BISFConfig (Join-Path $package 'GlobalConfig.xml') $package
+            $c.Citrix.WEM.Enabled=$false
+            Mock Get-BISFCitrixServices { @(
+                [pscustomobject]@{Name='BrokerAgent';DisplayName='Citrix Desktop Service';StartMode='Auto';State='Running';PathName='C:\Citrix\BrokerAgent.exe'},
+                [pscustomobject]@{Name='PvsVmAgent';DisplayName='Citrix Pvs for VMs Agent';StartMode='Manual';State='Stopped'}
+            ) }
+            Mock Get-BISFCitrixProducts { [pscustomobject]@{DisplayName='Citrix Virtual Delivery Agent 2507 LTSR';DisplayVersion='7.45.0.1'} }
+            Mock Get-BISFServiceBinaryVersion { '2507.0.1' }
+            $r=Get-BISFCitrixReadiness $c Prepare
+            $r.VDA.MachineIdentityService | Should -Be 'PvsVmAgent'
+            $r.VDA.Version | Should -Be '7.45.0.1'
+            $r.WEM | Should -BeNullOrEmpty
+        }
+    }
+}

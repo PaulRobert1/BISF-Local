@@ -18,6 +18,7 @@ The original scripts were reviewed as source references, particularly:
 - Framework/SubCall/Preparation/97_PrepBISF_PRE_BaseImage.ps1
 - Framework/SubCall/Preparation/10_PrepBISF_SCCM.ps1
 - Framework/SubCall/Personalization/10_PersBISF_SCCM.ps1
+- Framework/SubCall/Personalization/02_PersBISF_CTX.ps1 (legacy WEM behavior reviewed, not retained)
 - Framework/SubCall/Preparation/52_PrepBISF_VMWareTCPIPOptimizations.ps1
 - Framework/SubCall/Global/BISF.ps1 and BISF.psm1
 
@@ -41,12 +42,22 @@ A successful run of this package therefore covers only its explicitly selected a
 | Licensing rearm, Sysprep, vendor optimizers and agent sealing executables | Excluded under strict no-executable requirement |
 | PVS disk/cache manipulation, VHD compaction and write-cache formatting | Excluded; deployment product remains responsible |
 | FSLogix rule deletion/distribution and other vendor integrations | Excluded; existing configuration preserved |
+| Citrix VDA preparation | Installed-release/MCS component checks; optional Desktop Service stop immediately before shutdown |
+| Legacy WEM service restarts/cache utility | Replaced with prerequisite checks and cache preservation; WEM 2507 manages clone databases itself |
 | Image capture/provisioning | External supported workflow, not performed here |
 
 Reference documentation used for the replacement approach:
 
 - [Microsoft Configuration Manager client deployment, including reference image preparation](https://learn.microsoft.com/en-us/intune/configmgr/core/clients/deploy/deploy-clients-to-windows-computers)
 - [Microsoft Register-ScheduledTask](https://learn.microsoft.com/en-us/powershell/module/scheduledtasks/register-scheduledtask?view=windowsserver2025-ps)
+
+Citrix extension references (reviewed 2026-10-12):
+
+- [VDA 2507 installation and MCS component selection](https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/2507-ltsr/install-configure/install-vdas.html)
+- [MCS master preparation; no Sysprep](https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/2507-ltsr/install-configure/machine-catalogs-create.html)
+- [WEM 2507 agent services, cache location and clone startup behavior](https://docs.citrix.com/en-us/workspace-environment-management/2507/install-and-configure/agent-host.html)
+- [Citrix identifies PvsVmAgent as the Machine Identity Service Agent](https://support.citrix.com/external/article/CTX141113/limited-release-hotfix-xd710misawx64001.html) (historical naming evidence, not 2507 certification)
+- [Windows PowerShell 5.1 Stop-Service, including NoWait](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/stop-service?view=powershell-5.1)
 
 The attached compatibility investigation informed the removed legacy actions. This
 package has not been executed against the user's Windows images. See TEST-RESULTS.md

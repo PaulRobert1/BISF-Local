@@ -27,7 +27,8 @@ Set-Location 'C:\Program Files\BISF-Local'
 .\Invoke-BISF.ps1 -Mode Prepare         # Apply the selected operations
 ```
 
-**Defaults perform no cleanup or client resets and do not shut down the image.**
+**Defaults validate installed Citrix VDA 2507 and WEM 2507 for an MCS master.**
+They perform no cleanup or client resets and do not shut down the image.
 Enable the operations your image requires in XML. A successful empty run means only
 that validation passed; it does not mean the image was sealed or captured.
 
@@ -70,7 +71,9 @@ logging does not disable state needed for personalization.
 
 ## Configuration reference
 
-SchemaVersion must be `1`. All settings are required; unknown or duplicate elements,
+SchemaVersion must be `1`. The Citrix section is optional for compatibility with older
+configs (omitted means both integrations disabled); its child settings are required
+when present. All other settings are required; unknown or duplicate elements,
 invalid values and XML DTDs are rejected. Boolean values are XML booleans (`true`,
 `false`, `1`, `0`), not PowerShell expressions. No command strings are accepted.
 
@@ -84,11 +87,16 @@ invalid values and XML DTDs are rejected. Boolean values are XML booleans (`true
 | ConfigurationManager.PrepareIdentityReset | false | Stop CcmExec; remove SMS store certificates and `%SystemRoot%\SMSCFG.ini`; leave client stopped |
 | ConfigurationManager.CloneTrustedRootKeyReset | false | Use CIM to delete TrustedRootKey instances during Personalize, then start CcmExec |
 | Personalization.Enabled | false | Register the local SYSTEM startup task during Prepare |
+| Citrix.VDA.Enabled | true | Check installed release, Desktop Service and MCS Machine Identity component |
+| Citrix.VDA.ExpectedRelease | 2507 | Four-digit marketing release; not an internal component version |
+| Citrix.VDA.StopBeforeShutdown | false | Stop Desktop Service immediately before shutdown; requires VDA enabled and FinalAction=Shutdown |
+| Citrix.WEM.Enabled | true | Check installed release, WEM services/SENS startup, accounts and cache path; preserve configuration |
+| Citrix.WEM.ExpectedRelease | 2507 | Four-digit marketing release |
 | Preflight.BlockPendingReboot | true | Pending reboot blocks Prepare and its Validate preflight; false permits continuing |
 | FinalAction | None | `Shutdown` requests shutdown after all selected Prepare operations succeed |
 
 The cleanup traversal excludes reparse points and protects the package, configuration,
-state and configured logs. It rechecks candidates before deletion. It does not delete
+state, configured logs and the detected WEM cache when WEM checks are enabled. It rechecks candidates before deletion. It does not delete
 profiles, directories, event logs, update caches, or arbitrary user-supplied roots.
 A file that changes, disappears, becomes inaccessible or becomes a link can fail the
 run; retry after resolving active writers. Run with the image quiescent: path checks
@@ -99,6 +107,78 @@ store, machine-wide crypto folder or Entra join is reset. The installed Configur
 Manager service, certificate store and configured CIM class must be available.
 The certificate store may be empty, but must exist. Client version compatibility
 still requires an actual deployment test.
+
+## Citrix VDA 2507 LTSR and WEM 2507 for MCS
+
+Install and configure both agents first, select **Create a master MCS image** in the
+VDA installer, and complete any requested reboot. Run from an administrative console
+or RDP session on a quiescent master with no active ICA user sessions. This package
+does not install agents, configure delivery controllers/WEM endpoints, change deployment
+mode, or enable optimizations. Existing settings remain in effect.
+
+The supplied configuration includes:
+
+```xml
+<Citrix>
+  <VDA>
+    <Enabled>true</Enabled>
+    <ExpectedRelease>2507</ExpectedRelease>
+    <StopBeforeShutdown>false</StopBeforeShutdown>
+  </VDA>
+  <WEM>
+    <Enabled>true</Enabled>
+    <ExpectedRelease>2507</ExpectedRelease>
+  </WEM>
+</Citrix>
+```
+
+VDA validation requires an enabled MCS Machine Identity component (`PvsVmAgent`, also
+recognized by the Machine Identity display name), and Automatic startup for Desktop
+Service (`BrokerAgent`). The MCS component need not currently be running on the master.
+WEM validation requires Automatic startup for the host service, user logon service and
+SENS, with WEM services using LocalSystem. It never changes service startup settings.
+
+Release detection reads installed-product registrations in both registry views and
+checks that the service binary exists. A release token such as `2507` in the product
+name or the start of DisplayVersion identifies the marketing release. Without a
+matching product registration, the service binary ProductVersion must start with the
+expected release. Ambiguous/unknown versions fail closed; internal `7.x` versions alone
+are not guessed. Inspect the diagnostic and the installed products if detection fails.
+This is a release-family check, not a minimum cumulative-update or hotfix check. Other
+ExpectedRelease values are configurable but have not been validated by this project.
+
+WEM cache discovery reads the installed non-policy Agent Host settings, using
+AgentCacheAlternateLocation or `<agent installation>\Local Databases Set`. The path
+must be local and free of reparse points; it is excluded from optional temp cleanup.
+A not-yet-created cache directory is reported, not created by the script. Confirm cache
+initialization, connectivity and storage persistence for your chosen WEM deployment mode.
+The script preserves Basic, on-premises or cloud configuration and cannot establish
+endpoint connectivity or the suitability of the selected optimization settings.
+
+WEM performs its own clone-database checks and cache synchronization. Therefore this
+workflow does not delete its databases, restart WEM services or run AgentCacheUtility.
+This follows [Citrix WEM 2507 agent guidance](https://docs.citrix.com/en-us/workspace-environment-management/2507/install-and-configure/agent-host.html).
+
+For automatic power-off, set FinalAction to `Shutdown`. Optionally also set
+Citrix.VDA.StopBeforeShutdown to `true`. After all selected operations and file logging
+succeed, the script stops only BrokerAgent without Force, waits up to 30 seconds for
+Stopped, then requests shutdown. Startup type remains Automatic. If stopping or requesting
+shutdown fails, it attempts to restore the previous running state; recovery failure is
+reported. An already stopped VDA remains stopped. No recovery follows an accepted
+shutdown request. A stopped VDA is not a durable maintenance-mode setting: use your
+normal Citrix administration process to keep users away from the master.
+
+With FinalAction=None, leave StopBeforeShutdown=false, inspect the result and shut down
+the master through your normal process before taking the MCS snapshot. MCS owns machine
+identity preparation; **do not run Sysprep on the MCS master**. Follow the
+[Citrix 2507 master image instructions](https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/2507-ltsr/install-configure/machine-catalogs-create.html).
+Citrix-only use does not require the optional BIS-F Personalize task or its lifecycle
+state. Those features serve the separately selected Configuration Manager workflow.
+
+Before production, create an MCS test catalog from the powered-off snapshot. Verify
+VDA registration and ICA logon, WEM deployment mode and configuration processing,
+clone cache recreation/sync and persistence, and subsequent cold boots. The portable
+unit tests do not certify an actual 2507 installation or provisioning workflow.
 
 ## Personalization lifecycle
 

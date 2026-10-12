@@ -15,6 +15,7 @@ function Get-BISFPlan {
         if ($Config.Personalization.Enabled -or $Config.ConfigurationManager.PrepareIdentityReset -or $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
             $steps.Add([pscustomobject]@{Id='Lifecycle';Description='Record a preparation generation and optional startup task'})
         }
+        if ($Config.Citrix.VDA.Enabled -and $Config.Citrix.VDA.StopBeforeShutdown) { $steps.Add([pscustomobject]@{Id='VDAStop';Description='Stop Citrix Desktop Service immediately before shutdown; preserve startup type'}) }
         if ($Config.FinalAction -eq 'Shutdown') { $steps.Add([pscustomobject]@{Id='Shutdown';Description='Request computer shutdown'}) }
     }
     $steps.ToArray()
@@ -31,7 +32,7 @@ function Invoke-BISFLocal {
         [ValidateSet('Validate','Prepare','Personalize')][string]$Mode='Validate'
     )
     $results=New-Object 'System.Collections.Generic.List[object]'
-    $logger=$null; $lock=$null; $state=$null; $previousCM=$null
+    $logger=$null; $lock=$null; $state=$null; $previousCM=$null; $previousVDA=$null; $citrix=$null
     $exitCode=0; $errorMessage=$null; $applying=$false; $stateTouched=$false
     $completionTouched=$false; $journal=$null; $shutdownRequested=$false; $journalStatus=$null
     $currentStep='Preflight'
@@ -43,6 +44,7 @@ function Invoke-BISFLocal {
         $inventory=Get-BISFInventory
         $plan=@(Get-BISFPlan $config $Mode)
         Test-BISFPreflight $config $Mode $plan $ScriptRoot $ConfigPath $inventory
+        $citrix=Get-BISFCitrixReadiness $config $Mode
         $statePath=Join-Path $ScriptRoot 'state/lifecycle.json'
         if ($Mode -ne 'Validate' -and -not $WhatIfPreference) { $lock=Enter-BISFLock }
         if ($Mode -eq 'Personalize') {
@@ -56,6 +58,10 @@ function Invoke-BISFLocal {
         }
         $logger=New-BISFLogger $config $Mode
         Write-BISFLog $logger Info Inventory ("OS={0}; Build={1}; Computer={2}; CcmExec={3}; Mode={4}" -f $inventory.Caption,$inventory.Build,$inventory.Identity.Name,$inventory.CMInstalled,$Mode)
+        if ($null -ne $citrix.VDA) { Write-Host "Citrix VDA: $($citrix.VDA.Version); MCS component: $($citrix.VDA.MachineIdentityService)." }
+        if ($null -ne $citrix.WEM) { Write-Host "Citrix WEM: $($citrix.WEM.Version); preserved cache: $($citrix.WEM.CachePath) (exists: $($citrix.WEM.CacheExists))." }
+        if ($null -ne $citrix.VDA) { Write-BISFLog $logger Info CitrixVDA ("VDA=$($citrix.VDA.Version); MCS component=$($citrix.VDA.MachineIdentityService); Desktop Service=$($citrix.VDA.State), $($citrix.VDA.Startup)") }
+        if ($null -ne $citrix.WEM) { Write-BISFLog $logger Info CitrixWEM ("WEM=$($citrix.WEM.Version); cache=$($citrix.WEM.CachePath); exists=$($citrix.WEM.CacheExists). Services and cache preserved; confirm cache initialization and persistence on a test clone.") }
         if ($Mode -eq 'Personalize' -and -not $journalStatus.PersonalizationPending -and (Test-BISFCompletion $state $inventory.Identity)) {
             $results.Add([pscustomobject]@{Id='Personalize';Status='Skipped';Message='This clone already completed this preparation generation.'})
             Write-BISFLog $logger Info Personalize 'Skipped: already completed this generation.'
@@ -100,8 +106,9 @@ function Invoke-BISFLocal {
                     Write-BISFState $statePath $state
                 }
                 $protected=@($ScriptRoot,$ConfigPath,(Join-Path $ScriptRoot 'state'),$config.Logging.Path)
+                if ($null -ne $citrix.WEM) { $protected+=@($citrix.WEM.CachePath) }
                 foreach ($step in $plan) {
-                    if ($step.Id -eq 'Shutdown') { continue }
+                    if ($step.Id -in @('VDAStop','Shutdown')) { continue }
                     $currentStep=$step.Id
                     Write-BISFLog $logger Info $step.Id ('Starting: '+$step.Description)
                     switch ($step.Id) {
@@ -143,6 +150,14 @@ function Invoke-BISFLocal {
                 if (@($plan | ForEach-Object { $_.Id }) -contains 'Shutdown') {
                     $currentStep='Shutdown'
                     Write-BISFLog $logger Info Shutdown 'Requesting shutdown. No further log writes follow an accepted request.'
+                    if ($config.Citrix.VDA.StopBeforeShutdown) {
+                        $currentStep='VDAStop'
+                        # Capture before calling Stop, so a partial stop failure can recover.
+                        $previousVDA=Get-BISFVDARunningState
+                        Stop-BISFVDA
+                        $results.Add([pscustomobject]@{Id='VDAStop';Status='Completed';Message='Desktop Service stopped; startup type unchanged.'})
+                    }
+                    $currentStep='Shutdown'
                     Stop-Computer -Confirm:$false -ErrorAction Stop
                     $shutdownRequested=$true
                     $results.Add([pscustomobject]@{Id='Shutdown';Status='Completed';Message='Shutdown request accepted.'})
@@ -173,6 +188,10 @@ function Invoke-BISFLocal {
             try { Restore-BISFCMService $previousCM }
             catch { Write-Warning "Could not restore CcmExec: $($_.Exception.Message)" }
         }
+        if ($null -ne $previousVDA -and -not $shutdownRequested) {
+            try { Restore-BISFVDA $previousVDA }
+            catch { Write-Warning "Could not restore Citrix Desktop Service: $($_.Exception.Message)" }
+        }
         if ($shutdownRequested) { Write-Warning "Shutdown was accepted, but finalization failed; the incomplete-run journal remains. $errorMessage" }
         else {
             try { Write-BISFLog $logger Error $currentStep $errorMessage }
@@ -183,5 +202,5 @@ function Invoke-BISFLocal {
         Exit-BISFLock $lock
     }
     Write-Host ("BIS-F Local: Mode={0}, ExitCode={1}, Completed={2}, Failed={3}" -f $Mode,$exitCode,@($results | Where-Object Status -eq 'Completed').Count,@($results | Where-Object Status -eq 'Failed').Count)
-    [pscustomobject]@{ExitCode=$exitCode;Mode=$Mode;Results=$results.ToArray();Error=$errorMessage}
+    [pscustomobject]@{ExitCode=$exitCode;Mode=$Mode;Results=$results.ToArray();Error=$errorMessage;Citrix=$citrix}
 }
