@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="NonBlank"><xs:restriction base="xs:token"><xs:minLength value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="FinalAction"><xs:restriction base="xs:string"><xs:enumeration value="None"/><xs:enumeration value="Shutdown"/></xs:restriction></xs:simpleType>
+  <xs:element name="BISF"><xs:complexType><xs:sequence>
+    <xs:element name="Logging"><xs:complexType><xs:sequence>
+      <xs:element name="Enabled" type="xs:boolean"/><xs:element name="Path" type="NonBlank"/>
+    </xs:sequence></xs:complexType></xs:element>
+    <xs:element name="Cleanup"><xs:complexType><xs:sequence>
+      <xs:element name="WindowsTemp" type="xs:boolean"/><xs:element name="CurrentUserTemp" type="xs:boolean"/>
+      <xs:element name="MinimumAgeDays"><xs:simpleType><xs:restriction base="xs:positiveInteger"><xs:maxInclusive value="3650"/></xs:restriction></xs:simpleType></xs:element>
+    </xs:sequence></xs:complexType></xs:element>
+    <xs:element name="ConfigurationManager"><xs:complexType><xs:sequence>
+      <xs:element name="PrepareIdentityReset" type="xs:boolean"/><xs:element name="CloneTrustedRootKeyReset" type="xs:boolean"/>
+    </xs:sequence></xs:complexType></xs:element>
+    <xs:element name="Personalization"><xs:complexType><xs:sequence><xs:element name="Enabled" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element>
+    <xs:element name="Preflight"><xs:complexType><xs:sequence><xs:element name="BlockPendingReboot" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element>
+    <xs:element name="FinalAction" type="FinalAction"/>
+  </xs:sequence><xs:attribute name="SchemaVersion" use="required" fixed="1" type="xs:string"/></xs:complexType></xs:element>
+</xs:schema>
