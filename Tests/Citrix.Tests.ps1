@@ -8,7 +8,6 @@ Describe 'Citrix XML and MCS validation' {
     It 'enables VDA and WEM release checks in the supplied configuration' {
         $c.Citrix.VDA.Enabled | Should -BeTrue
         $c.Citrix.WEM.Enabled | Should -BeTrue
-        $c.Citrix.VDA.ExpectedRelease | Should -Be '2507'
         $c.Citrix.VDA.StopBeforeShutdown | Should -BeFalse
     }
     It 'keeps older configurations without Citrix disabled' {
@@ -26,12 +25,7 @@ Describe 'Citrix XML and MCS validation' {
         (@(Get-BISFPlan $c Prepare).Id -join ',') | Should -Be 'VDAStop,Shutdown'
         (@(Get-BISFPlan $c Personalize).Id) | Should -Not -Contain 'VDAStop'
     }
-    It 'matches the release token rather than a partial number' {
-        Test-BISFCitrixRelease 'Citrix Virtual Delivery Agent 2507 LTSR CU1' '7.45.100.12' '2507' | Should -BeTrue
-        Test-BISFCitrixRelease 'Citrix Virtual Delivery Agent' '2507.0.100.12' '2507' | Should -BeTrue
-        Test-BISFCitrixRelease 'Citrix Virtual Delivery Agent 12507' '25070.0.1' '2507' | Should -BeFalse
-        Test-BISFCitrixRelease 'Citrix Virtual Delivery Agent' '7.45.0.1' '2507' | Should -BeFalse
-    }
+
 }
 Describe 'Citrix prerequisite checks preserve installed configuration' {
     BeforeEach {
@@ -60,9 +54,9 @@ Describe 'Citrix prerequisite checks preserve installed configuration' {
         $script:services=@($script:services | Where-Object Name -ne PvsVmAgent)
         { Get-BISFCitrixReadiness $c Prepare } | Should -Throw '*Machine Identity*'
     }
-    It 'rejects a mismatched installed release' {
+    It 'accepts an older installed release' {
         Mock Get-BISFCitrixProducts { [pscustomobject]@{DisplayName='Citrix Virtual Delivery Agent 2402 LTSR';DisplayVersion='7.41.0.1'} }
-        { Get-BISFCitrixReadiness $c Prepare } | Should -Throw '*2507*'
+        (Get-BISFCitrixReadiness $c Prepare).VDA.Version | Should -Be '7.41.0.1'
     }
     It 'requires both WEM services and automatic SENS startup' {
         $script:services[4].StartMode='Manual'
@@ -71,6 +65,14 @@ Describe 'Citrix prerequisite checks preserve installed configuration' {
     It 'rejects a WEM host service running under another account' {
         $script:services[2].StartName='DOMAIN\account'
         { Get-BISFCitrixReadiness $c Prepare } | Should -Throw '*LocalSystem*'
+    }
+    It 'accepts the legacy WEM host without a separate user logon service' {
+        $script:services[2].Name='Norskale Agent Host Service'
+        $script:services[2].DisplayName='Norskale Agent Host Service'
+        $script:services=@($script:services | Where-Object Name -ne WemLogon)
+        $r=Get-BISFCitrixReadiness $c Prepare
+        $r.WEM.HostService | Should -Be 'Norskale Agent Host Service'
+        $r.WEM.LogonService | Should -Be 'Not installed'
     }
     It 'does not discover Citrix when both integrations are disabled' {
         $c.Citrix.VDA.Enabled=$false; $c.Citrix.WEM.Enabled=$false
@@ -89,14 +91,13 @@ Describe 'Citrix installed version evidence' {
         Mock Get-BISFServiceBinaryVersion { '2507.0.100.428' }
         Get-BISFCitrixVersion @() 'VDA' $service '2507' | Should -Be '2507.0.100.428'
     }
-    It 'fails closed on an unknown internal version without release metadata' {
-        Mock Get-BISFServiceBinaryVersion { '7.45.0.1' }
-        { Get-BISFCitrixVersion @() 'VDA' $service '2507' } | Should -Throw '*2507*'
+    It 'reports internal versions without guessing or blocking their release' {
+        Mock Get-BISFServiceBinaryVersion { '7.15.0.1' }
+        Get-BISFCitrixVersion @() 'VDA' $service | Should -Be '7.15.0.1'
     }
-    It 'rejects conflicting product registrations' {
-        Mock Get-BISFServiceBinaryVersion { '2507.0.1' }
-        $products=@([pscustomobject]@{DisplayName='VDA 2507';DisplayVersion='2507.0'},[pscustomobject]@{DisplayName='VDA 2402';DisplayVersion='2402.0'})
-        { Get-BISFCitrixVersion $products 'VDA' $service '2507' } | Should -Throw '*conflicting*'
+    It 'reports unknown version resources without blocking preparation' {
+        Mock Get-BISFServiceBinaryVersion { '' }
+        Get-BISFCitrixVersion @() 'VDA' $service | Should -Be 'Unknown'
     }
     It 'requires the installed binary even when the product registration matches' {
         Mock Get-BISFServiceBinaryVersion { throw 'binary missing' }
@@ -170,5 +171,11 @@ Describe 'VDA bounded service-control operations' {
     It 'surfaces a stop timeout to the runner recovery path' {
         $script:controller | Add-Member ScriptMethod WaitForStatus { param($State,$Timeout) throw 'timed out' } -Force
         { Stop-BISFVDA } | Should -Throw '*timed out*'
+    }
+}
+Describe 'Citrix version-independent inventory' {
+    It 'accepts installed version <Version> without a release gate' -ForEach @(@{Version='7.15.0.1'},@{Version='1912.0.1'},@{Version='2402.0.1'},@{Version='2507.0.1'},@{Version='2607.0.1'},@{Version='future-version'}) {
+        Mock Get-BISFServiceBinaryVersion { $Version }
+        Get-BISFCitrixVersion @() 'VDA' ([pscustomobject]@{Name='BrokerAgent'}) | Should -Be $Version
     }
 }

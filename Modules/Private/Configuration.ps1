@@ -28,15 +28,13 @@ function Read-BISFConfig {
     } finally { if ($null -ne $reader) { $reader.Dispose() } }
     $b = $doc.BISF
     $citrix = [pscustomobject]@{
-        VDA = [pscustomobject]@{Enabled=$false;ExpectedRelease='2507';StopBeforeShutdown=$false}
-        WEM = [pscustomobject]@{Enabled=$false;ExpectedRelease='2507'}
+        VDA = [pscustomobject]@{Enabled=$false;StopBeforeShutdown=$false}
+        WEM = [pscustomobject]@{Enabled=$false}
     }
     if ($null -ne $doc.SelectSingleNode('/BISF/Citrix')) {
         $citrix.VDA.Enabled = [Xml.XmlConvert]::ToBoolean($b.Citrix.VDA.Enabled.Trim())
-        $citrix.VDA.ExpectedRelease = [string]$b.Citrix.VDA.ExpectedRelease
         $citrix.VDA.StopBeforeShutdown = [Xml.XmlConvert]::ToBoolean($b.Citrix.VDA.StopBeforeShutdown.Trim())
         $citrix.WEM.Enabled = [Xml.XmlConvert]::ToBoolean($b.Citrix.WEM.Enabled.Trim())
-        $citrix.WEM.ExpectedRelease = [string]$b.Citrix.WEM.ExpectedRelease
     }
     [pscustomobject]@{
         Citrix = $citrix

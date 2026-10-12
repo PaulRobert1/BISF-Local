@@ -22,13 +22,11 @@
   <Citrix>
     <VDA>
       <Enabled>true</Enabled>
-      <ExpectedRelease>2507</ExpectedRelease>
       <!-- Requires FinalAction=Shutdown. Startup type is never changed. -->
       <StopBeforeShutdown>false</StopBeforeShutdown>
     </VDA>
     <WEM>
       <Enabled>true</Enabled>
-      <ExpectedRelease>2507</ExpectedRelease>
     </WEM>
   </Citrix>
   <Preflight>

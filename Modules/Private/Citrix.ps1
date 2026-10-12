@@ -23,11 +23,6 @@ function Get-BISFCitrixProducts {
         }
     }
 }
-function Test-BISFCitrixRelease {
-    param([string]$DisplayName, [string]$Version, [string]$ExpectedRelease)
-    $release=[regex]::Escape($ExpectedRelease)
-    ($DisplayName -match ('(?<![0-9])'+$release+'(?![0-9])')) -or ($Version -match ('^'+$release+'($|\.)'))
-}
 function Resolve-BISFCitrixLocalPath {
     param([string]$Path)
     $value=[Environment]::ExpandEnvironmentVariables($Path.Trim())
@@ -55,28 +50,18 @@ function Get-BISFServiceBinaryVersion {
     [Diagnostics.FileVersionInfo]::GetVersionInfo($path).ProductVersion
 }
 function Get-BISFCitrixVersion {
-    param($Products, [string]$Pattern, $Service, [string]$ExpectedRelease)
-    $matches=@($Products | Where-Object { $_.DisplayName -match $Pattern })
-    if ($matches.Count -gt 0) {
-        foreach ($product in $matches) {
-            if (-not (Test-BISFCitrixRelease $product.DisplayName $product.DisplayVersion $ExpectedRelease)) {
-                throw "Expected Citrix release $ExpectedRelease; found $($product.DisplayName), version $($product.DisplayVersion). Resolve conflicting or unrecognized installations before preparation."
-            }
-        }
-        # Also require an accessible installed binary, but do not infer marketing
-        # release numbers from internal 7.x component versions.
-        $null=Get-BISFServiceBinaryVersion $Service
-        return [string](($matches | ForEach-Object { $_.DisplayVersion } | Select-Object -Unique) -join ', ')
-    }
-    $version=Get-BISFServiceBinaryVersion $Service
-    if (-not (Test-BISFCitrixRelease '' $version $ExpectedRelease)) {
-        throw "Expected Citrix release $ExpectedRelease; $($Service.Name) product version is '$version' and no matching installed product was found."
-    }
-    [string]$version
+    param($Products, [string]$Pattern, $Service)
+    # Installed versions are inventory only. Windows eligibility and component
+    # prerequisites determine whether preparation can proceed.
+    $binaryVersion=Get-BISFServiceBinaryVersion $Service
+    $versions=@($Products | Where-Object { $_.DisplayName -match $Pattern } | ForEach-Object { $_.DisplayVersion } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+    if ($versions.Count -gt 0) { return [string]($versions -join ', ') }
+    if (-not [string]::IsNullOrWhiteSpace($binaryVersion)) { return [string]$binaryVersion }
+    'Unknown'
 }
 function Get-BISFRequiredCitrixService {
-    param($Services, [string]$Name, [string[]]$DisplayName)
-    $found=@($Services | Where-Object { ($Name -and $_.Name -eq $Name) -or ($DisplayName -and $DisplayName -contains $_.DisplayName) })
+    param($Services, [string[]]$Name, [string[]]$DisplayName)
+    $found=@($Services | Where-Object { ($Name -and $Name -contains $_.Name) -or ($DisplayName -and $DisplayName -contains $_.DisplayName) })
     if ($found.Count -ne 1) { throw "Required Citrix service missing or ambiguous: $Name $DisplayName" }
     if ($found[0].StartMode -eq 'Disabled') { throw "Required Citrix service is disabled: $($found[0].Name)" }
     $found[0]
@@ -109,22 +94,26 @@ function Get-BISFCitrixReadiness {
         $identity=Get-BISFRequiredCitrixService $services 'PvsVmAgent' 'Citrix Machine Identity Service'
         if ($vda.StartMode -ne 'Auto') { throw 'Citrix Desktop Service (BrokerAgent) must start automatically on MCS clones.' }
         if ($vda.State -notin @('Running','Stopped')) { throw 'Citrix Desktop Service is in a transitional state; retry after it settles.' }
-        $version=Get-BISFCitrixVersion $products '^Citrix.*Virtual (Delivery|Desktop) Agent' $vda $Config.Citrix.VDA.ExpectedRelease
+        $version=Get-BISFCitrixVersion $products '^Citrix.*Virtual (Delivery|Desktop) Agent' $vda
         $report.VDA=[pscustomobject]@{Version=$version;Service=$vda.Name;MachineIdentityService=$identity.Name;Startup=$vda.StartMode;State=$vda.State}
     }
     if ($Config.Citrix.WEM.Enabled) {
-        $hostService=Get-BISFRequiredCitrixService $services '' 'Citrix WEM Agent Host Service'
-        $logon=Get-BISFRequiredCitrixService $services '' @('Citrix WEM Agent User Logon Service','Citrix WEM User Logon Service')
+        $hostService=Get-BISFRequiredCitrixService $services @('WemAgentSvc','Norskale Agent Host Service') @('Citrix WEM Agent Host Service','Norskale Agent Host Service')
+        # Older WEM agents may not install a separate user-logon service.
+        $logon=$null
+        if (@($services | Where-Object { $_.DisplayName -in @('Citrix WEM Agent User Logon Service','Citrix WEM User Logon Service') }).Count -gt 0) {
+            $logon=Get-BISFRequiredCitrixService $services '' @('Citrix WEM Agent User Logon Service','Citrix WEM User Logon Service')
+        }
         $sens=Get-BISFRequiredCitrixService $services 'SENS' ''
-        foreach ($svc in @($hostService,$logon,$sens)) {
+        foreach ($svc in @($hostService,$logon,$sens) | Where-Object { $null -ne $_ }) {
             if ($svc.StartMode -ne 'Auto') { throw "WEM requires Automatic startup for $($svc.Name); fix the installed configuration first." }
         }
-        foreach ($svc in @($hostService,$logon)) {
+        foreach ($svc in @($hostService,$logon) | Where-Object { $null -ne $_ }) {
             if ($svc.StartName -notin @('LocalSystem','NT AUTHORITY\SYSTEM')) { throw "WEM requires LocalSystem for $($svc.Name)." }
         }
-        $version=Get-BISFCitrixVersion $products '^Citrix.*Workspace Environment Management.*Agent' $hostService $Config.Citrix.WEM.ExpectedRelease
+        $version=Get-BISFCitrixVersion $products '^Citrix.*Workspace Environment Management.*Agent' $hostService
         $cache=Get-BISFWEMCache $hostService
-        $report.WEM=[pscustomobject]@{Version=$version;HostService=$hostService.Name;LogonService=$logon.Name;CachePath=$cache;CacheExists=(Test-Path -LiteralPath $cache -PathType Container)}
+        $report.WEM=[pscustomobject]@{Version=$version;HostService=$hostService.Name;LogonService=$(if ($null -ne $logon) { $logon.Name } else { 'Not installed' });CachePath=$cache;CacheExists=(Test-Path -LiteralPath $cache -PathType Container)}
     }
     $report
 }

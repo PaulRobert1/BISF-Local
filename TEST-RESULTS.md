@@ -2,7 +2,7 @@
 
 2026-10-12, Linux x86_64 development host.
 
-- PowerShell 7.6.6, Pester 5.7.1: 124 tests passed, 0 failed.
+- PowerShell 7.6.6, Pester 5.7.1: 130 tests passed, 0 failed.
 - Actual suite entry point: `Tests/Invoke-Tests.ps1`.
 - Runtime files parsed by PowerShell; default XML exercised against its XSD.
 - Source audit checks for forbidden external execution, legacy mutations and binaries.
@@ -44,3 +44,9 @@ explicit bounded waits, with focused failing-then-passing regressions. The revie
 rechecked the fix and reported no definite remaining issue. Their minor suggestion to
 assert the current controller recovery path rather than the obsolete Start-Service call
 was also applied. No review findings were deferred.
+
+Version-independent update: all 130 tests pass. Tests cover older and newer version
+strings, unknown resources, legacy Norskale host service discovery, absence of the
+optional logon service, existing Windows eligibility checks and existing failure
+recovery. No Citrix version comparison remains. Windows runtime and actual agent/OS
+compatibility remain unverified.

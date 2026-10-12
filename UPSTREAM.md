@@ -42,7 +42,7 @@ A successful run of this package therefore covers only its explicitly selected a
 | Licensing rearm, Sysprep, vendor optimizers and agent sealing executables | Excluded under strict no-executable requirement |
 | PVS disk/cache manipulation, VHD compaction and write-cache formatting | Excluded; deployment product remains responsible |
 | FSLogix rule deletion/distribution and other vendor integrations | Excluded; existing configuration preserved |
-| Citrix VDA preparation | Installed-release/MCS component checks; optional Desktop Service stop immediately before shutdown |
+| Citrix VDA preparation | Version inventory/MCS component checks; optional Desktop Service stop immediately before shutdown |
 | Legacy WEM service restarts/cache utility | Replaced with prerequisite checks and cache preservation; WEM 2507 manages clone databases itself |
 | Image capture/provisioning | External supported workflow, not performed here |
 

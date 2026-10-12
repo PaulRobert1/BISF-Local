@@ -62,10 +62,9 @@ Completed only after the final commit. No minor findings were deferred.
 
 ## Approved Citrix extension
 
-VDA/WEM 2507 validation is enabled in the shipped XML. Legacy configs that omit Citrix
-remain compatible with both checks disabled. The four-digit release is configurable,
-but internal component versions are not guessed into marketing releases. A missing or
-ambiguous installation fails before any image operations. Pure read-only service/CIM,
+VDA/WEM component validation is enabled in the shipped XML. Legacy configs that omit Citrix
+remain compatible with both checks disabled. Versions are reported without mapping internal component numbers to marketing
+releases. Missing or ambiguous required services fail before image operations. Pure read-only service/CIM,
 registry and binary version-resource discovery uses no vendor executable or policy keys.
 
 WEM cache handling remains with the installed agent. The detected path is protected
@@ -78,3 +77,10 @@ the timeout. Fixed with NoWait plus a bounded status wait. Recovery uses Service
 Start and bounded status waits, without changing startup type. Focused regression tests
 exercise these wrappers as well as runner ordering, partial-stop failure, shutdown failure
 and no recovery after shutdown acceptance. The reviewer found no other definite issues.
+
+User-requested compatibility update: Citrix versions are inventory only, with no
+minimum or maximum. ExpectedRelease is accepted only for older XML compatibility
+and is ignored. The supplied XML omits it. Older WEM host names are recognized and
+a separate user-logon service is validated only when installed. Platform eligibility
+remains Windows Server 2025 or Windows 11. Vendor support and legacy sealing needs
+are not inferred from passing this platform check.
