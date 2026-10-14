@@ -1,0 +1,76 @@
+BIS-F Local continuation handoff — 2026-10-14
+
+Purpose
+Unofficial GPLv3 PowerShell-only rewrite/limited derivative of EUCweb/BIS-F
+7.1912.7, original commit 351b43dbd165ac864f4bc190cc61c866889eb598.
+Original source came from the public upstream, not the user's repository.
+Read README.md, UPSTREAM.md, TEST-RESULTS.md and IMPLEMENTATION-NOTES.md first.
+
+User requirements (latest instructions take precedence)
+- Run locally on an administrator-controlled master image.
+- Elevated 64-bit Windows PowerShell 5.1; Windows Server 2025 or Windows 11.
+- No GPO reads/writes, vendor executable calls or executable payloads.
+  The optional clone startup task launches only the built-in PowerShell host.
+- GlobalConfig.xml controls deployment and logging. Logging can be disabled;
+  default path is logs beside Invoke-BISF.ps1, independent of current directory.
+- Citrix VDA and WEM, MCS workflow. Initially targeted 2507 LTSR, but the user
+  explicitly broadened this to BOTH older and newer Citrix versions.
+  Citrix versions are informational, never minimum/maximum release gates.
+  Legacy ExpectedRelease XML elements are accepted but ignored.
+- Do not infer authorization to run on or shut down a real master from this
+  source upload. Current request was to upload progress for another chat.
+
+Current implementation
+Latest implementation commit before this handoff: 304bbd9.
+- Strict XML/XSD configuration, Validate/Prepare/Personalize modes and WhatIf.
+- Platform, pending-reboot and enabled-component prerequisites checked first.
+- Optional age-based Windows/current-user temporary file cleanup, with protected
+  paths and reparse checks. WEM cache is protected when WEM integration enabled.
+- Optional Configuration Manager identity preparation and CIM-based clone reset.
+- Optional protected SYSTEM startup task, identity/config-hash-bound lifecycle
+  state, incomplete-run journals and fail-closed completion.
+- VDA component/MCS PvsVmAgent checks; optional Desktop Service stop immediately
+  before shutdown, bounded waits and best-effort recovery before power acceptance.
+  Startup type is not changed. No Sysprep; MCS owns machine identity preparation.
+- Modern and legacy Norskale WEM host services recognized. Separate user-logon
+  service checked when present; absence is allowed for older installations.
+- WEM settings/cache preserved. No WEM stop/restart or cache utility invocation.
+  WEM 2507 documents automatic clone cache handling. Older releases' requirements
+  still need validation; accepting a version is not vendor compatibility certification.
+- Default XML enables Citrix checks but no destructive cleanup, CM reset,
+  automatic personalization, VDA stop or shutdown.
+
+Important scope limits
+This is NOT feature parity with upstream BIS-F and does NOT capture/provision images.
+There is NO user-profile deletion in this implementation. The user's comments about
+profiles not being removed referred to the OLD script; do not claim this rewrite
+removes profiles. Cleanup only covers selected temp roots, not arbitrary caches,
+event logs, every user's profile, antivirus sealing or optimizers.
+The old script's precise failure cause was not established from execution logs.
+Do not claim age alone conclusively explains the reported failures.
+
+Verification completed
+130 Pester tests passed on Linux PowerShell 7.6.6 with Pester 5.7.1.
+PSScriptAnalyzer 1.24.0 PSUseCompatibleSyntax targeting 5.1: zero findings.
+Source audit excludes external execution, forbidden legacy changes and binary payloads.
+Independent review covered core lifecycle and Citrix changes; actionable findings fixed.
+Windows operations are mocked. No actual Windows 5.1, VDA/WEM installation, Windows
+ACL/SYSTEM task, shutdown or MCS deployment test has been performed.
+Development tools are not bundled. Install Pester 5 separately to run:
+  .\Tests\Invoke-Tests.ps1
+On the original development host only, tools are under /tmp/bisf-dev; those paths
+are ephemeral and must not be assumed available in another chat/environment.
+
+Next useful work
+1. Retrieve this repository and inspect current code/docs before editing.
+2. Use a disposable Windows Server 2025/Windows 11 MCS master to Validate and WhatIf.
+3. Confirm real installed-product/service names and cache discovery for actual
+   older/newer Citrix versions, and verify WEM configuration processing on clones.
+4. Exercise preparation failure recovery, logging, and optional settings actually
+   requested by the user. Validate MCS snapshot/first-boot and subsequent cold boots.
+5. If the user wants profile removal or broader cleanup, implement that explicitly;
+   it is not present today. Preserve the no-GPO/no-vendor-EXE constraints.
+
+Delivery
+The source tree is sufficient to reproduce the source-only ZIP via git archive.
+Logs, runtime state and local development dependencies are intentionally excluded.
