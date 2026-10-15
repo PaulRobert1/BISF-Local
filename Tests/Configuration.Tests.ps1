@@ -30,6 +30,26 @@ Describe 'Configuration and logging contract' {
         (Get-Content $cfgPath -Raw).Replace($Old,$New) | Set-Content $cfgPath
         { Read-BISFConfig $cfgPath $root } | Should -Throw
     }
+    It 'defaults profile cleanup to disabled when an older XML omits it' {
+        (Get-Content $cfgPath -Raw).Replace('<UserProfiles>false</UserProfiles>','') | Set-Content $cfgPath
+        $config=Read-BISFConfig $cfgPath $root
+        $config.Cleanup.UserProfiles | Should -BeFalse
+        $config.Cleanup.ExcludedProfileSIDs.Count | Should -Be 0
+    }
+    It 'accepts explicit profile cleanup and protected SID list without affecting temp file age' {
+        $body=(Get-Content $cfgPath -Raw).Replace('<UserProfiles>false</UserProfiles>','<UserProfiles>true</UserProfiles>')
+        $body=$body.Replace('</MinimumAgeDays>','</MinimumAgeDays><ExcludedProfileSIDs><SID>S-1-5-21-111-222-333-1001</SID></ExcludedProfileSIDs>')
+        $body | Set-Content $cfgPath
+        $config=Read-BISFConfig $cfgPath $root
+        $config.Cleanup.UserProfiles | Should -BeTrue
+        $config.Cleanup.ExcludedProfileSIDs.Count | Should -Be 1
+        $config.Cleanup.ExcludedProfileSIDs[0] | Should -Be 'S-1-5-21-111-222-333-1001'
+        $config.Cleanup.MinimumAgeDays | Should -Be 7
+    }
+    It 'rejects malformed SID exclusions in strict XML' {
+        (Get-Content $cfgPath -Raw).Replace('</MinimumAgeDays>','</MinimumAgeDays><ExcludedProfileSIDs><SID>NOT-A-SID</SID></ExcludedProfileSIDs>') | Set-Content $cfgPath
+        { Read-BISFConfig $cfgPath $root } | Should -Throw '*Invalid ExcludedProfileSIDs*'
+    }
     It 'rejects DTD entities' {
         '<!DOCTYPE BISF [<!ENTITY x "test">]><BISF SchemaVersion="1">&x;</BISF>' | Set-Content $cfgPath
         { Read-BISFConfig $cfgPath $root } | Should -Throw
