@@ -2,7 +2,7 @@
 
 This reviewed, sanitized bundle is an interim evidence snapshot, not final acceptance. Subsequent live runs are not inferred.
 
-Current W11 installation update: FSLogix and WEM installed with exit 0; VDA first invocation returned 3, then resumed setup returned 0 at 18:10:15 UTC. Final normal reboot and baseline qualification are pending. See [VDA installation result](evidence/w11/vda-resume-output.txt). No complete W11 vendor baseline is claimed.
+Current W11 installation update: installed CVAD2012/WEM2005/FSLogix baseline now qualified; six shipped-agent preview checks PASS. Vendor snapshot 10031 is Ready-For-Seal-Agents-No-Autologon; old snapshot10025 remains pre-agents. Account Unknown native test has seven PASS checks.
 
 # Disposable Windows acceptance — draft evidence map
 
@@ -27,7 +27,7 @@ PASS below means only the explicitly described native observation. PARTIAL never
 
 | Checklist row | Windows 11 | Server 2025 | Evidence and remaining gate |
 |---|---|---|---|
-| Defaults, shipped XML Validate and Prepare -WhatIf | BLOCKED — shipped VDA missing; native variants PASS | PASS — shipped-agent preview, six checks | Server shipped Validate and Prepare -WhatIf exit0; profile/task/state/config invariance checks pass after agent installation. Earlier missing-BrokerAgent output is historical pre-install evidence. [evidence/server/agents-preview-results.json](evidence/server/agents-preview-results.json); [evidence/server/agents-preview-output.txt](evidence/server/agents-preview-output.txt); [evidence/w11/baseline-output.txt](evidence/w11/baseline-output.txt) |
+| Defaults, shipped XML Validate and Prepare -WhatIf | PASS — shipped-agent preview, six checks | PASS — shipped-agent preview, six checks | Both OS shipped Validate and Prepare -WhatIf exit0; profile/task/state/config invariance checks pass after agent installation. [W11 six-check result](evidence/w11/agents-preview-results.json); [W11 output](evidence/w11/agents-preview-output.txt). Earlier missing-BrokerAgent output is historical pre-install evidence. [evidence/server/agents-preview-results.json](evidence/server/agents-preview-results.json); [evidence/server/agents-preview-output.txt](evidence/server/agents-preview-output.txt); [evidence/w11/baseline-output.txt](evidence/w11/baseline-output.txt) |
 | Checkbox editing | PASS — nine actual GUI cases | PASS — nine actual GUI cases | [evidence/w11/gui-v2-final/results.json](evidence/w11/gui-v2-final/results.json) run7a8a644fc1d84824be72d1d7ac918fda: four flag combinations/custom path, Cancel, stale, locked, malformed and legacy. Earlier automation failures retained as harness history. Server run a2a6d83b57984dd58a95f9fd1e735937: [evidence/server/gui-results-final.json](evidence/server/gui-results-final.json). |
 | Log scope, all event/BISF flag combinations, with/without deferred cleanup | PARTIAL — true/true deferred fixture scope PASS | PARTIAL — true/true deferred fixture scope PASS | Both primary deferred runs have 13 passing offline fixture checks; Server powered off at 17:49:24 UTC. Seven other combinations on each OS remain NOT TESTED. [evidence/w11/offline-inspection-final.json](evidence/w11/offline-inspection-final.json); [evidence/server/normal-signout-power.json](evidence/server/normal-signout-power.json) |
 | Ordinary profiles | PASS — observed native fixture scope | PASS — nine native checks | W11 inactive SID1002 removed; Server inactive SID1005 removed through CIM, preserved operator1000/built-in500/excluded1006/dependency1007 and system profiles. Dependency fixture preserved by explicit SID exclusion, not automatic path coverage. [evidence/w11/ordinary-native.txt](evidence/w11/ordinary-native.txt); [evidence/server/ordinary-native.txt](evidence/server/ordinary-native.txt); [evidence/server/before-primary-seal/ordinary-results.json](evidence/server/before-primary-seal/ordinary-results.json) |
@@ -36,7 +36,7 @@ PASS below means only the explicitly described native observation. PARTIAL never
 | Recycle Bin/temp | PASS — observed fixture scope | PASS — observed fixture scope | Old temp removed/new and unrelated retained on both OS. Current-operator recycle W11 4→0 and Server2→0, exit0. Other-user recycle preservation not independently measured. [evidence/w11/recycle-result.json](evidence/w11/recycle-result.json); [evidence/server/recycle-result.json](evidence/server/recycle-result.json); [evidence/server/ordinary-native.txt](evidence/server/ordinary-native.txt) |
 | Protected SYSTEM handoff | PASS — observed staging | PASS — observed staging | Both staged exact SYSTEM/highest triggerless Finalize action with protected state. [evidence/w11/normal-signout/seal-task.xml](evidence/w11/normal-signout/seal-task.xml); [evidence/server/normal-signout/seal-task.xml](evidence/server/normal-signout/seal-task.xml); [evidence/server/normal-signout/seal-state-acl.json](evidence/server/normal-signout/seal-state-acl.json) |
 | Disconnect versus sign-out | PARTIAL — timeout and normal sign-out evidence | PARTIAL — normal sign-out offline verified | W11 disconnected loaded operator timed out2minutes/result2 without shutdown; its separate normal sign-out cleanup is offline-verified. Server normal sign-out reached powered off at 17:49:24 and offline cleanup passed; its disconnect-timeout case is not done. [evidence/w11/disconnect-timeout/inspect-final.txt](evidence/w11/disconnect-timeout/inspect-final.txt); [evidence/server/normal-signout-power.json](evidence/server/normal-signout-power.json) |
-| Successful finalization | PASS — primary native fixture scope | PASS — primary native fixture scope | Both copied-disk inspections have 13 passing checks. Server sealed snapshot 10030 retained after 17:49:24 UTC poweroff; copy task 16266 completed, inspected read-only on W11 and subsequently detached with its copy retained (root confirmed). Source Server remains off/unbooted since seal. [evidence/w11/offline-inspection-final.json](evidence/w11/offline-inspection-final.json); [evidence/server/normal-signout-power.json](evidence/server/normal-signout-power.json) |
+| Successful finalization | PASS — primary native fixture scope | PASS — primary native fixture scope | Both copied-disk inspections have 13 passing checks. Server sealed snapshot 10030 retained after 17:49:24 UTC poweroff; copy task 16266 completed, inspected read-only on W11 and subsequently detached with its copy retained (root confirmed). Source Server was not booted during offline inspection; after evidence completion it was restored to baseline10029 for subsequent tests. [evidence/w11/offline-inspection-final.json](evidence/w11/offline-inspection-final.json); [evidence/server/normal-signout-power.json](evidence/server/normal-signout-power.json) |
 | Clone | BLOCKED | BLOCKED | No disposable Citrix/MCS catalog; capture/provision and read-only VerifyClone not proven. Installed Server agents do not satisfy this gate. |
 | Reboot/persistence | BLOCKED | BLOCKED | Requires disposable MCS clones and two cold boots with profile/identity persistence checks. |
 
@@ -171,7 +171,7 @@ Final gate remains incomplete until the entire sign-out → profile removal → 
 
 The primary Windows 11 true/true deferred run reached shutdown after normal sign-out. Copy task 16239 completed; the copied disk was inspected read-only as disk 1 on Server, with expected serial/unique ID and configuration hash verified. Source Windows 11 was never booted for inspection. All 13 offline checks PASS: operator profile registration/directory absent; seal task file and TaskCache Tree absent; pending state absent; BISF fixture deleted; Citrix/WEM/FSLogix/unrelated preservation fixtures retain exact known content; Application/System/Setup old records absent; Security old record retained, with EVTX reads validated. [Offline inspection — 13 PASS](evidence/w11/offline-inspection-final.json); [Output](evidence/w11/offline-inspection-final-output.txt).
 
-Server primary seal: exact staged SYSTEM task and normal sign-out poweroff observed at 17:49:24 UTC, snapshot 10030 retained. Read-only copied-disk inspection on W11 disk 1 passed all 13 checks, run 7c4d2e2f7c1145c8a95d0d6bd5f4656e. Copy task 16266 completed and root subsequently confirmed copy detachment and evidence completion; the copy is retained. The source Server has never booted since sealing. Server Security preservation uses the newest existing marker, explicitly documented in seal-events-before.json despite legacy Oldest field names; this avoids mistaking ordinary oldest-record rotation for clearing. W11 retains its original marker selection. [Server offline result](evidence/server/offline-inspection-final.json); [Server offline output](evidence/server/offline-inspection-output.txt). [offline-copy-receipts/evidence-server-normal-signout-both-logs-20261015T174949Z-863b93df93.vmdk.json](offline-copy-receipts/evidence-server-normal-signout-both-logs-20261015T174949Z-863b93df93.vmdk.json).
+Server primary seal: exact staged SYSTEM task and normal sign-out poweroff observed at 17:49:24 UTC, snapshot 10030 retained. Read-only copied-disk inspection on W11 disk 1 passed all 13 checks, run 7c4d2e2f7c1145c8a95d0d6bd5f4656e. Copy task 16266 completed and root subsequently confirmed copy detachment and evidence completion; the copy is retained. The source Server was not booted during offline inspection; root subsequently restored baseline10029 after evidence completion for its Account Unknown test. Server Security preservation uses the newest existing marker, explicitly documented in seal-events-before.json despite legacy Oldest field names; this avoids mistaking ordinary oldest-record rotation for clearing. W11 retains its original marker selection. [Server offline result](evidence/server/offline-inspection-final.json); [Server offline output](evidence/server/offline-inspection-output.txt). [offline-copy-receipts/evidence-server-normal-signout-both-logs-20261015T174949Z-863b93df93.vmdk.json](offline-copy-receipts/evidence-server-normal-signout-both-logs-20261015T174949Z-863b93df93.vmdk.json).
 
 Limits: preservation fixtures are not actual vendor event channels. TaskCache Tasks orphan GUID entries were not excluded without a preseal task GUID. This proves the primary native fixture scope, not the other seven combinations on each OS or external clone lifecycle.
 
@@ -205,7 +205,7 @@ The user confirmed CVAD **2507 LTSR** as a separate comparison target. Compariso
 
 | Case | Windows 11 | Server 2025 | Scope |
 |---|---|---|---|
-| User Profiles “Account Unknown” / unresolved SID removal | NOT TESTED | NOT TESTED | native-account-unknown.ps1 (omitted from bundle; see OMITTED.json) is a local unexecuted native test harness. It creates an owned orphan profile, verifies SID resolution failure, excludes all other ordinary profiles and invokes actual Prepare. No product change or PASS is claimed. |
+| User Profiles “Account Unknown” / unresolved SID removal | PASS — seven native checks | PASS — seven native checks | W11 run b45d868f9791483abdfb8122c71d845f passed all seven checks: unresolved SID fixture, actual Prepare removal and preservation evidence. [Result](evidence/w11/account-unknown/result.json). Initial overlong account description caused fixture setup failure before account creation; retained separately, not a BISF failure. Server run 7c20947538e048c299a88925c68e068b also passed all seven native checks: [Server result](evidence/server/account-unknown/result.json). No product-source change. |
 
 ## Supplementary bundle artifacts
 
@@ -215,3 +215,41 @@ The user confirmed CVAD **2507 LTSR** as a separate comparison target. Compariso
 - [evidence/server/before-primary-seal/seal-events-before.json](evidence/server/before-primary-seal/seal-events-before.json)
 
 [Artifact hashes and transformations](ARTIFACTS.json); [omitted/missing references](OMITTED.json). No private credentials, media binaries, seed images, registry hives, virtual disks or opaque MSI logs are included. Original hashes and staged hashes differ where text normalization, redaction or links changed; only original hashes authenticate the raw source artifact.
+
+## Updated W11 baseline and Account Unknown artifacts
+
+- [evidence/w11/agents-preview-results.json](evidence/w11/agents-preview-results.json)
+- [evidence/w11/agents-preview-output.txt](evidence/w11/agents-preview-output.txt)
+- [evidence/w11/vendor-ready-baseline/vendor-install/installed-inventory.json](evidence/w11/vendor-ready-baseline/vendor-install/installed-inventory.json)
+- [evidence/w11/vendor-baseline-check.txt](evidence/w11/vendor-baseline-check.txt)
+- [evidence/w11/vendor-baseline-boot.txt](evidence/w11/vendor-baseline-boot.txt)
+- [BISF-Test-W11-20261015-snapshots.json](BISF-Test-W11-20261015-snapshots.json)
+- [evidence/w11/account-unknown/native-config-before.xml](evidence/w11/account-unknown/native-config-before.xml)
+- [evidence/w11/account-unknown/prepare-stderr.txt](evidence/w11/account-unknown/prepare-stderr.txt)
+- [evidence/w11/account-unknown/prepare-stdout.txt](evidence/w11/account-unknown/prepare-stdout.txt)
+- [evidence/w11/account-unknown/profiles-after.json](evidence/w11/account-unknown/profiles-after.json)
+- [evidence/w11/account-unknown/profiles-before.json](evidence/w11/account-unknown/profiles-before.json)
+- [evidence/w11/account-unknown/profiles-original.json](evidence/w11/account-unknown/profiles-original.json)
+- [evidence/w11/account-unknown/result.json](evidence/w11/account-unknown/result.json)
+- [evidence/w11/account-unknown/source-after.json](evidence/w11/account-unknown/source-after.json)
+- [evidence/w11/account-unknown/source-before.json](evidence/w11/account-unknown/source-before.json)
+- [evidence/w11/account-unknown/test-config.xml](evidence/w11/account-unknown/test-config.xml)
+- [evidence/w11/account-unknown/evidence-complete.json](evidence/w11/account-unknown/evidence-complete.json)
+
+Account Unknown fixture setup history: the initial account description exceeded Windows’ 48-character limit and no account was created. The corrected native run passed; initial failure artifacts are retained outside this selected bundle.
+
+## Server Account Unknown artifacts
+
+Run 7c20947538e048c299a88925c68e068b: seven native checks PASS; no product-source changes.
+
+- [evidence/server/account-unknown/evidence-complete.json](evidence/server/account-unknown/evidence-complete.json)
+- [evidence/server/account-unknown/native-config-before.xml](evidence/server/account-unknown/native-config-before.xml)
+- [evidence/server/account-unknown/prepare-stderr.txt](evidence/server/account-unknown/prepare-stderr.txt)
+- [evidence/server/account-unknown/prepare-stdout.txt](evidence/server/account-unknown/prepare-stdout.txt)
+- [evidence/server/account-unknown/profiles-after.json](evidence/server/account-unknown/profiles-after.json)
+- [evidence/server/account-unknown/profiles-before.json](evidence/server/account-unknown/profiles-before.json)
+- [evidence/server/account-unknown/profiles-original.json](evidence/server/account-unknown/profiles-original.json)
+- [evidence/server/account-unknown/result.json](evidence/server/account-unknown/result.json)
+- [evidence/server/account-unknown/source-after.json](evidence/server/account-unknown/source-after.json)
+- [evidence/server/account-unknown/source-before.json](evidence/server/account-unknown/source-before.json)
+- [evidence/server/account-unknown/test-config.xml](evidence/server/account-unknown/test-config.xml)

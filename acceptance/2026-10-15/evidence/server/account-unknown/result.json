@@ -1,0 +1,55 @@
+{
+    "Case":  "AccountUnknown",
+    "Computer":  "BISF-S25-TEST",
+    "Snapshot":  "Ready-For-Seal-No-Autologon/snapshot-10029",
+    "Run":  "7c20947538e048c299a88925c68e068b",
+    "Operator":  "BISF-S25-TEST\\BISFOperator",
+    "OperatorSid":  "S-1-5-21-2179150373-3800760875-3562492511-1000",
+    "User":  "BISFU7c20947538e0",
+    "SID":  "S-1-5-21-2179150373-3800760875-3562492511-1011",
+    "ProfilePath":  "C:\\Users\\BISFU7c20947538e0",
+    "Status":  "PASS",
+    "PrepareExit":  0,
+    "Error":  null,
+    "CleanupError":  null,
+    "Checks":  [
+                   {
+                       "Case":  "Actual Prepare exit zero",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "Unresolved SID profile removed through actual Prepare",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "Owned profile folder absent",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "Owned ProfileList registry key absent",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "All other profiles registrations/directories preserved",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "Pinned44-file source unchanged",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "Original native config unchanged",
+                       "Pass":  true
+                   }
+               ],
+    "SidResolution":  "IdentityNotMapped",
+    "ExcludedSids":  [
+                         "S-1-5-21-2179150373-3800760875-3562492511-1000",
+                         "S-1-5-21-2179150373-3800760875-3562492511-1005",
+                         "S-1-5-21-2179150373-3800760875-3562492511-1006",
+                         "S-1-5-21-2179150373-3800760875-3562492511-1007",
+                         "S-1-5-21-2179150373-3800760875-3562492511-500"
+                     ],
+    "ConfigHash":  "C88823FC62F833A279D0AFAE2E6F23FF594CB1362D79A58B04B9A09A8FA9E3DD",
+    "ChildPid":  7620
+}

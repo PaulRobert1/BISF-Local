@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Relative paths resolve against Invoke-BISF.ps1, not the current directory. -->
+<BISF SchemaVersion="1">
+  <Logging>
+    <Enabled>true</Enabled>
+    <Path>.\logs</Path>
+  </Logging>
+  <Cleanup>
+    <WindowsTemp>false</WindowsTemp>
+    <CurrentUserTemp>false</CurrentUserTemp>
+    <!-- Opt-in: delete unloaded non-system profiles from a quiescent MCS master. -->
+    <UserProfiles>false</UserProfiles>
+    <MinimumAgeDays>7</MinimumAgeDays>
+    <!-- Clears only the invoking user's Recycle Bin when explicitly enabled. -->
+    <RecycleBin>false</RecycleBin>
+  </Cleanup>
+  <!-- Uses Microsoft's built-in Servicing StartComponentCleanup scheduled task. -->
+  <Servicing>
+    <ComponentCleanup>false</ComponentCleanup>
+    <TimeoutMinutes>75</TimeoutMinutes>
+  </Servicing>
+  <!-- Optional final seal cleanup: Windows Event Logs (Application/System/Setup)
+       and BISF-generated diagnostic logs. Security audit and Citrix logs preserved. -->
+  <LogCleanup>
+    <WindowsEventLogs>false</WindowsEventLogs>
+    <BISFLogs>false</BISFLogs>
+  </LogCleanup>
+  <ConfigurationManager>
+    <PrepareIdentityReset>false</PrepareIdentityReset>
+    <CloneTrustedRootKeyReset>false</CloneTrustedRootKeyReset>
+  </ConfigurationManager>
+  <!-- Requires an administrator-controlled local package and configuration. -->
+  <Personalization>
+    <Enabled>false</Enabled>
+  </Personalization>
+  <!-- Installed agents only. MCS owns machine identity and WEM owns cache refresh. -->
+  <Citrix>
+    <VDA>
+      <Enabled>true</Enabled>
+      <!-- Requires FinalAction=Shutdown. Startup type is never changed. -->
+      <StopBeforeShutdown>false</StopBeforeShutdown>
+    </VDA>
+    <WEM>
+      <Enabled>true</Enabled>
+    </WEM>
+  </Citrix>
+  <Preflight>
+    <BlockPendingReboot>true</BlockPendingReboot>
+    <MinimumSystemDriveFreeGB>0</MinimumSystemDriveFreeGB>
+    <BlockOtherLoadedProfiles>true</BlockOtherLoadedProfiles>
+  </Preflight>
+  <!-- Requires UserProfiles=true, FinalAction=Shutdown, administrator logoff,
+       and a protected BIS-F local installation; disabled by default. -->
+  <Finalization>
+    <RemoveOperatorProfile>false</RemoveOperatorProfile>
+    <TimeoutMinutes>30</TimeoutMinutes>
+  </Finalization>
+  <!-- None or Shutdown. Shutdown only follows successful Prepare. -->
+  <FinalAction>None</FinalAction>
+</BISF>

@@ -1,0 +1,55 @@
+{
+    "Case":  "AccountUnknown",
+    "Computer":  "BISF-W11-TEST",
+    "Snapshot":  "Ready-For-Seal-Agents-No-Autologon/snapshot-10031",
+    "Run":  "b45d868f9791483abdfb8122c71d845f",
+    "Operator":  "BISF-W11-TEST\\BISFOperator",
+    "OperatorSid":  "S-1-5-21-1208933770-1335860016-3683188281-1000",
+    "User":  "BISFUb45d868f9791",
+    "SID":  "S-1-5-21-1208933770-1335860016-3683188281-1011",
+    "ProfilePath":  "C:\\Users\\BISFUb45d868f9791",
+    "Status":  "PASS",
+    "PrepareExit":  0,
+    "Error":  null,
+    "CleanupError":  null,
+    "Checks":  [
+                   {
+                       "Case":  "Actual Prepare exit zero",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "Unresolved SID profile removed through actual Prepare",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "Owned profile folder absent",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "Owned ProfileList registry key absent",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "All other profiles registrations/directories preserved",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "Pinned44-file source unchanged",
+                       "Pass":  true
+                   },
+                   {
+                       "Case":  "Original native config unchanged",
+                       "Pass":  true
+                   }
+               ],
+    "SidResolution":  "IdentityNotMapped",
+    "ExcludedSids":  [
+                         "S-1-5-21-1208933770-1335860016-3683188281-1000",
+                         "S-1-5-21-1208933770-1335860016-3683188281-1002",
+                         "S-1-5-21-1208933770-1335860016-3683188281-1003",
+                         "S-1-5-21-1208933770-1335860016-3683188281-1004",
+                         "S-1-5-21-1208933770-1335860016-3683188281-500"
+                     ],
+    "ConfigHash":  "228BEC99BA863F76D0268701D695C9524CE1974659F8E175F8186EFF73246351",
+    "ChildPid":  11136
+}

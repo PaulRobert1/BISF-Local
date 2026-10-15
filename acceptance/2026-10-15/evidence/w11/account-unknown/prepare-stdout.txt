@@ -1,0 +1,22 @@
+2026-10-15T18:21:38.8604276Z [Info] [Inventory] OS=Microsoft Windows 11 Pro; Build=26200; Computer=BISF-W11-TEST; CcmExec=False; Mode=Prepare
+2026-10-15T18:21:38.9493657Z [Info] [Platform] Family=Windows 11 workstation; Release=Windows 11 25H2; Build=26200; RecognizedBuild=True; ScriptEligible=True. Windows 11 single-session VDA is supported where Citrix product/edition requirements are met. Multi-session Windows 11 requires Citrix DaaS.
+Citrix VDA: 2012.0.0.28051, 7.28.0.6; MCS component: PvsVmAgent.
+2026-10-15T18:21:38.9594897Z [Info] [CitrixVDA] VDA=2012.0.0.28051, 7.28.0.6; MCS component=PvsVmAgent; Desktop Service=Running, Auto
+2026-10-15T18:21:38.9675749Z [Warning] [CitrixWEM] WEM=2005.2.0.1; hostState=Running; cache=C:\Program Files (x86)\Citrix\Workspace Environment Management Agent\Local Databases Set; cacheStatus=DirectoryMissing; LocalAgentCache.db=False, LocalAgentDatabase.db=False. Cache directory is absent. Verify the WEM agent has synchronized and check its registration/connectivity on the master and a test clone. BIS-F does not create or refresh WEM cache.
+2026-10-15T18:21:39.0383231Z [Info] [Disk] System drive=C:; FreeGB=35.62; TotalGB=63.01; RequiredFreeGB=0
+2026-10-15T18:21:39.6148679Z [Info] [ProfileManager] Name=ctxProfile; State=Running; StartMode=Auto
+2026-10-15T18:21:39.6189141Z [Info] [ProfileManager] Name=frxsvc; State=Running; StartMode=Auto
+2026-10-15T18:21:39.8210950Z [Info] [UserProfiles] Profile scan: eligible=1; blocked=0; total=9; root=C:\Users
+2026-10-15T18:21:39.8312091Z [Info] [UserProfiles] Protected: SID=S-1-5-21-1208933770-1335860016-3683188281-500; path=C:\Users\Administrator; reason=Explicit SID exclusion
+2026-10-15T18:21:39.8352470Z [Info] [UserProfiles] Remove: SID=S-1-5-21-1208933770-1335860016-3683188281-1011; path=C:\Users\BISFUb45d868f9791; reason=Inactive, registered, non-special user profile
+2026-10-15T18:21:39.8372701Z [Info] [UserProfiles] Protected: SID=S-1-5-21-1208933770-1335860016-3683188281-1004; path=C:\Users\BISFDependency; reason=Explicit SID exclusion
+2026-10-15T18:21:39.8392934Z [Info] [UserProfiles] Protected: SID=S-1-5-21-1208933770-1335860016-3683188281-1003; path=C:\Users\BISFExcluded; reason=Explicit SID exclusion
+2026-10-15T18:21:39.8413166Z [Info] [UserProfiles] Protected: SID=S-1-5-21-1208933770-1335860016-3683188281-1002; path=C:\Users\BISFInactive; reason=Explicit SID exclusion
+2026-10-15T18:21:39.8433389Z [Info] [UserProfiles] Protected: SID=S-1-5-21-1208933770-1335860016-3683188281-1000; path=C:\Users\BISFOperator; reason=Current administrator profile
+2026-10-15T18:21:39.8453611Z [Info] [UserProfiles] Protected: SID=S-1-5-20; path=C:\WINDOWS\ServiceProfiles\NetworkService; reason=Special system profile
+2026-10-15T18:21:39.8473841Z [Info] [UserProfiles] Protected: SID=S-1-5-19; path=C:\WINDOWS\ServiceProfiles\LocalService; reason=Special system profile
+2026-10-15T18:21:39.8494076Z [Info] [UserProfiles] Protected: SID=S-1-5-18; path=C:\WINDOWS\system32\config\systemprofile; reason=Special system profile
+2026-10-15T18:21:40.1668007Z [Info] [UserProfiles] Starting: Remove inactive non-system local Windows user profiles through CIM
+2026-10-15T18:21:47.3381486Z [Info] [UserProfiles] Removed profile SID=S-1-5-21-1208933770-1335860016-3683188281-1011; path=C:\Users\BISFUb45d868f9791
+2026-10-15T18:21:47.3482907Z [Info] [UserProfiles] Completed.
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=1, Failed=0

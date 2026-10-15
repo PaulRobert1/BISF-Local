@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Installed-Pinned-Baseline",
+    "ref": "snapshot-10022",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "createdUtc": "2026-10-15T15:41:09.729089+00:00"
+  },
+  {
+    "name": "Native-Fixtures",
+    "ref": "snapshot-10023",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "createdUtc": "2026-10-15T15:52:44.204416+00:00"
+  },
+  {
+    "name": "Ready-For-Seal",
+    "ref": "snapshot-10024",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "createdUtc": "2026-10-15T16:10:13.796308+00:00"
+  },
+  {
+    "name": "Ready-For-Seal-No-Autologon",
+    "ref": "snapshot-10025",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "createdUtc": "2026-10-15T16:20:53.481381+00:00"
+  },
+  {
+    "name": "Sealed-Normal-Signout-Both-Logs",
+    "ref": "snapshot-10026",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "createdUtc": "2026-10-15T16:22:42.210689+00:00"
+  },
+  {
+    "name": "Ready-For-Seal-Agents-No-Autologon",
+    "ref": "snapshot-10031",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "createdUtc": "2026-10-15T18:18:40.558219+00:00"
+  }
+]

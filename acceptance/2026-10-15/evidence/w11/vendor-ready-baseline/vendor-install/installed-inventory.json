@@ -1,0 +1,229 @@
+{
+    "UTC":  "2026-10-15T18:17:07.2936884Z",
+    "Computer":  "BISF-W11-TEST",
+    "Products":  [
+                     {
+                         "DisplayName":  "Citrix Virtual Apps and Desktops 7 2012 - Virtual Delivery Agent",
+                         "DisplayVersion":  "2012.0.0.28051",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  null
+                     },
+                     {
+                         "DisplayName":  "Citrix WMI Proxy Plugin",
+                         "DisplayVersion":  "7.28.0.6",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Monitor Service VDA Plugin",
+                         "DisplayVersion":  "7.28.0.11",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Telemetry Service - x64",
+                         "DisplayVersion":  "3.16.0.28001",
+                         "Publisher":  "Citrix",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Identity Assertion VDA Plugin",
+                         "DisplayVersion":  "10.4.0.2",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix HDX WS x64",
+                         "DisplayVersion":  "7.28.0.28012",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix CDF Capture Service - x64",
+                         "DisplayVersion":  "7.28.0.6",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Diagnostics Facility",
+                         "DisplayVersion":  "7.1.8.0",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Universal Print Client",
+                         "DisplayVersion":  "7.28.0.6",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Virtual Desktop Agent - x64",
+                         "DisplayVersion":  "7.28.0.6",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Group Policy Client-Side Extension 7.28.0.6",
+                         "DisplayVersion":  "7.28.0.6",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  "C:\\Program Files\\Citrix"
+                     },
+                     {
+                         "DisplayName":  "Citrix Browser Content Redirection",
+                         "DisplayVersion":  "15.23.0.5",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Director VDA Plugin",
+                         "DisplayVersion":  "7.28.0.7",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Start Menu Disconnect Button",
+                         "DisplayVersion":  "7.28.0.28012",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Microsoft FSLogix Apps",
+                         "DisplayVersion":  "3.26.826.17182",
+                         "Publisher":  "FSLogix, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Microsoft FSLogix Apps",
+                         "DisplayVersion":  "3.26.826.17182",
+                         "Publisher":  "FSLogix, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Profile management",
+                         "DisplayVersion":  "20.12.0.28002",
+                         "Publisher":  "Citrix Systems Inc.",
+                         "InstallLocation":  "C:\\Program Files\\Citrix\\User Profile Manager\\"
+                     },
+                     {
+                         "DisplayName":  "Citrix Workspace Environment Management Agent",
+                         "DisplayVersion":  "2005.2.0.1",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  ""
+                     },
+                     {
+                         "DisplayName":  "Citrix Workspace Environment Management Agent",
+                         "DisplayVersion":  "2005.2.0.1",
+                         "Publisher":  "Citrix Systems, Inc.",
+                         "InstallLocation":  null
+                     },
+                     {
+                         "DisplayName":  "Microsoft FSLogix Apps",
+                         "DisplayVersion":  "3.26.826.17182",
+                         "Publisher":  "FSLogix, Inc.",
+                         "InstallLocation":  null
+                     }
+                 ],
+    "Services":  [
+                     {
+                         "Name":  "BrokerAgent",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "NT AUTHORITY\\NetworkService",
+                         "PathName":  "\"C:\\Program Files\\Citrix\\Virtual Desktop Agent\\BrokerAgent.exe\""
+                     },
+                     {
+                         "Name":  "Citrix Encryption Service",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "NT AUTHORITY\\LOCAL SERVICE",
+                         "PathName":  "\"C:\\Program Files (x86)\\Citrix\\HDX\\bin\\EncSvc.exe\""
+                     },
+                     {
+                         "Name":  "Citrix EUEM",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "NT AUTHORITY\\LOCAL SERVICE",
+                         "PathName":  "\"C:\\Program Files (x86)\\Citrix\\HDX\\bin\\SemsService.exe\""
+                     },
+                     {
+                         "Name":  "CitrixCseEngine",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "LocalSystem",
+                         "PathName":  "\"C:\\Program Files\\Citrix\\GroupPolicy\\CseEngine.exe\""
+                     },
+                     {
+                         "Name":  "CitrixRDR",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "NT AUTHORITY\\LOCAL SERVICE",
+                         "PathName":  "\"C:\\Program Files\\Citrix\\HDX\\bin\\CtxRdr.exe\""
+                     },
+                     {
+                         "Name":  "CitrixTelemetryService",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "NT AUTHORITY\\NETWORK SERVICE",
+                         "PathName":  "\"C:\\Program Files\\Citrix\\Telemetry Service\\TelemetryService.exe\""
+                     },
+                     {
+                         "Name":  "CitrixUWACacheService",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "LocalSystem",
+                         "PathName":  "\"C:\\Program Files (x86)\\Citrix\\UWACacheService\\UWACacheService.exe\""
+                     },
+                     {
+                         "Name":  "CitrixVDACeipService",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "NT AUTHORITY\\LOCAL SERVICE",
+                         "PathName":  "\"C:\\Program Files\\Citrix\\Telemetry Service\\CtxCeipSvc.exe\""
+                     },
+                     {
+                         "Name":  "ctxProfile",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "LocalSystem",
+                         "PathName":  "\"C:\\Program Files\\Citrix\\User Profile Manager\\UserProfileManager.exe\""
+                     },
+                     {
+                         "Name":  "frxccds",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "LocalSystem",
+                         "PathName":  "\"C:\\Program Files\\FSLogix\\Apps\\frxccds.exe\""
+                     },
+                     {
+                         "Name":  "frxsvc",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "LocalSystem",
+                         "PathName":  "\"C:\\Program Files\\FSLogix\\Apps\\frxsvc.exe\""
+                     },
+                     {
+                         "Name":  "PvsVmAgent",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "LocalSystem",
+                         "PathName":  "\"C:\\Program Files\\Citrix\\PvsVm\\Service\\PvsVmAgent.exe\""
+                     },
+                     {
+                         "Name":  "WemAgentSvc",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "LocalSystem",
+                         "PathName":  "\"C:\\Program Files (x86)\\Citrix\\Workspace Environment Management Agent\\Citrix.Wem.Agent.Service.exe\""
+                     },
+                     {
+                         "Name":  "WemLogonSvc",
+                         "State":  "Running",
+                         "StartMode":  "Auto",
+                         "StartName":  "LocalSystem",
+                         "PathName":  "\"C:\\Program Files (x86)\\Citrix\\Workspace Environment Management Agent\\Citrix.Wem.Agent.LogonService.exe\""
+                     }
+                 ],
+    "ProfilePolicy":  [
+
+                      ]
+}

@@ -1,0 +1,4 @@
+{
+    "CSName":  "BISF-W11-TEST",
+    "LastBootUpTime":  "\/Date(1792087918500)\/"
+}

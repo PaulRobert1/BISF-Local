@@ -515,5 +515,229 @@
     "stagedSha256": "bc50cfea83e5b700a13ecaa8c3482d376759c42d4b3b0e79b097e2aaceb0aea5",
     "bytes": 341,
     "transformation": "UTF-8 text normalized; signed installer result only"
+  },
+  {
+    "path": "evidence/w11/agents-preview-results.json",
+    "sourceSha256": "288de36b1e67b3118d257fa71f3276d6eedd8526cee653a2d5b4e3a49ef4f64a",
+    "stagedSha256": "c4980564a0204e4265ef9909704c92816af24bc058a148835b3c41eb2ab22b42",
+    "bytes": 481,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/agents-preview-output.txt",
+    "sourceSha256": "8bf3b323aec755842356d5583b31098a588be4b0952fad2ad5e0d6df4039fae3",
+    "stagedSha256": "020d38a78cd5b6bd683193711cdffd281fa83912d4204598d7eb1aaf4987d2c5",
+    "bytes": 3295,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/vendor-ready-baseline/vendor-install/installed-inventory.json",
+    "sourceSha256": "a1bae78db45947a81423c127ae6c197e9f56cb7c65ff2fdd433dbc1269c38f70",
+    "stagedSha256": "0dbe13f6dd3cebfc2a36f38e2be6afac61f27d54adbe833343792c10aff606a0",
+    "bytes": 11189,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/vendor-baseline-check.txt",
+    "sourceSha256": "b85e624f5648e15148331dd1ff730547a2cf1daf75d33665350d923044c7cf31",
+    "stagedSha256": "c9b72a797654e90e6dd8d2ca94459b8f1e8845e90e82237de04d7b547b0a2d91",
+    "bytes": 2891,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/vendor-baseline-boot.txt",
+    "sourceSha256": "c2e9ea83a4c6f91eb816b52e6ede51a6bf4dbbe97928f705cba07d6c80a1a121",
+    "stagedSha256": "53796b84d8511ae16eee6be455f202873e82416d528a63359e585145266c022c",
+    "bytes": 85,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "BISF-Test-W11-20261015-snapshots.json",
+    "sourceSha256": "3876ac06ec0b73fe5b15a4d501117f41f7d65e556b2ce5356e044b2af50657b0",
+    "stagedSha256": "389d6be1ab164f4bdbc2f586aec1838a8fe7848865ef808b724379682329ae80",
+    "bytes": 1235,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/native-config-before.xml",
+    "sourceSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
+    "stagedSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
+    "bytes": 2355,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/prepare-stderr.txt",
+    "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stagedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "bytes": 1,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/prepare-stdout.txt",
+    "sourceSha256": "01d5a000bd4968919f9b7ef5540392357c923fb70b19a8ddda901e61b617c1eb",
+    "stagedSha256": "01d5a000bd4968919f9b7ef5540392357c923fb70b19a8ddda901e61b617c1eb",
+    "bytes": 3430,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/profiles-after.json",
+    "sourceSha256": "c0e339642865b6236c9c63775093cb1cc893c95b371ecfaf56c81f9e41a81003",
+    "stagedSha256": "1843d0aefa33070de0fe519010a293397cbbcb6306e5222d1d25d506bb22e3e6",
+    "bytes": 2134,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/profiles-before.json",
+    "sourceSha256": "0816858b808c2949b4844e1cd5c3b6cad3054b20c2b0cc3c76a938643491c7a7",
+    "stagedSha256": "29f8530284920dff802d2da60d479f3561e230a6eea0552d13f6a0e2b1f8ffb9",
+    "bytes": 2413,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/profiles-original.json",
+    "sourceSha256": "c0e339642865b6236c9c63775093cb1cc893c95b371ecfaf56c81f9e41a81003",
+    "stagedSha256": "1843d0aefa33070de0fe519010a293397cbbcb6306e5222d1d25d506bb22e3e6",
+    "bytes": 2134,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/result.json",
+    "sourceSha256": "9b6a55e85441016e4effe9bcc797cd905fa8a803df8c42142e2b2d53b505dfd9",
+    "stagedSha256": "84cc5aac779d30839b6835faf1904056a25a675bd3fdf30e0710cc71696cf2c2",
+    "bytes": 2222,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/source-after.json",
+    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
+    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
+    "bytes": 6328,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/source-before.json",
+    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
+    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
+    "bytes": 6328,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/test-config.xml",
+    "sourceSha256": "228bec99ba863f76d0268701d695c9524ce1974659f8e175f8186eff73246351",
+    "stagedSha256": "b2bfec33f3e8266d9a13fd5739067b4b8cfb34a66d30c9cecbb293689be3409f",
+    "bytes": 2726,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/evidence-complete.json",
+    "sourceSha256": "fe6d878f41de04d7c96ca5cdd7ec500078876352c6212b59691da922a3b4c8a0",
+    "stagedSha256": "fa322eff6f64a4e5726d3a6ecc9cf60fc7f0c0b0cd0292d35b1554dec42b3c19",
+    "bytes": 237,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/evidence-complete.json",
+    "sourceSha256": "7a94db91d20aeae69500885e029a9fb0c225b9bba39aabed04534fd90b4b9d81",
+    "stagedSha256": "cb23b6ab2ad95a50adeb20416a904f7f37c3f2ebbe0701de3cdb7740cd511a4b",
+    "bytes": 240,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/native-config-before.xml",
+    "sourceSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
+    "stagedSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
+    "bytes": 2355,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/prepare-stderr.txt",
+    "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stagedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "bytes": 1,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/prepare-stdout.txt",
+    "sourceSha256": "4c48d674354e1fecf4dcb25da9d05d4af7dec962686a11691725ac6d23d2f5ea",
+    "stagedSha256": "4c48d674354e1fecf4dcb25da9d05d4af7dec962686a11691725ac6d23d2f5ea",
+    "bytes": 3412,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/profiles-after.json",
+    "sourceSha256": "10bc9bcddeaeff6dfd4d71511d22c0d6186e5d42eae5fad473de8fa255c9a314",
+    "stagedSha256": "f6c483d418e572a4ddfa2ffb9545e6fc27be7921d175696df7ac7b23827216f3",
+    "bytes": 2134,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/profiles-before.json",
+    "sourceSha256": "124b376f4dfe6a2c13d62b39de5849342ac31879321d1da6b23a6ec1313a6908",
+    "stagedSha256": "84a1c87a174e99a1f6baad8048044ba19903d99946ce1561a17d5189f250e38c",
+    "bytes": 2413,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/profiles-original.json",
+    "sourceSha256": "10bc9bcddeaeff6dfd4d71511d22c0d6186e5d42eae5fad473de8fa255c9a314",
+    "stagedSha256": "f6c483d418e572a4ddfa2ffb9545e6fc27be7921d175696df7ac7b23827216f3",
+    "bytes": 2134,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/result.json",
+    "sourceSha256": "44d925fd4876f9c311db01edd5ef9b3cc6f97f06b91b0701a28e2aa1cf28fb29",
+    "stagedSha256": "460a36d55373dcce5cb2cf48f20aceb8b79a980169f6a226bfa41fa97b864995",
+    "bytes": 2214,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/source-after.json",
+    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
+    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
+    "bytes": 6328,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/source-before.json",
+    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
+    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
+    "bytes": 6328,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/test-config.xml",
+    "sourceSha256": "c88823fc62f833a279d0afae2e6f23ff594cb1362d79a58b04b9a09a8fa9e3dd",
+    "stagedSha256": "49714f80cb8a2312e45e7412570fcb7d465975ff64064e9f50cb2a6bd6b93fb0",
+    "bytes": 2726,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
   }
 ]
