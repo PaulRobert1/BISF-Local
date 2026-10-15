@@ -150,5 +150,39 @@ function Test-BISFPreflight {
         # Win32_UserProfile inventory and path validation take place in Runner
         # before any image operations. Do not require WEM to be initialized.
     }
+    if ($targetMode -eq 'Prepare' -and $Config.Preflight.MinimumSystemDriveFreeGB -gt 0) {
+        $volume=Get-BISFSystemDriveStatus
+        if ($volume.FreeGB -lt $Config.Preflight.MinimumSystemDriveFreeGB) {
+            throw ("Not enough free space on {0}: {1} GB available, {2} GB required." -f $volume.Drive,$volume.FreeGB,$Config.Preflight.MinimumSystemDriveFreeGB)
+        }
+    }
+    if ($targetMode -eq 'Prepare' -and $Config.Preflight.BlockOtherLoadedProfiles) {
+        $others=@(Get-BISFLoadedNonSystemProfiles (Get-BISFCurrentUserSid))
+        if ($others.Count -gt 0) { throw 'Other loaded local user profiles exist. Log off other users and retry image preparation.' }
+    }
+    if ($ids -contains 'Servicing') {
+        foreach ($cmd in 'Get-ScheduledTask','Get-ScheduledTaskInfo','Start-ScheduledTask') {
+            $null=Get-Command $cmd -Module ScheduledTasks -CommandType Cmdlet,Function -ErrorAction Stop
+        }
+        $null=Get-BISFComponentCleanupTask
+    }
+    if ($ids -contains 'RecycleBin') {
+        $null=Get-Command 'Clear-RecycleBin' -CommandType Cmdlet -ErrorAction Stop
+    }
+    if ($Config.Finalization.RemoveOperatorProfile) {
+        Test-BISFOperatorSealSettings $Config
+        if ($targetMode -eq 'Prepare') {
+            foreach ($cmd in 'Get-ScheduledTask','Register-ScheduledTask','Start-ScheduledTask','Unregister-ScheduledTask',
+                    'New-ScheduledTaskAction','New-ScheduledTaskPrincipal','New-ScheduledTaskSettingsSet') {
+                $null=Get-Command $cmd -Module ScheduledTasks -CommandType Cmdlet,Function -ErrorAction Stop
+            }
+            Test-BISFProtectedLocation $ScriptRoot
+            Test-BISFProtectedLocation $ConfigPath
+            Test-BISFProtectedLocation (Join-Path $ScriptRoot 'Invoke-BISF.ps1')
+            Test-BISFProtectedLocation (Join-Path $ScriptRoot 'state')
+            if ($Config.Logging.Enabled) { Test-BISFProtectedLocation $Config.Logging.Path }
+            Test-BISFOperatorSealTaskOwnership $ScriptRoot $ConfigPath
+        }
+    }
     if ($ids -contains 'Shutdown') { $null = Get-Command Stop-Computer -CommandType Cmdlet -ErrorAction Stop }
 }
