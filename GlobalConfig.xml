@@ -41,6 +41,7 @@
   <Preflight>
     <BlockPendingReboot>true</BlockPendingReboot>
     <MinimumSystemDriveFreeGB>0</MinimumSystemDriveFreeGB>
+    <BlockOtherLoadedProfiles>true</BlockOtherLoadedProfiles>
   </Preflight>
   <!-- Requires UserProfiles=true, FinalAction=Shutdown, administrator logoff,
        and a protected BIS-F local installation; disabled by default. -->
