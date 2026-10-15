@@ -1,0 +1,231 @@
+# BISF-Local: explicitly opted-in two-phase SYSTEM finalization.
+# The operator must sign out normally. No forced logoff, raw folder deletion,
+# external vendor tools or direct deletion of an in-use profile.
+
+function Test-BISFOperatorSealSettings {
+    param($Config)
+    if (-not $Config.Finalization.RemoveOperatorProfile) { return }
+    if (-not $Config.Cleanup.UserProfiles) {
+        throw 'RemoveOperatorProfile requires Cleanup.UserProfiles=true.'
+    }
+    if ($Config.FinalAction -ne 'Shutdown') {
+        throw 'RemoveOperatorProfile requires FinalAction=Shutdown; SYSTEM will shut down only after profile removal.'
+    }
+    if ($Config.Personalization.Enabled -or
+        $Config.ConfigurationManager.PrepareIdentityReset -or
+        $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
+        throw 'Operator profile finalization cannot be combined with automatic clone personalization or Configuration Manager identity resets.'
+    }
+    if (-not $Config.Preflight.BlockPendingReboot) {
+        throw 'Operator profile finalization requires BlockPendingReboot=true.'
+    }
+}
+function Get-BISFOperatorSealTarget {
+    param($Config,[string]$ScriptRoot,[string]$ConfigPath)
+    $sid=Get-BISFCurrentUserSid
+    if ($sid -notmatch '^S-1-5-21-([0-9]+-){3}([0-9]+)$' -or [long]$Matches[2] -lt 1000) {
+        throw 'Operator sealing requires a normal administrative account SID; built-in and reserved identities are not eligible.'
+    }
+    if ($sid -in $Config.Cleanup.ExcludedProfileSIDs) {
+        throw 'The invoking operator SID is explicitly excluded from profile cleanup.'
+    }
+    $root=Get-BISFProfilesRoot
+    $profiles=@(Get-CimInstance -ClassName Win32_UserProfile -Filter "SID='$sid'" -ErrorAction Stop)
+    if ($profiles.Count -ne 1) { throw "Cannot uniquely locate current operator profile SID $sid." }
+    $p=$profiles[0]
+    if ($null -eq $p.Special -or $p.Special -or -not (Test-BISFDirectProfilePath $p.LocalPath $root)) {
+        throw 'Operator profile is special or outside the expected Windows profile root.'
+    }
+    Test-BISFNoReparsePath ([string]$p.LocalPath)
+    if (-not (Test-Path -LiteralPath $p.LocalPath -PathType Container)) {
+        throw 'Operator profile directory does not exist.'
+    }
+    foreach ($protected in @($ScriptRoot,$ConfigPath,$Config.Logging.Path)) {
+        if (Test-BISFPathWithin $protected $p.LocalPath) {
+            throw 'The BISF package, config or log path is inside the operator profile scheduled for deletion.'
+        }
+    }
+    [pscustomobject]@{SID=$sid;Path=[string]$p.LocalPath;Root=$root}
+}
+function Get-BISFOperatorSealStatePath {
+    param([string]$ScriptRoot)
+    Join-Path $ScriptRoot 'state/operator-seal.json'
+}
+function Get-BISFOperatorSealTaskMarker {
+    param([string]$ScriptRoot,[string]$ConfigPath)
+    'BISF-Local/OperatorSeal/v1 | {0} | {1}' -f $ScriptRoot,$ConfigPath
+}
+function Get-BISFOperatorSealTaskArguments {
+    param([string]$ScriptPath,[string]$ConfigPath)
+    if (@($ScriptPath,$ConfigPath | Where-Object { [string]::IsNullOrWhiteSpace($_) -or $_ -match '["\r\n]' }).Count -gt 0) {
+        throw 'Invalid operator-seal task paths.'
+    }
+    '-NoProfile -NonInteractive -File "{0}" -Mode Finalize -ConfigPath "{1}"' -f $ScriptPath,$ConfigPath
+}
+function Test-BISFOperatorSealTaskOwnership {
+    param([string]$ScriptRoot,[string]$ConfigPath)
+    $existing=@(Get-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -ErrorAction SilentlyContinue)
+    if ($existing.Count -gt 0) {
+        $expected=Get-BISFOperatorSealTaskMarker $ScriptRoot $ConfigPath
+        $exe=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        $args=Get-BISFOperatorSealTaskArguments (Join-Path $ScriptRoot 'Invoke-BISF.ps1') $ConfigPath
+        if ($existing.Count -ne 1 -or $existing[0].Description -ne $expected -or
+            @($existing[0].Actions).Count -ne 1 -or $existing[0].Actions[0].Execute -ne $exe -or
+            $existing[0].Actions[0].Arguments -ne $args -or
+            $existing[0].Principal.UserId -notin @('SYSTEM','S-1-5-18')) {
+            throw 'Refusing an existing operator-seal task that is not owned by this package.'
+        }
+        throw 'A previous BISF operator-seal task already exists. Resolve or cancel the previous sealing attempt before retrying.'
+    }
+}
+function New-BISFOperatorSealState {
+    param($Config,$Target,[string]$ConfigPath)
+    [pscustomobject]@{
+        SchemaVersion=1
+        Generation=[guid]::NewGuid().ToString()
+        Status='Pending'
+        ConfigHash=(Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash
+        Master=Get-BISFIdentity
+        OperatorSid=$Target.SID
+        OperatorPath=$Target.Path
+        ProfilesRoot=$Target.Root
+        TimeoutMinutes=[int]$Config.Finalization.TimeoutMinutes
+        StagedUtc=[datetime]::UtcNow.ToString('o')
+    }
+}
+function Register-BISFOperatorSeal {
+    param([string]$ScriptRoot,[string]$ConfigPath,$Config,$Target)
+    Test-BISFProtectedLocation $ScriptRoot
+    Test-BISFProtectedLocation $ConfigPath
+    Test-BISFProtectedLocation (Join-Path $ScriptRoot 'Invoke-BISF.ps1')
+    foreach ($f in Get-ChildItem -LiteralPath (Join-Path $ScriptRoot 'Modules') -Recurse -Force -ErrorAction Stop) {
+        Test-BISFProtectedLocation $f.FullName
+    }
+    Test-BISFOperatorSealTaskOwnership $ScriptRoot $ConfigPath
+    $statePath=Get-BISFOperatorSealStatePath $ScriptRoot
+    Test-BISFProtectedLocation $statePath
+    if (Test-Path -LiteralPath $statePath) {
+        throw 'Existing operator-seal state detected. Resolve the earlier sealing attempt.'
+    }
+    $state=New-BISFOperatorSealState $Config $Target $ConfigPath
+    $registered=$false
+    try {
+        Write-BISFState $statePath $state
+        $exe=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        $script=Join-Path $ScriptRoot 'Invoke-BISF.ps1'
+        $action=New-ScheduledTaskAction -Execute $exe -Argument (Get-BISFOperatorSealTaskArguments $script $ConfigPath) -WorkingDirectory $ScriptRoot
+        $principal=New-ScheduledTaskPrincipal -UserId 'S-1-5-18' -LogonType ServiceAccount -RunLevel Highest
+        $minutes=[int]$Config.Finalization.TimeoutMinutes
+        $settings=New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes ($minutes+5)) -StartWhenAvailable
+        # No trigger: job is started deliberately once by successful Prepare.
+        $null=Register-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -Action $action -Principal $principal -Settings $settings -Description (Get-BISFOperatorSealTaskMarker $ScriptRoot $ConfigPath) -ErrorAction Stop
+        $registered=$true
+        Start-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -ErrorAction Stop
+    } catch {
+        $errorObject=$_
+        if ($registered) {
+            try { Unregister-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -Confirm:$false -ErrorAction Stop }
+            catch { Write-Warning "Could not unregister failed operator-seal task: $($_.Exception.Message)" }
+        }
+        try {
+            if (Test-Path -LiteralPath $statePath) { Remove-Item -LiteralPath $statePath -Force -ErrorAction Stop }
+        } catch { Write-Warning "Could not clean up failed operator-seal state: $($_.Exception.Message)" }
+        throw $errorObject
+    }
+}
+function Read-BISFOperatorSealState {
+    param([string]$ScriptRoot)
+    $path=Get-BISFOperatorSealStatePath $ScriptRoot
+    Test-BISFProtectedLocation $path
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw 'No staged operator seal state.' }
+    $state=Get-Content -LiteralPath $path -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+    foreach ($field in @('SchemaVersion','Generation','Status','ConfigHash','Master','OperatorSid','OperatorPath','ProfilesRoot','TimeoutMinutes','StagedUtc')) {
+        if ($null -eq $state.PSObject.Properties[$field]) { throw "Operator seal state missing $field" }
+    }
+    if ($state.SchemaVersion -ne 1 -or -not (Test-BISFValidGuid $state.Generation) -or
+        $state.Status -ne 'Pending' -or $state.ConfigHash -notmatch '^[A-Fa-f0-9]{64}$' -or
+        [int]$state.TimeoutMinutes -lt 1 -or [int]$state.TimeoutMinutes -gt 90 -or
+        $state.OperatorSid -notmatch '^S-1-5-21-([0-9]+-){3}[0-9]+$') {
+        throw 'Operator seal state invalid or not pending.'
+    }
+    $state
+}
+function Test-BISFOperatorSealCandidate {
+    param($State,$Config)
+    if ([string](Get-BISFCurrentUserSid) -ne 'S-1-5-18') {
+        throw 'Operator seal Finalize must run as NT AUTHORITY\SYSTEM.'
+    }
+    if (-not $Config.Finalization.RemoveOperatorProfile -or $Config.FinalAction -ne 'Shutdown') {
+        throw 'Operator seal was disabled or shutdown no longer approved.'
+    }
+    if ($State.ConfigHash -ne (Get-FileHash -LiteralPath $Config.Path -Algorithm SHA256 -ErrorAction Stop).Hash) {
+        throw 'Configuration changed since staging operator seal.'
+    }
+    $identity=Get-BISFIdentity
+    foreach ($field in @('Name','MachineGuid','SmbiosUuid')) {
+        if ($identity.$field -ne $State.Master.$field) { throw 'Operator seal refused: machine identity changed; never run finalization on an MCS clone.' }
+    }
+    $root=Get-BISFProfilesRoot
+    if ($root -ne $State.ProfilesRoot) { throw 'Windows profile root changed after staging.' }
+    $others=@(Get-BISFLoadedNonSystemProfiles '')
+    if ($others.Count -gt 0) { return $false }
+    $profiles=@(Get-CimInstance -ClassName Win32_UserProfile -Filter "SID='$($State.OperatorSid)'" -ErrorAction Stop)
+    if ($profiles.Count -ne 1) { throw 'Operator profile missing or ambiguous.' }
+    $status=Get-BISFUserProfileDisposition $profiles[0] $root 'S-1-5-18' $Config.Cleanup.ExcludedProfileSIDs
+    if ($status.Status -eq 'Blocked') { return $false }
+    if ($status.Status -ne 'Remove' -or $status.LocalPath -ne $State.OperatorPath) {
+        throw "Operator profile no longer matches eligible staged profile: $($status.Reason)"
+    }
+    $true
+}
+function Invoke-BISFOperatorSealFinalizer {
+    param([string]$ScriptRoot,[string]$ConfigPath)
+    # Do not use the interactive Prepare runner or its startup task here.
+    $ScriptRoot=[IO.Path]::GetFullPath($ScriptRoot)
+    $ConfigPath=Resolve-BISFPath $ConfigPath $ScriptRoot
+    $config=Read-BISFConfig $ConfigPath $ScriptRoot
+    # Binding avoids passing an arbitrary path from the state file as code.
+    $config | Add-Member NoteProperty Path $ConfigPath
+    Test-BISFOperatorSealSettings $config
+    $state=Read-BISFOperatorSealState $ScriptRoot
+    $logger=New-BISFLogger $config 'Finalize'
+    $lock=$null
+    try {
+        $deadline=[datetime]::UtcNow.AddMinutes([int]$state.TimeoutMinutes)
+        Write-BISFLog $logger Info Finalize 'SYSTEM finalizer started; waiting for the administrator to sign out normally. No forced logoff will be used.'
+        $ready=$false
+        while ([datetime]::UtcNow -lt $deadline) {
+            if (Test-BISFOperatorSealCandidate $state $config) { $ready=$true; break }
+            Start-Sleep -Seconds 10
+        }
+        if (-not $ready) { throw 'Operator profile did not fully unload before timeout; shutdown is refused.' }
+        $lock=Enter-BISFLock
+        # The original Prepare must have committed; no incomplete master journal.
+        $journals=Get-BISFJournalStatus $ScriptRoot
+        if ($journals.PreparationPending) { throw 'Incomplete Prepare journal: shutdown is refused.' }
+        if (@(Get-BISFPendingRebootReasons).Count -gt 0) { throw 'Pending reboot reappeared: shutdown is refused.' }
+        if (-not (Test-BISFOperatorSealCandidate $state $config)) { throw 'Profile state changed just before deletion; shutdown refused.' }
+        $target=@(Get-CimInstance -ClassName Win32_UserProfile -Filter "SID='$($state.OperatorSid)'" -ErrorAction Stop)
+        if ($target.Count -ne 1) { throw 'Operator profile disappeared before final deletion.' }
+        Remove-BISFCimUserProfile $target[0]
+        if (@(Get-CimInstance -ClassName Win32_UserProfile -Filter "SID='$($state.OperatorSid)'" -ErrorAction Stop).Count -gt 0) {
+            throw 'Windows still reports the operator profile after deletion.'
+        }
+        Write-BISFLog $logger Info Finalize ("Operator profile removed: SID={0}; local path={1}" -f $state.OperatorSid,$state.OperatorPath)
+        # No restart/shutdown unless registration is cleaned and the pending state
+        # is consumed. If cleanup fails, manual recovery is required.
+        Unregister-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -Confirm:$false -ErrorAction Stop
+        $statePath=Get-BISFOperatorSealStatePath $ScriptRoot
+        Test-BISFProtectedLocation $statePath
+        Remove-Item -LiteralPath $statePath -Force -ErrorAction Stop
+        Write-BISFLog $logger Info Finalize 'Finalization succeeded. Requesting shutdown; no further file logging.'
+        Stop-Computer -Confirm:$false -ErrorAction Stop
+        return 0
+    } catch {
+        try { Write-BISFLog $logger Error Finalize $_.Exception.Message } catch { Write-Warning $_.Exception.Message }
+        return 2
+    } finally {
+        Exit-BISFLock $lock
+        Close-BISFLogger $logger
+    }
+}
