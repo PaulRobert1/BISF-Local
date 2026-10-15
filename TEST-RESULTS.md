@@ -114,3 +114,11 @@ Windows component servicing, Recycle Bin deletion or shutdown is
 performed by CI. **Even a passing CI run does not certify production
 master-image safety.** A disposable MCS master and test catalog
 acceptance is mandatory before enabling operator finalization.
+
+Read-only `-Mode VerifyClone` was added to report OS build, VDA/MCS
+components, WEM/cache state, domain join, disk space and profile-manager
+services without mutating image state. Its output deliberately labels
+broker registration, ICA logon, WEM synchronization, activation and
+profile-container attachment as NotVerified until externally tested.
+GitHub CI invokes the verification with mocked service/CIM responses,
+not with a real Citrix session.
