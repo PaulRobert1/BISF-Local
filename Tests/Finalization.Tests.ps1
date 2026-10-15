@@ -201,6 +201,13 @@ Describe 'Finalization shutdown boundary' {
         $result | Should -Be 0
         ($script:trace -join ',') | Should -Be 'delete,unregister,state-delete,shutdown'
     }
+    It 'previews Finalize without reading staged state or applying any mutation' {
+        (Invoke-BISFOperatorSealFinalizer $root $script:cfg -WhatIf) | Should -Be 0
+        $script:trace.Count | Should -Be 0
+        Should -Invoke Read-BISFOperatorSealState -Times 0
+        Should -Invoke New-BISFLogger -Times 0
+        Should -Invoke Invoke-BISFLogCleanup -Times 0
+    }
     It 'performs explicitly enabled log cleanup after profile deletion and before shutdown' {
         $script:trace.Clear()
         Mock Invoke-BISFLogCleanup { $script:trace.Add('logs') }

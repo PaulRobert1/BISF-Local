@@ -50,6 +50,13 @@ Describe 'Opt-in log cleanup XML and strict selection' {
         Mock Get-WinEvent { throw 'Setup log not available' }
         { Test-BISFLogCleanupPreflight $c $root } | Should -Throw '*Setup log not available*'
     }
+    It 'checks trust for a missing log directory before a logger can create it' {
+        $c.FinalAction='Shutdown'
+        $c.LogCleanup.BISFLogs=$true
+        $c.Logging.Path=Join-Path $TestDrive 'missing-logs'
+        Mock Test-BISFProtectedLocation { throw 'Unsafe log ancestor' }
+        { Test-BISFLogCleanupPreflight $c $root } | Should -Throw '*Unsafe log ancestor*'
+    }
 }
 Describe 'BISF-only generated log removal and path protection' {
     BeforeEach {
@@ -97,3 +104,4 @@ Describe 'Optional checkbox GUI source parse' {
         $source | Should -Match 'doc\.Save'
     }
 }
+
