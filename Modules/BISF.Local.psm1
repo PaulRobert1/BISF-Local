@@ -5,4 +5,4 @@ foreach ($name in @('Configuration','Logging','Preflight','Operations','Lifecycl
     $file = Join-Path $PSScriptRoot "Private/$name.ps1"
     if (Test-Path -LiteralPath $file) { . $file }
 }
-Export-ModuleMember -Function Invoke-BISFLocal
+Export-ModuleMember -Function Invoke-BISFLocal,Invoke-BISFOperatorSealFinalizer
