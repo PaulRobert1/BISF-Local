@@ -1,7 +1,7 @@
 BeforeAll {
     Set-StrictMode -Version Latest
     $root = Split-Path $PSScriptRoot -Parent
-    foreach ($name in 'Configuration','Preflight','Runner') {
+    foreach ($name in 'Configuration','Operations','Lifecycle','Profiles','Maintenance','Finalization','Preflight','Runner') {
         $p = "$root/Modules/Private/$name.ps1"
         if (Test-Path $p) { . $p }
     }
@@ -123,6 +123,8 @@ Describe 'Enabled integration dependencies' {
         Mock Test-BISFPlatform {}
         Mock Test-BISFProtectedLocation {}
         Mock Test-BISFTaskOwnership {}
+        Mock Get-BISFLoadedNonSystemProfiles { @() }
+        Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-1002' }
     }
     It 'does not require client or scheduler commands when their features are disabled' {
         Mock Get-Command { throw 'unneeded dependency query' }
