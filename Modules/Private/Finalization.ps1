@@ -16,6 +16,9 @@ function Test-BISFOperatorSealSettings {
         $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
         throw 'Operator profile finalization cannot be combined with automatic clone personalization or Configuration Manager identity resets.'
     }
+    if ($Config.Citrix.VDA.StopBeforeShutdown) {
+        throw 'Operator profile finalization does not support the interactive VDA StopBeforeShutdown operation; keep this option false.'
+    }
     if (-not $Config.Preflight.BlockPendingReboot) {
         throw 'Operator profile finalization requires BlockPendingReboot=true.'
     }
