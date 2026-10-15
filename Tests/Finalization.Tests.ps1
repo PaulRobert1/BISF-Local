@@ -53,7 +53,7 @@ Describe 'Two-phase operator seal configuration and trust boundaries' {
     It 'refuses to overwrite an existing reserved task without trusting its owner' {
         Mock Get-ScheduledTask {
             [pscustomobject]@{
-                Description='Unrelated task';TaskName='BISF-Local-OperatorSeal';Actions=@()
+                Description='Unrelated task';TaskName='BISF-Local-OperatorSeal';TaskPath='\';Actions=@()
                 Principal=[pscustomobject]@{UserId='S-1-5-18'}
             }
         }

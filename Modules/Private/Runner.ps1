@@ -52,8 +52,11 @@ function Invoke-BISFLocal {
     try {
         $ScriptRoot=[IO.Path]::GetFullPath($ScriptRoot)
         $ConfigPath=Resolve-BISFPath $ConfigPath $ScriptRoot
-        $config=Read-BISFConfig $ConfigPath $ScriptRoot
         $hash=(Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash
+        $config=Read-BISFConfig $ConfigPath $ScriptRoot
+        if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) {
+            throw 'Configuration changed while reading settings. Retry with a stable configuration.'
+        }
         $inventory=Get-BISFInventory
         $plan=@(Get-BISFPlan $config $Mode)
         Test-BISFPreflight $config $Mode $plan $ScriptRoot $ConfigPath $inventory
@@ -186,6 +189,7 @@ function Invoke-BISFLocal {
                     if ($step.Id -in @('VDAStop','Shutdown','OperatorFinalize','LogCleanup')) { continue }
                     $currentStep=$step.Id
                     if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
+                    if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during image operations.' }
                     Write-BISFLog $logger Info $step.Id ('Starting: '+$step.Description)
                     switch ($step.Id) {
                         'Servicing' {
@@ -231,6 +235,7 @@ function Invoke-BISFLocal {
                 if ($plan.Count -eq 0) { Write-BISFLog $logger Info Prepare 'No image operations enabled. Nothing was sealed or captured.' }
                 $currentStep='Finalize'
                 if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
+                if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed before final sealing.' }
                 if ($config.Preflight.BlockPendingReboot -and @(Get-BISFPendingRebootReasons).Count -gt 0) {
                     throw 'Windows servicing now requires a reboot; refusing to finalize or shut down.'
                 }
@@ -267,7 +272,7 @@ function Invoke-BISFLocal {
                     $currentStep='OperatorFinalize'
                     # Last fallible file log before the operator may sign out.
                     Write-BISFLog $logger Info OperatorFinalize 'Starting one-shot protected SYSTEM task. Sign out normally. If the user profile stays loaded or cleanup fails, the image will NOT shut down.'
-                    Register-BISFOperatorSeal $ScriptRoot $ConfigPath $config $operatorTarget
+                    Register-BISFOperatorSeal $ScriptRoot $ConfigPath $config $operatorTarget -ExpectedHash $hash
                     $results.Add([pscustomobject]@{Id='OperatorFinalize';Status='Staged';Message='SYSTEM finalizer started. Sign out normally to permit profile deletion and shutdown.'})
                     if ($config.LogCleanup.WindowsEventLogs -or $config.LogCleanup.BISFLogs) {
                         $results.Add([pscustomobject]@{Id='LogCleanup';Status='Staged';Message='Log cleanup deferred to the SYSTEM finalizer after operator sign-out.'})

@@ -67,7 +67,12 @@ function Get-BISFOperatorSealTaskArguments {
 }
 function Test-BISFOperatorSealTaskOwnership {
     param([string]$ScriptRoot,[string]$ConfigPath)
-    $existing=@(Get-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -ErrorAction SilentlyContinue)
+    # Enumerate successfully before treating the reserved root task as absent.
+    # Filtering after enumeration avoids using a missing-task lookup error as
+    # an excuse to suppress Task Scheduler/RPC/access failures.
+    $existing=@(Get-ScheduledTask -ErrorAction Stop | Where-Object {
+        $_.TaskName -eq 'BISF-Local-OperatorSeal' -and $_.TaskPath -eq '\'
+    })
     if ($existing.Count -gt 0) {
         $expected=Get-BISFOperatorSealTaskMarker $ScriptRoot $ConfigPath
         $exe=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
@@ -82,12 +87,16 @@ function Test-BISFOperatorSealTaskOwnership {
     }
 }
 function New-BISFOperatorSealState {
-    param($Config,$Target,[string]$ConfigPath)
+    param($Config,$Target,[string]$ConfigPath,[string]$ExpectedHash)
+    if ($ExpectedHash -notmatch '^[A-Fa-f0-9]{64}$' -or
+        (Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $ExpectedHash) {
+        throw 'Configuration changed before operator staging or no confirmed hash was supplied.'
+    }
     [pscustomobject]@{
         SchemaVersion=1
         Generation=[guid]::NewGuid().ToString()
         Status='Pending'
-        ConfigHash=(Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash
+        ConfigHash=$ExpectedHash
         Master=Get-BISFIdentity
         OperatorSid=$Target.SID
         OperatorPath=$Target.Path
@@ -114,11 +123,11 @@ function Test-BISFOperatorSealStaging {
     }
 }
 function Register-BISFOperatorSeal {
-    param([string]$ScriptRoot,[string]$ConfigPath,$Config,$Target)
+    param([string]$ScriptRoot,[string]$ConfigPath,$Config,$Target,[string]$ExpectedHash)
     # Repeat preflight immediately before staging; never repair/overwrite a prior run.
     Test-BISFOperatorSealStaging $ScriptRoot $ConfigPath $Config
     $statePath=Get-BISFOperatorSealStatePath $ScriptRoot
-    $state=New-BISFOperatorSealState $Config $Target $ConfigPath
+    $state=New-BISFOperatorSealState $Config $Target $ConfigPath $ExpectedHash
     $registered=$false
     try {
         Write-BISFState $statePath $state

@@ -53,11 +53,16 @@ rolled back. Never capture an image from a failed or timed-out seal.
 - Create a new loaded/referenced other profile during servicing and before final
   sealing. Further destructive steps and shutdown must be refused when the
   session guard is enabled. The SYSTEM finalizer always requires quiescence.
-- Change configuration after staging, change master identity in a disposable
+- Change configuration while Prepare reads it, during servicing and after
+  staging; include enabling a log option absent from the confirmed plan.
+  No changed configuration may become implicitly approved by a new state hash.
+  Change master identity in a disposable
   copied VM, or introduce pending reboot before final deletion. Refuse deletion
   and shutdown; never run the finalizer on an MCS clone to repair an image.
 - Supply unsafe ACLs, a redirected module/schema/config/state/log path, retained
   operator state, or a conflicting task. Refuse preparation before mutations.
+- Make Task Scheduler enumeration fail. Preflight must report the error rather
+  than treating an unreadable reserved task as absent and applying cleanup.
 - Deny profile-provider removal, state/task removal, selected event-log clearing,
   BISF-log deletion or shutdown. Each error must remain visible, return failure
   and prevent a not-yet-requested shutdown. After partial removal, investigate

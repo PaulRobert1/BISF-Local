@@ -2,6 +2,23 @@
 
 Updated: 2026-10-15. This is a source-based development handoff, not permission to run destructive actions on any Windows master.
 
+## Continuation review (supersedes the earlier source-verification summary)
+
+The Work continuation inspected both PR diffs/current heads and independently
+reviewed the runtime and tests. PR #1 remains unchanged. PR #2 remains draft.
+See [REVIEW-2026-10-15.md](REVIEW-2026-10-15.md) for exact baseline SHAs, findings
+and observed CI evidence. [ACCEPTANCE-TESTING.md](ACCEPTANCE-TESTING.md) tracks
+the required disposable Server 2025 / Windows 11 acceptance workflow; every live
+acceptance row is still NOT RUN. No operation was run on SWCTXMASTER05.
+
+Corrections preserve the existing architecture/options: protect runtime-dependent
+profiles and detected WEM paths, reject ambiguous deletion objects/duplicate paths,
+repeat session readiness checks, enforce complete staging trust/state prerequisites,
+identify a new completed servicing run, honor direct Finalize preview/confirmation,
+save checkbox XML without overwriting concurrent edits or truncating the original,
+and bind confirmation/staging to one approved config hash. Task inventory errors
+must fail closed. All new mutating defaults remain false.
+
 ## User objective
 Build a Windows PowerShell 5.1 Citrix MCS golden-image preparation framework for Windows Server 2025, Windows 11, and appropriately reviewed newer client releases. Preserve strict safety, reliable preview modes, and production Citrix/Windows compatibility. Master operator profile cleanup is a *separate* SYSTEM phase after normal sign-out. Latest request added GUI checkboxes for optional final-stage log hygiene.
 
@@ -48,3 +65,4 @@ Build a Windows PowerShell 5.1 Citrix MCS golden-image preparation framework for
 
 ## How the user continues in ChatGPT Work
 Open a new Work-mode chat, connect the existing GitHub app/connector if needed, and provide this GitHub file URL or paste this document. Ask Work to perform the above audit/test-and-improve workflow. A new Work chat cannot be started by this existing conversation automatically.
+
