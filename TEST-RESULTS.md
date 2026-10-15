@@ -59,7 +59,24 @@ logs a warning in Validate mode without stopping services or requesting shutdown
 It also adds a GitHub Actions workflow using the `windows-2025` runner and
 Windows PowerShell 5.1 with Pester 5.7.1.
 
-The previously recorded 130-test pass belongs to the 2026-10-12 revision.
-**These five new tests have not been executed in this authoring environment.**
-Use the pull request's Actions checks for actual regression results; the
-Windows-hosted tests still mock Citrix agents and do not certify an MCS clone.
+The 2026-10-12 revision passed 130 portable Pester tests. The first updated
+WEM-only branch passed **135/135 Pester tests** on Windows Server 2025 / Windows
+PowerShell 5.1: https://github.com/PaulRobert1/BISF-Local/actions/runs/38701590882.
+These Windows-hosted tests still mock Citrix agents and do not certify an MCS clone.
+
+## Profile cleanup regression additions (2026-10-15)
+
+An opt-in Cleanup.UserProfiles operation uses native Win32_UserProfile inventory
+and Remove-CimInstance (wrapped for Pester) with protective SID/path guards.
+Tests cover disabled-by-default legacy XML, explicit exclusions, operator and
+built-in administrator protection, path boundaries, special/system identities,
+loaded-profile and RefCount blockers, Validate/WhatIf immutability, and
+per-SID pre-deletion revalidation against lifecycle/path changes.
+
+**158/158 Pester tests passed, 0 failed, 0 skipped** on Windows Server 2025
+with Windows PowerShell 5.1, GitHub Actions:
+https://github.com/PaulRobert1/BISF-Local/actions/runs/38705010124.
+
+Profile deletion in this CI run was simulated by mocks. No real profile was
+deleted, no real Citrix agent was installed, and no MCS provisioning was tested.
+Actual MCS master image integration and clone acceptance remain required.
