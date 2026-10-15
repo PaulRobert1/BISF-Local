@@ -50,6 +50,10 @@ function Read-BISFConfig {
     if ($null -ne $doc.SelectSingleNode('/BISF/Cleanup/RecycleBin')) {
         $recycleBin=[Xml.XmlConvert]::ToBoolean($b.Cleanup.RecycleBin.Trim())
     }
+    $blockOtherProfiles=$false
+    if ($null -ne $doc.SelectSingleNode('/BISF/Preflight/BlockOtherLoadedProfiles')) {
+        $blockOtherProfiles=[Xml.XmlConvert]::ToBoolean($b.Preflight.BlockOtherLoadedProfiles.Trim())
+    }
     $minFreeGB=0
     if ($null -ne $doc.SelectSingleNode('/BISF/Preflight/MinimumSystemDriveFreeGB')) {
         $minFreeGB=[int]$b.Preflight.MinimumSystemDriveFreeGB
@@ -89,6 +93,7 @@ function Read-BISFConfig {
         Preflight = [pscustomobject]@{
             BlockPendingReboot = [Xml.XmlConvert]::ToBoolean($b.Preflight.BlockPendingReboot.Trim())
             MinimumSystemDriveFreeGB = [int]$minFreeGB
+            BlockOtherLoadedProfiles = [bool]$blockOtherProfiles
         }
         FinalAction = [string]$b.FinalAction
     }
