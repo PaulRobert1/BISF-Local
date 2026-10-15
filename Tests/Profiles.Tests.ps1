@@ -1,7 +1,7 @@
 BeforeAll {
     Set-StrictMode -Version Latest
     $root=Split-Path $PSScriptRoot -Parent
-    foreach ($n in 'Operations','Profiles','Configuration','Runner') { . "$root/Modules/Private/$n.ps1" }
+    foreach ($n in 'Operations','Profiles','Configuration','Logging','Runner') { . "$root/Modules/Private/$n.ps1" }
     if (-not (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)) { function Get-CimInstance { param($ClassName,$Filter) } }
     if (-not (Get-Command Remove-CimInstance -ErrorAction SilentlyContinue)) { function Remove-CimInstance { param($InputObject) } }
     function New-TestProfile {
