@@ -50,6 +50,29 @@ Describe 'Configuration and logging contract' {
         (Get-Content $cfgPath -Raw).Replace('</MinimumAgeDays>','</MinimumAgeDays><ExcludedProfileSIDs><SID>NOT-A-SID</SID></ExcludedProfileSIDs>') | Set-Content $cfgPath
         { Read-BISFConfig $cfgPath $root } | Should -Throw '*Invalid ExcludedProfileSIDs*'
     }
+    It 'parses safe maintenance defaults without changing older XML compatibility' {
+        $c=Read-BISFConfig $cfgPath $root
+        $c.Cleanup.RecycleBin | Should -BeFalse
+        $c.Servicing.ComponentCleanup | Should -BeFalse
+        $c.Servicing.TimeoutMinutes | Should -Be 75
+        $c.Finalization.RemoveOperatorProfile | Should -BeFalse
+        $c.Finalization.TimeoutMinutes | Should -Be 30
+        $c.Preflight.BlockOtherLoadedProfiles | Should -BeTrue
+    }
+    It 'accepts legacy XML with optional maintenance sections absent and defaults to non-destructive' {
+        $xml=Get-Content $cfgPath -Raw
+        $xml=[regex]::Replace($xml,'(?s)\s*<Servicing>.*?</Servicing>','')
+        $xml=[regex]::Replace($xml,'(?s)\s*<Finalization>.*?</Finalization>','')
+        $xml=$xml.Replace('    <RecycleBin>false</RecycleBin>','')
+        $xml=$xml.Replace('    <BlockOtherLoadedProfiles>true</BlockOtherLoadedProfiles>','')
+        $xml=$xml.Replace('    <MinimumSystemDriveFreeGB>0</MinimumSystemDriveFreeGB>','')
+        $xml | Set-Content $cfgPath
+        $c=Read-BISFConfig $cfgPath $root
+        $c.Servicing.ComponentCleanup | Should -BeFalse
+        $c.Cleanup.RecycleBin | Should -BeFalse
+        $c.Finalization.RemoveOperatorProfile | Should -BeFalse
+        $c.Preflight.BlockOtherLoadedProfiles | Should -BeFalse
+    }
     It 'rejects DTD entities' {
         '<!DOCTYPE BISF [<!ENTITY x "test">]><BISF SchemaVersion="1">&x;</BISF>' | Set-Content $cfgPath
         { Read-BISFConfig $cfgPath $root } | Should -Throw
