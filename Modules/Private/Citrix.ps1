@@ -82,6 +82,27 @@ function Get-BISFWEMCache {
     if ((Test-Path -LiteralPath $cache) -and -not (Test-Path -LiteralPath $cache -PathType Container)) { throw 'WEM cache path is not a directory.' }
     $cache
 }
+function Get-BISFWEMCacheStatus {
+    param([Parameter(Mandatory=$true)][string]$CachePath)
+    # Existence is not synchronization or integrity. Modern WEM agents manage
+    # cache creation and clone-specific database refresh themselves.
+    $directoryExists=Test-Path -LiteralPath $CachePath -PathType Container -ErrorAction Stop
+    $cacheDbExists=$false
+    $databaseDbExists=$false
+    if ($directoryExists) {
+        $cacheDbExists=Test-Path -LiteralPath (Join-Path $CachePath 'LocalAgentCache.db') -PathType Leaf -ErrorAction Stop
+        $databaseDbExists=Test-Path -LiteralPath (Join-Path $CachePath 'LocalAgentDatabase.db') -PathType Leaf -ErrorAction Stop
+    }
+    $status='Incomplete'
+    if (-not $directoryExists) { $status='DirectoryMissing' }
+    elseif ($cacheDbExists -and $databaseDbExists) { $status='FilesPresent' }
+    [pscustomobject]@{
+        DirectoryExists=[bool]$directoryExists
+        LocalAgentCachePresent=[bool]$cacheDbExists
+        LocalAgentDatabasePresent=[bool]$databaseDbExists
+        Status=$status
+    }
+}
 function Get-BISFCitrixReadiness {
     param($Config, [string]$Mode)
     Test-BISFCitrixSettings $Config
@@ -113,7 +134,8 @@ function Get-BISFCitrixReadiness {
         }
         $version=Get-BISFCitrixVersion $products '^Citrix.*Workspace Environment Management.*Agent' $hostService
         $cache=Get-BISFWEMCache $hostService
-        $report.WEM=[pscustomobject]@{Version=$version;HostService=$hostService.Name;LogonService=$(if ($null -ne $logon) { $logon.Name } else { 'Not installed' });CachePath=$cache;CacheExists=(Test-Path -LiteralPath $cache -PathType Container)}
+        $cacheStatus=Get-BISFWEMCacheStatus $cache
+        $report.WEM=[pscustomobject]@{Version=$version;HostService=$hostService.Name;HostState=$hostService.State;LogonService=$(if ($null -ne $logon) { $logon.Name } else { 'Not installed' });CachePath=$cache;CacheExists=$cacheStatus.DirectoryExists;CacheStatus=$cacheStatus.Status;LocalAgentCachePresent=$cacheStatus.LocalAgentCachePresent;LocalAgentDatabasePresent=$cacheStatus.LocalAgentDatabasePresent}
     }
     $report
 }
