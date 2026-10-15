@@ -89,5 +89,12 @@ function Test-BISFPreflight {
             }
         }
     }
+    if ($ids -contains 'UserProfiles') {
+        foreach ($cmd in 'Get-CimInstance','Remove-CimInstance') {
+            $null=Get-Command $cmd -CommandType Cmdlet -ErrorAction Stop
+        }
+        # Win32_UserProfile inventory and path validation take place in Runner
+        # before any image operations. Do not require WEM to be initialized.
+    }
     if ($ids -contains 'Shutdown') { $null = Get-Command Stop-Computer -CommandType Cmdlet -ErrorAction Stop }
 }
