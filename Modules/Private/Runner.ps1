@@ -20,6 +20,9 @@ function Get-BISFPlan {
         if ($Config.Personalization.Enabled -or $Config.ConfigurationManager.PrepareIdentityReset -or $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
             $steps.Add([pscustomobject]@{Id='Lifecycle';Description='Record a preparation generation and optional startup task'})
         }
+        if ($Config.LogCleanup.WindowsEventLogs -or $Config.LogCleanup.BISFLogs) {
+            $steps.Add([pscustomobject]@{Id='LogCleanup';Description='Clear opted-in Windows Event Logs and/or BISF diagnostic logs at final shutdown'})
+        }
         if ($Config.Citrix.VDA.Enabled -and $Config.Citrix.VDA.StopBeforeShutdown) { $steps.Add([pscustomobject]@{Id='VDAStop';Description='Stop Citrix Desktop Service immediately before shutdown; preserve startup type'}) }
         if ($Config.Finalization.RemoveOperatorProfile) {
             $steps.Add([pscustomobject]@{Id='OperatorFinalize';Description='Stage SYSTEM profile cleanup, then require normal operator sign-out before shutdown'})
@@ -179,7 +182,7 @@ function Invoke-BISFLocal {
                 $protected=@($ScriptRoot,$ConfigPath,(Join-Path $ScriptRoot 'state'),$config.Logging.Path)
                 if ($null -ne $citrix.WEM) { $protected+=@($citrix.WEM.CachePath) }
                 foreach ($step in $plan) {
-                    if ($step.Id -in @('VDAStop','Shutdown','OperatorFinalize')) { continue }
+                    if ($step.Id -in @('VDAStop','Shutdown','OperatorFinalize','LogCleanup')) { continue }
                     $currentStep=$step.Id
                     Write-BISFLog $logger Info $step.Id ('Starting: '+$step.Description)
                     switch ($step.Id) {
@@ -240,6 +243,14 @@ function Invoke-BISFLocal {
                         Stop-BISFVDA
                         $results.Add([pscustomobject]@{Id='VDAStop';Status='Completed';Message='Desktop Service stopped; startup type unchanged.'})
                     }
+                    if ($config.LogCleanup.WindowsEventLogs -or $config.LogCleanup.BISFLogs) {
+                        $currentStep='LogCleanup'
+                        # This is deliberately the last logging/cleanup step before
+                        # requesting shutdown. Security and arbitrary vendor logs stay intact.
+                        Write-BISFLog $logger Info LogCleanup 'Final-stage log hygiene requested. Security audit log and Citrix/WEM logs are not touched.'
+                        Invoke-BISFLogCleanup $config
+                        $results.Add([pscustomobject]@{Id='LogCleanup';Status='Completed';Message='Selected master log cleanup completed.'})
+                    }
                     $currentStep='Shutdown'
                     Stop-Computer -Confirm:$false -ErrorAction Stop
                     $shutdownRequested=$true
@@ -255,6 +266,9 @@ function Invoke-BISFLocal {
                     Write-BISFLog $logger Info OperatorFinalize 'Starting one-shot protected SYSTEM task. Sign out normally. If the user profile stays loaded or cleanup fails, the image will NOT shut down.'
                     Register-BISFOperatorSeal $ScriptRoot $ConfigPath $config $operatorTarget
                     $results.Add([pscustomobject]@{Id='OperatorFinalize';Status='Staged';Message='SYSTEM finalizer started. Sign out normally to permit profile deletion and shutdown.'})
+                    if ($config.LogCleanup.WindowsEventLogs -or $config.LogCleanup.BISFLogs) {
+                        $results.Add([pscustomobject]@{Id='LogCleanup';Status='Staged';Message='Log cleanup deferred to the SYSTEM finalizer after operator sign-out.'})
+                    }
                     Write-Host 'BIS-F Local: SYSTEM finalizer staged. Sign out (do not disconnect) after reviewing the result. No automatic logoff will be performed.'
                 }
                 foreach ($step in $plan) {
