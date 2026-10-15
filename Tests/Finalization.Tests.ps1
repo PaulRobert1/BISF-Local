@@ -17,6 +17,15 @@ Describe 'Two-phase operator seal configuration and trust boundaries' {
         $c.Cleanup.UserProfiles=$false
         { Test-BISFOperatorSealSettings $c } | Should -Throw '*UserProfiles*'
     }
+    It 'never replaces the approved config hash with an edit made before state staging' {
+        $path=Join-Path $TestDrive 'staging-config.xml'
+        Copy-Item (Join-Path $root 'GlobalConfig.xml') $path
+        $approvedHash=(Get-FileHash -LiteralPath $path).Hash
+        Add-Content -LiteralPath $path -Value '<!-- changed since confirmation -->'
+        Mock Get-BISFIdentity { [pscustomobject]@{Name='MASTER'} }
+        $target=[pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\operator';Root='C:\Users'}
+        { New-BISFOperatorSealState $c $target $path $approvedHash } | Should -Throw '*Configuration changed*'
+    }
     It 'requires an actual final shutdown, not an unattended profile deletion' {
         $c.FinalAction='None'
         { Test-BISFOperatorSealSettings $c } | Should -Throw '*FinalAction*'

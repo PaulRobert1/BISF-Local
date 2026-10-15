@@ -198,6 +198,49 @@ Describe 'Full workflow safety and results' {
         $r.ExitCode | Should -Be 1
         $script:trace.Count | Should -Be 0
     }
+    It 'rejects a configuration replaced while its settings are being read' {
+        $script:realReadConfig=(Get-Command Read-BISFConfig).ScriptBlock
+        Mock Read-BISFConfig {
+            $parsed=& $script:realReadConfig $ConfigPath $ScriptRoot
+            Add-Content -LiteralPath $ConfigPath -Value '<!-- concurrent edit during load -->'
+            $parsed
+        }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 1
+        $r.Error | Should -Match 'Configuration changed'
+        $script:trace.Count | Should -Be 0
+    }
+    It 'refuses shutdown when configuration changes during servicing' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Servicing.ComponentCleanup='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Invoke-BISFComponentCleanup { Add-Content -LiteralPath $cfg -Value '<!-- changed during servicing -->' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $r.Error | Should -Match 'Configuration changed'
+        Should -Invoke Stop-Computer -Times 0
+    }
+    It 'never stages newly enabled log cleanup that was absent from the confirmed operator plan' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Servicing.ComponentCleanup='true'
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';Entries=@()} }
+        Mock Invoke-BISFUserProfileCleanup {}
+        Mock Register-BISFOperatorSeal {}
+        Mock Invoke-BISFComponentCleanup {
+            (Get-Content $cfg -Raw).Replace('<WindowsEventLogs>false','<WindowsEventLogs>true') | Set-Content $cfg
+        }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $r.Error | Should -Match 'Configuration changed'
+        Should -Invoke Register-BISFOperatorSeal -Times 0
+        Should -Invoke Stop-Computer -Times 0
+    }
     It 'protects package, config, state, logging and WEM dependencies during profile planning' {
         (Get-Content $cfg -Raw).Replace('<UserProfiles>false','<UserProfiles>true') | Set-Content $cfg
         Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=[pscustomobject]@{Version='2507';CachePath="$TestDrive/WEM"}} }
