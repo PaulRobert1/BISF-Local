@@ -74,3 +74,15 @@ Next useful work
 Delivery
 The source tree is sufficient to reproduce the source-only ZIP via git archive.
 Logs, runtime state and local development dependencies are intentionally excluded.
+
+
+Addendum 2026-10-15 — profile cleanup branch (not yet merged)
+The preceding "no profile deletion" statements describe the 2026-10-14
+implementation handoff and are superseded for the open feature branch.
+PR #1 extends fix/wem-cache-diagnostics-20261015 with an opt-in
+Cleanup.UserProfiles action. XML legacy configs are accepted with this
+action disabled; profile cleanup uses the Windows profile CIM provider,
+not raw directory deletes or the original Delprof2 utility.
+Review the README profile section and the latest GitHub Actions results.
+The behavior still requires a disposable, backed-up Server 2025 MCS master
+and clone acceptance before production deployment.
