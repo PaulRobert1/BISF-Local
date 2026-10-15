@@ -178,6 +178,7 @@ Describe 'Finalization shutdown boundary' {
         $script:boundaryPath=Join-Path $script:boundaryRoot 'operator'
         New-Item -ItemType Directory -Path $script:boundaryPath -Force | Out-Null
         $script:boundaryProfile=[pscustomobject]@{SID='S-1-5-21-111-222-333-1001';LocalPath=$script:boundaryPath;Loaded=$false;Special=$false;RefCount=0}
+        Mock Get-BISFProfilesRoot { $script:boundaryRoot }
         Mock Read-BISFOperatorSealState { [pscustomobject]@{OperatorSid='S-1-5-21-111-222-333-1001';OperatorPath=$script:boundaryPath;ProfilesRoot=$script:boundaryRoot;TimeoutMinutes=1} }
         Mock New-BISFLogger { [pscustomobject]@{Enabled=$false;LogFile=$null} }
         Mock Test-BISFOperatorSealCandidate { $true }

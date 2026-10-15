@@ -58,6 +58,8 @@ function Invoke-BISFLocal {
         $plan=@(Get-BISFPlan $config $Mode)
         Test-BISFPreflight $config $Mode $plan $ScriptRoot $ConfigPath $inventory
         $citrix=Get-BISFCitrixReadiness $config $Mode
+        $protected=@($ScriptRoot,$ConfigPath,(Join-Path $ScriptRoot 'state'),$config.Logging.Path)
+        if ($null -ne $citrix.WEM) { $protected+=@($citrix.WEM.CachePath) }
         $statePath=Join-Path $ScriptRoot 'state/lifecycle.json'
         if ($Mode -ne 'Validate' -and -not $WhatIfPreference) { $lock=Enter-BISFLock }
         if ($Mode -eq 'Personalize') {
@@ -105,7 +107,7 @@ function Invoke-BISFLocal {
         }
         if ($Mode -ne 'Personalize' -and $config.Finalization.RemoveOperatorProfile) {
             $currentStep='OperatorFinalize'
-            $operatorTarget=Get-BISFOperatorSealTarget $config $ScriptRoot $ConfigPath
+            $operatorTarget=Get-BISFOperatorSealTarget $config $ScriptRoot $ConfigPath -ProtectedPaths $protected
             Write-BISFLog $logger Info OperatorFinalize ("Operator SID={0}; local profile={1}; planned SYSTEM deletion only after normal sign-out." -f $operatorTarget.SID,$operatorTarget.Path)
             $currentStep='Preflight'
         }
@@ -118,7 +120,7 @@ function Invoke-BISFLocal {
         }
         if ($Mode -ne 'Personalize' -and $config.Cleanup.UserProfiles) {
             $currentStep='UserProfiles'
-            $profilePlan=Get-BISFUserProfilePlan $config.Cleanup.ExcludedProfileSIDs
+            $profilePlan=Get-BISFUserProfilePlan $config.Cleanup.ExcludedProfileSIDs -ProtectedPaths $protected
             $targets=@($profilePlan.Entries | Where-Object { $_.Status -eq 'Remove' })
             $blocked=@($profilePlan.Entries | Where-Object { $_.Status -eq 'Blocked' })
             Write-BISFLog $logger Info UserProfiles ("Profile scan: eligible={0}; blocked={1}; total={2}; root={3}" -f $targets.Count,$blocked.Count,$profilePlan.Entries.Count,$profilePlan.Root)
@@ -165,6 +167,7 @@ function Invoke-BISFLocal {
                 if ($null -ne $profilePlan -and @($profilePlan.Entries | Where-Object { $_.Status -eq 'Blocked' }).Count -gt 0) {
                     throw 'Refusing profile cleanup while non-exempt profiles are loaded or their lifecycle status is unknown. Log off all other users and retry.'
                 }
+                if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
                 $applying=$true
                 if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during preflight.' }
                 $needsState=($Mode -eq 'Prepare' -and (@($plan | ForEach-Object { $_.Id }) -contains 'Lifecycle'))
@@ -179,11 +182,10 @@ function Invoke-BISFLocal {
                     $state.Status='Failed'; $state.Completion=$null; $stateTouched=$true
                     Write-BISFState $statePath $state
                 }
-                $protected=@($ScriptRoot,$ConfigPath,(Join-Path $ScriptRoot 'state'),$config.Logging.Path)
-                if ($null -ne $citrix.WEM) { $protected+=@($citrix.WEM.CachePath) }
                 foreach ($step in $plan) {
                     if ($step.Id -in @('VDAStop','Shutdown','OperatorFinalize','LogCleanup')) { continue }
                     $currentStep=$step.Id
+                    if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
                     Write-BISFLog $logger Info $step.Id ('Starting: '+$step.Description)
                     switch ($step.Id) {
                         'Servicing' {
@@ -228,6 +230,7 @@ function Invoke-BISFLocal {
                 }
                 if ($plan.Count -eq 0) { Write-BISFLog $logger Info Prepare 'No image operations enabled. Nothing was sealed or captured.' }
                 $currentStep='Finalize'
+                if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
                 if ($config.Preflight.BlockPendingReboot -and @(Get-BISFPendingRebootReasons).Count -gt 0) {
                     throw 'Windows servicing now requires a reboot; refusing to finalize or shut down.'
                 }
@@ -309,3 +312,4 @@ function Invoke-BISFLocal {
     Write-Host ("BIS-F Local: Mode={0}, ExitCode={1}, Completed={2}, Failed={3}" -f $Mode,$exitCode,@($results | Where-Object Status -eq 'Completed').Count,@($results | Where-Object Status -eq 'Failed').Count)
     [pscustomobject]@{ExitCode=$exitCode;Mode=$Mode;Results=$results.ToArray();Error=$errorMessage;Citrix=$citrix}
 }
+

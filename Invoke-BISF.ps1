@@ -28,7 +28,10 @@ try {
     if ($Mode -eq 'Finalize') {
         # This is only used by the protected SYSTEM task; the module verifies
         # the machine identity, staged state, calling SID and unloaded profile.
-        exit [int](Invoke-BISFOperatorSealFinalizer -ScriptRoot $PSScriptRoot -ConfigPath $ConfigPath)
+        $finalArguments=@{ScriptRoot=$PSScriptRoot;ConfigPath=$ConfigPath}
+        if ($PSBoundParameters.ContainsKey('WhatIf')) { $finalArguments.WhatIf=$PSBoundParameters.WhatIf }
+        if ($PSBoundParameters.ContainsKey('Confirm')) { $finalArguments.Confirm=$PSBoundParameters.Confirm }
+        exit [int](Invoke-BISFOperatorSealFinalizer @finalArguments)
     }
     $arguments=@{ConfigPath=$ConfigPath;ScriptRoot=$PSScriptRoot;Mode=$Mode}
     if ($PSBoundParameters.ContainsKey('WhatIf')) { $arguments.WhatIf=$PSBoundParameters.WhatIf }
@@ -39,3 +42,4 @@ try {
     Write-Error -Message $_.Exception.Message -ErrorAction Continue
     exit 1
 }
+

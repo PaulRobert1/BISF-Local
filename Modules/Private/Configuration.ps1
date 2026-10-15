@@ -104,3 +104,63 @@ function Read-BISFConfig {
         FinalAction = [string]$b.FinalAction
     }
 }
+
+function Set-BISFLogCleanupOptions {
+    [CmdletBinding()]
+    param(
+        [string]$ConfigPath,[string]$ScriptRoot,
+        [ValidatePattern('^[A-Fa-f0-9]{64}$')][string]$ExpectedHash,
+        [bool]$WindowsEventLogs,[bool]$BISFLogs
+    )
+    # Shared with the checkbox editor so save behavior is tested without a UI.
+    # Work on a same-directory temporary file; never truncate the original XML.
+    $ConfigPath=Resolve-BISFPath $ConfigPath $ScriptRoot
+    $schema=Join-Path $ScriptRoot 'GlobalConfig.xsd'
+    Test-BISFNoReparsePath $ConfigPath
+    Test-BISFProtectedLocation $ConfigPath
+    Test-BISFProtectedLocation $schema
+    if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $ExpectedHash) {
+        throw 'Configuration changed while the editor was open. Reopen the editor before saving.'
+    }
+    $config=Read-BISFConfig $ConfigPath $ScriptRoot
+    if (($WindowsEventLogs -or $BISFLogs) -and $config.FinalAction -ne 'Shutdown') {
+        throw 'Log cleanup requires explicit FinalAction=Shutdown; the editor will not enable shutdown.'
+    }
+    $settings=New-Object Xml.XmlReaderSettings
+    $settings.XmlResolver=$null
+    $settings.DtdProcessing=[Xml.DtdProcessing]::Prohibit
+    $doc=New-Object Xml.XmlDocument
+    $doc.XmlResolver=$null
+    $reader=[Xml.XmlReader]::Create($ConfigPath,$settings)
+    try { $doc.Load($reader) } finally { $reader.Dispose() }
+    $node=$doc.SelectSingleNode('/BISF/LogCleanup')
+    if ($null -eq $node) {
+        $node=$doc.CreateElement('LogCleanup')
+        $null=$doc.DocumentElement.InsertBefore($node,$doc.SelectSingleNode('/BISF/ConfigurationManager'))
+    }
+    foreach ($name in @('WindowsEventLogs','BISFLogs')) {
+        $child=$node.SelectSingleNode($name)
+        if ($null -eq $child) { $child=$doc.CreateElement($name); $null=$node.AppendChild($child) }
+        $value=if ($name -eq 'WindowsEventLogs') { $WindowsEventLogs } else { $BISFLogs }
+        $child.InnerText=([string]$value).ToLowerInvariant()
+    }
+    $dir=Split-Path -Parent $ConfigPath
+    Test-BISFProtectedLocation $dir
+    $tmp=Join-Path $dir ([guid]::NewGuid().ToString('N')+'.tmp')
+    try {
+        $doc.Save($tmp)
+        $null=Read-BISFConfig $tmp $ScriptRoot
+        # Recheck after serialization/validation. Only administrators can replace
+        # files in this protected directory; concurrent administrative changes
+        # still require exclusive operational control during a seal.
+        Test-BISFNoReparsePath $ConfigPath
+        Test-BISFProtectedLocation $ConfigPath
+        if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $ExpectedHash) {
+            throw 'Configuration changed before saving. Reopen the editor.'
+        }
+        [IO.File]::Replace($tmp,$ConfigPath,[NullString]::Value)
+    } finally {
+        if ([IO.File]::Exists($tmp)) { [IO.File]::Delete($tmp) }
+    }
+}
+

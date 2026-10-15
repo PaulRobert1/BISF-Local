@@ -31,9 +31,9 @@ function Test-BISFLogCleanupPreflight {
             throw 'BISF log cleanup requires a dedicated, non-root local log folder.'
         }
         Test-BISFNoReparsePath $dir
-        if (Test-Path -LiteralPath $dir -PathType Container) {
-            Test-BISFProtectedLocation $dir
-        }
+        # Also validate the nearest existing ancestor if the logger will create
+        # this folder later. A missing directory is not an ACL exemption.
+        Test-BISFProtectedLocation $dir
     }
 }
 function Clear-BISFEventLogChannel {
@@ -86,3 +86,4 @@ function Invoke-BISFLogCleanup {
         Remove-BISFLocalLogs $Config.Logging.Path
     }
 }
+

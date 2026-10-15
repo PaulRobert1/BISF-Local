@@ -101,7 +101,7 @@ Describe 'Optional checkbox GUI source parse' {
         $null=[Management.Automation.Language.Parser]::ParseInput($source,[ref]$tokens,[ref]$parseErrors)
         @($parseErrors).Count | Should -Be 0
         $source | Should -Match 'System\.Windows\.Forms\.CheckBox'
-        $source | Should -Match 'doc\.Save'
+        $source | Should -Match 'Set-BISFLogCleanupOptions'
     }
 }
 

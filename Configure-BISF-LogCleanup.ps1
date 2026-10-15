@@ -10,6 +10,9 @@
 [CmdletBinding()]
 param([string]$ConfigPath=(Join-Path $PSScriptRoot 'GlobalConfig.xml'))
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'Modules/Private/Configuration.ps1')
+. (Join-Path $PSScriptRoot 'Modules/Private/Operations.ps1')
+. (Join-Path $PSScriptRoot 'Modules/Private/Lifecycle.ps1')
 if ($PSVersionTable.PSEdition -ne 'Desktop' -or -not [Environment]::Is64BitProcess) {
     throw 'Use elevated 64-bit Windows PowerShell 5.1.'
 }
@@ -22,6 +25,10 @@ if (-not (Test-Path -LiteralPath $ConfigPath -PathType Leaf) -or
     -not (Test-Path -LiteralPath $SchemaPath -PathType Leaf)) {
     throw 'GlobalConfig.xml and GlobalConfig.xsd must exist in this BISF package.'
 }
+Test-BISFProtectedLocation $ConfigPath
+Test-BISFProtectedLocation $SchemaPath
+$configHash=(Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash
+$null=Read-BISFConfig $ConfigPath $PSScriptRoot
 $doc=New-Object Xml.XmlDocument
 $doc.XmlResolver=$null
 $settings=New-Object Xml.XmlReaderSettings
@@ -29,6 +36,9 @@ $settings.XmlResolver=$null
 $settings.DtdProcessing=[Xml.DtdProcessing]::Prohibit
 $reader=[Xml.XmlReader]::Create($ConfigPath,$settings)
 try { $doc.Load($reader) } finally { $reader.Dispose() }
+if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $configHash) {
+    throw 'Configuration changed while opening the editor. Reopen it.'
+}
 if ($null -eq $doc.SelectSingleNode('/BISF/FinalAction')) { throw 'Invalid BISF GlobalConfig.xml.' }
 $ev=$false; $own=$false
 $a=$doc.SelectSingleNode('/BISF/LogCleanup/WindowsEventLogs')
@@ -101,34 +111,8 @@ $save.Add_Click({
                 [System.Windows.Forms.MessageBoxIcon]::Warning)
             return
         }
-        $node=$doc.SelectSingleNode('/BISF/LogCleanup')
-        if ($null -eq $node) {
-            $node=$doc.CreateElement('LogCleanup')
-            $cm=$doc.SelectSingleNode('/BISF/ConfigurationManager')
-            if ($null -eq $cm) { throw 'Cannot locate ConfigurationManager for safe XML insertion.' }
-            $null=$doc.DocumentElement.InsertBefore($node,$cm)
-        }
-        foreach ($name in @('WindowsEventLogs','BISFLogs')) {
-            $child=$node.SelectSingleNode($name)
-            if ($null -eq $child) {
-                $child=$doc.CreateElement($name)
-                $null=$node.AppendChild($child)
-            }
-            if ($name -eq 'WindowsEventLogs') {
-                $child.InnerText=([string]$eventCheck.Checked).ToLowerInvariant()
-            } else {
-                $child.InnerText=([string]$ownCheck.Checked).ToLowerInvariant()
-            }
-        }
-        $schemas=New-Object System.Xml.Schema.XmlSchemaSet
-        $null=$schemas.Add($null,$SchemaPath)
-        $doc.Schemas=$schemas
-        $handler=[System.Xml.Schema.ValidationEventHandler]{
-            param($sender,$event)
-            throw $event.Exception
-        }
-        $doc.Validate($handler)
-        $doc.Save($ConfigPath)
+        Set-BISFLogCleanupOptions -ConfigPath $ConfigPath -ScriptRoot $PSScriptRoot -ExpectedHash $configHash `
+            -WindowsEventLogs $eventCheck.Checked -BISFLogs $ownCheck.Checked
         [void][System.Windows.Forms.MessageBox]::Show(
             ('Saved XML to ' + $ConfigPath + [Environment]::NewLine + 'No logs were cleared or shutdown requested.'),
             'Options saved',
@@ -144,3 +128,4 @@ $save.Add_Click({
 })
 [void]$form.ShowDialog()
 $form.Dispose()
+

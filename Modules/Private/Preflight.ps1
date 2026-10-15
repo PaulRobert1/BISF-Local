@@ -177,12 +177,7 @@ function Test-BISFPreflight {
                     'New-ScheduledTaskAction','New-ScheduledTaskPrincipal','New-ScheduledTaskSettingsSet') {
                 $null=Get-Command $cmd -Module ScheduledTasks -CommandType Cmdlet,Function -ErrorAction Stop
             }
-            Test-BISFProtectedLocation $ScriptRoot
-            Test-BISFProtectedLocation $ConfigPath
-            Test-BISFProtectedLocation (Join-Path $ScriptRoot 'Invoke-BISF.ps1')
-            Test-BISFProtectedLocation (Join-Path $ScriptRoot 'state')
-            if ($Config.Logging.Enabled) { Test-BISFProtectedLocation $Config.Logging.Path }
-            Test-BISFOperatorSealTaskOwnership $ScriptRoot $ConfigPath
+            Test-BISFOperatorSealStaging $ScriptRoot $ConfigPath $Config
         }
     }
     if ($ids -contains 'LogCleanup') {
@@ -190,3 +185,4 @@ function Test-BISFPreflight {
     }
     if ($ids -contains 'Shutdown') { $null = Get-Command Stop-Computer -CommandType Cmdlet -ErrorAction Stop }
 }
+

@@ -27,14 +27,27 @@ function Get-BISFSystemDriveStatus {
 }
 function Get-BISFLoadedNonSystemProfiles {
     param([string]$CurrentSid)
-    @(
-        Get-CimInstance -ClassName Win32_UserProfile -ErrorAction Stop |
-            Where-Object {
-                $_.Special -eq $false -and $_.Loaded -eq $true -and
-                -not [string]::IsNullOrWhiteSpace([string]$_.SID) -and
-                [string]$_.SID -ne $CurrentSid
-            }
-    )
+    foreach ($profile in Get-CimInstance -ClassName Win32_UserProfile -ErrorAction Stop) {
+        if ($null -eq $profile.PSObject.Properties['Special'] -or $null -eq $profile.Special) {
+            throw 'Unknown Windows profile lifecycle flags.'
+        }
+        if ($profile.Special) { continue }
+        if ($null -eq $profile.PSObject.Properties['SID'] -or [string]::IsNullOrWhiteSpace([string]$profile.SID) -or
+            $null -eq $profile.PSObject.Properties['Loaded'] -or $null -eq $profile.Loaded) {
+            throw 'Unknown Windows profile lifecycle identity or loaded state.'
+        }
+        if ([string]$profile.SID -eq $CurrentSid) { continue }
+        $referenced=($null -ne $profile.PSObject.Properties['RefCount'] -and
+            $null -ne $profile.RefCount -and [long]$profile.RefCount -gt 0)
+        if ($profile.Loaded -or $referenced) { $profile }
+    }
+}
+function Test-BISFPreparationProfiles {
+    param($Config)
+    if ($Config.Preflight.BlockOtherLoadedProfiles -and
+        @(Get-BISFLoadedNonSystemProfiles (Get-BISFCurrentUserSid)).Count -gt 0) {
+        throw 'Other loaded or referenced local user profiles appeared; preparation and shutdown are refused.'
+    }
 }
 function Get-BISFProfileManagementServices {
     @(Get-CimInstance -ClassName Win32_Service -ErrorAction Stop |
@@ -57,6 +70,8 @@ function Invoke-BISFComponentCleanup {
     # The built-in task honors Windows Servicing's component-management rules,
     # unlike deleting files under WinSxS/SoftwareDistribution. No ResetBase.
     $task=Get-BISFComponentCleanupTask
+    $previous=Get-ScheduledTaskInfo -TaskName 'StartComponentCleanup' -TaskPath '\Microsoft\Windows\Servicing\' -ErrorAction Stop
+    if ($null -eq $previous.LastRunTime) { throw 'Cannot establish the previous servicing run time.' }
     $begin=[datetime]::Now.AddSeconds(-5)
     Write-BISFLog $Logger Info Servicing 'Starting built-in Microsoft Windows Servicing StartComponentCleanup scheduled task.'
     Start-ScheduledTask -TaskName 'StartComponentCleanup' -TaskPath '\Microsoft\Windows\Servicing\' -ErrorAction Stop
@@ -65,8 +80,9 @@ function Invoke-BISFComponentCleanup {
     while ([datetime]::UtcNow -lt $deadline) {
         $current=Get-ScheduledTask -TaskName 'StartComponentCleanup' -TaskPath '\Microsoft\Windows\Servicing\' -ErrorAction Stop
         $info=Get-ScheduledTaskInfo -TaskName 'StartComponentCleanup' -TaskPath '\Microsoft\Windows\Servicing\' -ErrorAction Stop
-        if ($null -ne $info.LastRunTime -and [datetime]$info.LastRunTime -ge $begin) { $started=$true }
-        if ($started -and [string]$current.State -ne 'Running') {
+        if ($null -ne $info.LastRunTime -and [datetime]$info.LastRunTime -ge $begin -and
+            [datetime]$info.LastRunTime -gt [datetime]$previous.LastRunTime) { $started=$true }
+        if ($started -and [string]$current.State -eq 'Ready') {
             if ([int]$info.LastTaskResult -ne 0) {
                 throw "Servicing component cleanup returned Task Scheduler result $($info.LastTaskResult)."
             }
@@ -84,3 +100,4 @@ function Invoke-BISFRecycleBinCleanup {
     Clear-RecycleBin -DriveLetter $drive.Substring(0,1) -Force -Confirm:$false -ErrorAction Stop
     Write-BISFLog $Logger Info RecycleBin "Requested Windows Recycle Bin cleanup for $drive through Clear-RecycleBin."
 }
+
