@@ -240,7 +240,10 @@ function Invoke-BISFOperatorSealFinalizer {
         $statePath=Get-BISFOperatorSealStatePath $ScriptRoot
         Test-BISFProtectedLocation $statePath
         Remove-Item -LiteralPath $statePath -Force -ErrorAction Stop
-        Write-BISFLog $logger Info Finalize 'Finalization succeeded. Requesting shutdown; no further file logging.'
+        Write-BISFLog $logger Info Finalize 'Operator cleanup and staging-state removal succeeded; optional last-stage log cleanup follows. Requesting shutdown afterwards.'
+        # Do not write diagnostics between successful log deletion and shutdown.
+        # A failed cleanup refuses shutdown and writes an error to the log.
+        Invoke-BISFLogCleanup $config
         Stop-Computer -Confirm:$false -ErrorAction Stop
         return 0
     } catch {
