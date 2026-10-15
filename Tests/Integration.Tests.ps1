@@ -1,7 +1,7 @@
 BeforeAll {
     Set-StrictMode -Version Latest
     $root=Split-Path $PSScriptRoot -Parent
-    foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Citrix','Profiles','Runner') { . "$root/Modules/Private/$n.ps1" }
+    foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Citrix','Profiles','Maintenance','Finalization','Runner') { . "$root/Modules/Private/$n.ps1" }
     foreach ($n in 'Enter-BISFJournal','Clear-BISFJournal','Get-BISFJournalStatus') {
         if (-not (Get-Command $n -ErrorAction SilentlyContinue)) { Set-Item -Path ('Function:'+ $n) -Value {} }
     }
@@ -21,6 +21,7 @@ Describe 'Full workflow safety and results' {
         $clone=[pscustomobject]@{Name='CLONE';MachineGuid=$master.MachineGuid;SmbiosUuid='33333333-3333-3333-3333-333333333333'}
         Mock Get-BISFInventory { [pscustomobject]@{Caption='Test Windows';Build=26100;Identity=$master;CMInstalled=$true} }
         Mock Test-BISFPreflight {}
+        Mock Get-BISFPendingRebootReasons { @() }
         Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=$null} }
         Mock Test-BISFProtectedLocation {}
         Mock Write-BISFState { $script:trace.Add('state:'+$State.Status) }
