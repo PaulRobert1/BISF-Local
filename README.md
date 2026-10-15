@@ -14,6 +14,49 @@ The package has no executable payloads, installer, GPO configuration, downloads 
 external executable calls. Optional startup personalization launches only the built-in
 Windows PowerShell host. Existing policy and network/security settings are preserved.
 
+## Windows 11 / Windows Server platform compatibility
+
+BISF-Local targets **Windows 11 single-session MCS templates** and
+**Windows Server 2025 multi-session templates**, using elevated 64-bit
+Windows PowerShell 5.1. Modern Windows 11 retains kernel version 10.0.
+Build 26100 is shared by Windows 11 24H2 and Windows Server 2025;
+`Win32_OperatingSystem.ProductType` separates workstation (1) and
+member server (3). Domain controllers (2) remain blocked.
+
+| Windows edition/release | Base build | BISF-Local platform outcome |
+| --- | --- | --- |
+| Windows 11 21H2 / 22H2 / 23H2 | 22000 / 22621 / 22631 | Recognized client (verify OS lifecycle) |
+| Windows 11 24H2 / 25H2 | 26100 / 26200 | Recognized client |
+| Windows 11 26H2 | 26300 | Recognized client; check Citrix VDA CU |
+| Windows 11 26H1 | 28000 | Recognized specialized new-hardware release; Citrix compatibility not assumed |
+| Other future Windows 11-family 10.0 workstation builds >=22000 | Other | Accepted by existing script-level build gate; **explicit compatibility warning** |
+| Windows Server 2025 | 26100, ProductType 3 | Recognized server |
+| Later Windows Server builds | Other | Blocked until tested and added |
+| Windows 10, Windows Server 2022/2019 and domain controllers | Older/any DC | Outside this specialized package's preparation scope |
+
+**Citrix version support is separate from script eligibility.**
+Per Citrix VDA 2507 LTSR system requirements, Windows 11 single-session
+VDAs are supported, whereas Windows 11 multi-session is supported **only
+with Citrix DaaS**. Citrix's CTX224843 compatibility matrix lists
+**2507 LTSR CU2 or newer** among releases supporting Windows 11 26H2.
+Windows 11 26H1 is designed for specialized new hardware (initially
+Qualcomm Snapdragon X2), and Windows 11 VDA compatibility is not
+established merely by recognizing that OS version.
+
+References:
+- [Microsoft Windows 11 release information](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information)
+- [Microsoft Windows 11 26H1](https://support.microsoft.com/en-us/servicing/os/windows/2026/02/windows-11-version-26h1)
+- [Citrix VDA 2507 LTSR system requirements](https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/2507-ltsr/system-requirements.html)
+- [Citrix Windows 10/11 compatibility CTX224843](https://support.citrix.com/external/article/CTX224843/windows-10-11-compatibility-with-citrix.html)
+
+Windows 11 release labels and vendor-compatibility warnings are logged
+in Validate, Prepare and Personalize when the runtime inventory is available.
+This does not automatically optimize a new Windows release, reset MSIX
+packages, modify security configuration or bypass Citrix installer checks.
+The regression suite exercises Windows 11 build detection using mocked OS
+inventory on Server 2025; **a real Windows 11 MCS clone test is still
+required** before production use.
+
 ## Quick start
 
 Copy the complete folder to a local location, such as `C:\Program Files\BISF-Local`.
@@ -83,6 +126,8 @@ invalid values and XML DTDs are rejected. Boolean values are XML booleans (`true
 | Logging.Path | `.\logs` | Script-relative or absolute log destination |
 | Cleanup.WindowsTemp | false | Delete old files under `%SystemRoot%\Temp` |
 | Cleanup.CurrentUserTemp | false | Delete old files under the executing user's LocalApplicationData\Temp; not every profile |
+| Cleanup.UserProfiles | false | **Opt-in** removal of unloaded, non-system Windows user profiles from master image via `Win32_UserProfile` and `Remove-CimInstance`; no age threshold |
+| Cleanup.ExcludedProfileSIDs | none | Optional `<ExcludedProfileSIDs><SID>...</SID></ExcludedProfileSIDs>`: protect domain/admin/service-account profile SIDs from cleanup |
 | Cleanup.MinimumAgeDays | 7 | Last-write age threshold, integer 1–3650 days |
 | ConfigurationManager.PrepareIdentityReset | false | Stop CcmExec; remove SMS store certificates and `%SystemRoot%\SMSCFG.ini`; leave client stopped |
 | ConfigurationManager.CloneTrustedRootKeyReset | false | Use CIM to delete TrustedRootKey instances during Personalize, then start CcmExec |
@@ -93,9 +138,11 @@ invalid values and XML DTDs are rejected. Boolean values are XML booleans (`true
 | Preflight.BlockPendingReboot | true | Pending reboot blocks Prepare and its Validate preflight; false permits continuing |
 | FinalAction | None | `Shutdown` requests shutdown after all selected Prepare operations succeed |
 
-The cleanup traversal excludes reparse points and protects the package, configuration,
-state, configured logs and the detected WEM cache when WEM checks are enabled. It rechecks candidates before deletion. It does not delete
-profiles, directories, event logs, update caches, or arbitrary user-supplied roots.
+The temporary-file cleanup excludes reparse points and protects the package, configuration,
+state, configured logs and the detected WEM cache when WEM checks are enabled. It rechecks
+candidates before deletion. Temporary-file cleanup never deletes profile directories or arbitrary
+roots. User-profile cleanup is a **separate, explicitly enabled** Windows profile-provider operation;
+it removes the registered profile and its local content and associated profile metadata.
 A file that changes, disappears, becomes inaccessible or becomes a link can fail the
 run; retry after resolving active writers. Run with the image quiescent: path checks
 are not a security sandbox against concurrent hostile filesystem changes.
@@ -105,6 +152,74 @@ store, machine-wide crypto folder or Entra join is reset. The installed Configur
 Manager service, certificate store and configured CIM class must be available.
 The certificate store may be empty, but must exist. Client version compatibility
 still requires an actual deployment test.
+
+## User profile cleanup before an MCS snapshot
+
+Citrix Profile Management 2507 documentation for **Provisioning Services** recommends
+removing non-essential, locally cached profiles before capturing the master vDisk,
+while retaining the currently logged-on local administrator. Applying the same
+local-cache hygiene to an MCS master is reasonable, but this is **not** a claim that
+Citrix prescribes this exact script for MCS:
+[Citrix Profile Management guidance](https://docs.citrix.com/en-us/profile-management/2507-ltsr/integrate/provisioning-services).
+
+Optional profile cleanup uses Windows' own Win32_UserProfile provider rather than
+raw recursive deletion of C:\Users or the upstream BIS-F's external Delprof2
+executable. The provider manages the registered Windows profile and settings:
+[Microsoft Win32_UserProfile](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ee886409(v=vs.85)),
+[Remove-CimInstance](https://learn.microsoft.com/en-us/powershell/module/cimcmdlets/remove-ciminstance?view=powershell-5.1).
+
+Set the following **only on a backed-up, quiescent master** with no other user
+sessions. The setting is optional in legacy XML and defaults to false:
+
+    <Cleanup>
+      <WindowsTemp>true</WindowsTemp>
+      <CurrentUserTemp>true</CurrentUserTemp>
+      <UserProfiles>true</UserProfiles>
+      <MinimumAgeDays>7</MinimumAgeDays>
+      <!-- Optional: known administrative/service profile SIDs to preserve. -->
+      <ExcludedProfileSIDs>
+        <SID>S-1-5-21-111-222-333-1001</SID>
+      </ExcludedProfileSIDs>
+    </Cleanup>
+
+The sample SID is illustrative; replace it with a real SID or omit
+ExcludedProfileSIDs entirely. Exclusions are never inferred from user display names.
+The seven-day MinimumAgeDays threshold applies **only to temporary files**;
+opted-in user-profile cleanup removes *all* eligible inactive profiles irrespective
+of last-use date.
+
+The safe selection rules are:
+- Use only locally registered Win32_UserProfile objects returned from the OS,
+  with valid domain/local user SIDs (S-1-5-21-...). No folder-tree search.
+- Protect system/special identities, current administrator SID, built-in/reserved
+  accounts (RID below 1000), template profile directories (Default/Public),
+  explicitly excluded SIDs, nonstandard identities and profiles outside the
+  configured Windows ProfilesDirectory.
+- Only consider a direct child of the configured local ProfilesDirectory whose
+  directory exists and has no reparse-point ancestor.
+- If another non-exempt profile is **loaded**, has active references or has
+  unknown lifecycle flags, **Prepare fails before image changes**. Log off that
+  user, stop only its legitimate workloads through normal maintenance procedures
+  and retry. The script never logs off users or forces profile deletion.
+- Enumerate candidate SIDs and paths with reasons in Validate and Prepare -WhatIf.
+  During Prepare, re-query each SID, re-check profile status/path and remove via
+  Remove-CimInstance -InputObject. Any failure stops the workflow.
+- Profile deletion is **irreversible** within the running master. Make a VM
+  snapshot or backup first; there is no rollback of prior successfully deleted
+  user profiles if a later operation fails.
+
+Run first:
+
+    .\Invoke-BISF.ps1 -Mode Validate
+    .\Invoke-BISF.ps1 -Mode Prepare -WhatIf
+
+Review the exact proposed SIDs and local paths in the resulting log. Profiles of
+other domain administrators may have normal S-1-5-21 SIDs with RIDs >= 1000:
+exclude their SIDs explicitly if those profiles must survive. Keep service
+accounts, installation accounts and any data stored solely in local user profiles
+backed up. This step does **not** delete profiles in FSLogix containers, Citrix
+Profile Management's network user store, or other remote stores; it targets the
+local cached Windows profile registered on the master only.
 
 ## Citrix VDA and WEM for MCS
 
@@ -150,8 +265,31 @@ for a particular Citrix/Windows combination; test the installed agents on an MCS
 WEM cache discovery reads the installed non-policy Agent Host settings, using
 AgentCacheAlternateLocation or `<agent installation>\Local Databases Set`. The path
 must be local and free of reparse points; it is excluded from optional temp cleanup.
-A not-yet-created cache directory is reported, not created by the script. Confirm cache
-initialization, connectivity and storage persistence for your chosen WEM deployment mode.
+The read-only inventory distinguishes `DirectoryMissing` (cache folder absent),
+`Incomplete` (folder exists but one or both expected .db files are absent), and
+`FilesPresent` (both files exist). The two expected files are
+`LocalAgentCache.db` and `LocalAgentDatabase.db`. Missing/partial cache is
+logged as a **warning**, not an automatic preparation failure. Neither an
+existing directory nor both database files prove connectivity, database integrity,
+or that the latest WEM settings were synchronized. This script never creates or
+refreshes these files. Confirm initialization and connectivity before capturing a
+test MCS image, and check that the agent rebuilds/synchronizes the cache on a clone.
+
+To investigate a missing cache on the master without modifying WEM, use the exact
+path printed in your BIS-F log and inspect the agent's current settings:
+
+```powershell
+Get-CimInstance Win32_Service | Where-Object { $_.Name -match '^(WemAgentSvc|Norskale Agent Host Service)$' } |
+    Select-Object Name, State, StartMode, PathName
+Get-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\Norskale\Agent Host' |
+    Select-Object AgentLocation, AgentCacheAlternateLocation
+Get-ChildItem -LiteralPath 'C:\Program Files (x86)\Citrix\Workspace Environment Management Agent\Local Databases Set' -Force -ErrorAction SilentlyContinue |
+    Select-Object Name, Length, LastWriteTime
+```
+
+An alternate cache registry value overrides the default installation-folder cache.
+If the WEM service is stopped or the cache remains absent, investigate the agent's
+connectivity and initialization before relying on the captured image.
 The script preserves Basic, on-premises or cloud configuration and cannot establish
 endpoint connectivity or the suitability of the selected optimization settings.
 

@@ -8,6 +8,8 @@
   <Cleanup>
     <WindowsTemp>false</WindowsTemp>
     <CurrentUserTemp>false</CurrentUserTemp>
+    <!-- Opt-in: delete unloaded non-system profiles from a quiescent MCS master. -->
+    <UserProfiles>false</UserProfiles>
     <MinimumAgeDays>7</MinimumAgeDays>
   </Cleanup>
   <ConfigurationManager>

@@ -36,6 +36,16 @@ function Read-BISFConfig {
         $citrix.VDA.StopBeforeShutdown = [Xml.XmlConvert]::ToBoolean($b.Citrix.VDA.StopBeforeShutdown.Trim())
         $citrix.WEM.Enabled = [Xml.XmlConvert]::ToBoolean($b.Citrix.WEM.Enabled.Trim())
     }
+    $userProfiles=$false
+    if ($null -ne $doc.SelectSingleNode('/BISF/Cleanup/UserProfiles')) {
+        $userProfiles=[Xml.XmlConvert]::ToBoolean($b.Cleanup.UserProfiles.Trim())
+    }
+    $excludedProfileSIDs=@($doc.SelectNodes('/BISF/Cleanup/ExcludedProfileSIDs/SID') | ForEach-Object { ([string]$_.InnerText).Trim() })
+    foreach ($sid in $excludedProfileSIDs) {
+        if ($sid -notmatch '^S-1-(5-21-([0-9]+-){3}[0-9]+|12-1-([0-9]+-){3}[0-9]+)$') {
+            throw "Invalid ExcludedProfileSIDs SID: $sid"
+        }
+    }
     [pscustomobject]@{
         Citrix = $citrix
         SchemaVersion = 1
@@ -46,6 +56,8 @@ function Read-BISFConfig {
         Cleanup = [pscustomobject]@{
             WindowsTemp = [Xml.XmlConvert]::ToBoolean($b.Cleanup.WindowsTemp.Trim())
             CurrentUserTemp = [Xml.XmlConvert]::ToBoolean($b.Cleanup.CurrentUserTemp.Trim())
+            UserProfiles = [bool]$userProfiles
+            ExcludedProfileSIDs = [string[]]$excludedProfileSIDs
             MinimumAgeDays = [int]$b.Cleanup.MinimumAgeDays
         }
         ConfigurationManager = [pscustomobject]@{

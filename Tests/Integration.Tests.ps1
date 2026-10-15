@@ -1,7 +1,7 @@
 BeforeAll {
     Set-StrictMode -Version Latest
     $root=Split-Path $PSScriptRoot -Parent
-    foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Citrix','Runner') { . "$root/Modules/Private/$n.ps1" }
+    foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Citrix','Profiles','Runner') { . "$root/Modules/Private/$n.ps1" }
     foreach ($n in 'Enter-BISFJournal','Clear-BISFJournal','Get-BISFJournalStatus') {
         if (-not (Get-Command $n -ErrorAction SilentlyContinue)) { Set-Item -Path ('Function:'+ $n) -Value {} }
     }
@@ -44,6 +44,48 @@ Describe 'Full workflow safety and results' {
         $r.ExitCode | Should -Be 0
         $r.Results.Status | Should -Contain 'Preview'
         $script:trace.Count | Should -Be 0
+    }
+    It 'shows eligible user profiles in Validate and WhatIf without deleting anything' {
+        (Get-Content $cfg -Raw).Replace('<UserProfiles>false','<UserProfiles>true') | Set-Content $cfg
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{
+            Root='C:\Users'
+            CurrentSid='S-1-5-21-111-222-333-1002'
+            ExcludedSIDs=@()
+            Entries=@([pscustomobject]@{SID='S-1-5-21-111-222-333-1001';LocalPath='C:\Users\test';Status='Remove';Reason='Inactive'})
+        } }
+        Mock Invoke-BISFUserProfileCleanup { throw 'Should not delete anything in preview modes' }
+        (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0
+        (Invoke-BISFLocal $cfg $root Prepare -WhatIf).ExitCode | Should -Be 0
+        Should -Invoke Invoke-BISFUserProfileCleanup -Times 0
+    }
+    It 'refuses destructive preparation if a non-admin profile is still loaded' {
+        (Get-Content $cfg -Raw).Replace('<UserProfiles>false','<UserProfiles>true') | Set-Content $cfg
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{
+            Root='C:\Users'
+            CurrentSid='S-1-5-21-111-222-333-1002'
+            ExcludedSIDs=@()
+            Entries=@([pscustomobject]@{SID='S-1-5-21-111-222-333-1001';LocalPath='C:\Users\test';Status='Blocked';Reason='Profile still loaded'})
+        } }
+        Mock Invoke-BISFUserProfileCleanup { throw 'Should not delete a loaded profile' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 1
+        $r.Error | Should -Match 'non-exempt profiles are loaded'
+        Should -Invoke Invoke-BISFUserProfileCleanup -Times 0
+        $script:trace.Count | Should -Be 0
+    }
+    It 'invokes native profile cleanup only during applying Prepare' {
+        (Get-Content $cfg -Raw).Replace('<UserProfiles>false','<UserProfiles>true') | Set-Content $cfg
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{
+            Root='C:\Users'
+            CurrentSid='S-1-5-21-111-222-333-1002'
+            ExcludedSIDs=@()
+            Entries=@([pscustomobject]@{SID='S-1-5-21-111-222-333-1001';LocalPath='C:\Users\test';Status='Remove';Reason='Inactive'})
+        } }
+        Mock Invoke-BISFUserProfileCleanup { $script:trace.Add('profiles') }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 0
+        ($script:trace -join ',') | Should -Be 'profiles'
+        Should -Invoke Invoke-BISFUserProfileCleanup -Times 1
     }
     It 'preflight failure prevents every requested mutation' {
         Mock Test-BISFPreflight { throw 'missing prerequisite' }
@@ -255,6 +297,26 @@ Describe 'Citrix final shutdown boundary' {
         Mock Restore-BISFVDA { $script:trace.Add('vda-restore:'+$PreviousState) }
         Mock Stop-Computer { $script:trace.Add('shutdown') }
         Mock Write-BISFLog { if ($script:trace -contains 'vda-stop') { $script:trace.Add('late-log') } }
+    }
+    It 'warns on absent WEM cache in Validate without stopping a service or requesting shutdown' {
+        Mock Get-BISFCitrixReadiness {
+            [pscustomobject]@{
+                VDA=$null
+                WEM=[pscustomobject]@{
+                    Version='2507';CachePath="$TestDrive/cache";CacheExists=$false
+                    CacheStatus='DirectoryMissing';HostState='Running'
+                    LocalAgentCachePresent=$false;LocalAgentDatabasePresent=$false
+                }
+            }
+        }
+        $script:observedLogs=New-Object 'System.Collections.Generic.List[string]'
+        Mock Write-BISFLog { $script:observedLogs.Add("$Level|$Operation|$Message") }
+        $r=Invoke-BISFLocal $cfg $root Validate
+        $r.ExitCode | Should -Be 0
+        ($script:observedLogs -join [Environment]::NewLine) | Should -Match 'Warning\|CitrixWEM\|.*cacheStatus=DirectoryMissing'
+        $script:trace.Count | Should -Be 0
+        Should -Invoke Stop-BISFVDA -Times 0
+        Should -Invoke Stop-Computer -Times 0
     }
     It 'does not stop or shut down in Validate or WhatIf' {
         (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0

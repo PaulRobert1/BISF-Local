@@ -50,3 +50,52 @@ strings, unknown resources, legacy Norskale host service discovery, absence of t
 optional logon service, existing Windows eligibility checks and existing failure
 recovery. No Citrix version comparison remains. Windows runtime and actual agent/OS
 compatibility remain unverified.
+
+## WEM cache diagnostics regression additions (2026-10-15)
+
+The `fix/wem-cache-diagnostics-20261015` branch adds four read-only
+WEM cache state tests and one integration test verifying that a missing cache
+logs a warning in Validate mode without stopping services or requesting shutdown.
+It also adds a GitHub Actions workflow using the `windows-2025` runner and
+Windows PowerShell 5.1 with Pester 5.7.1.
+
+The 2026-10-12 revision passed 130 portable Pester tests. The first updated
+WEM-only branch passed **135/135 Pester tests** on Windows Server 2025 / Windows
+PowerShell 5.1: https://github.com/PaulRobert1/BISF-Local/actions/runs/38701590882.
+These Windows-hosted tests still mock Citrix agents and do not certify an MCS clone.
+
+## Profile cleanup regression additions (2026-10-15)
+
+An opt-in Cleanup.UserProfiles operation uses native Win32_UserProfile inventory
+and Remove-CimInstance (wrapped for Pester) with protective SID/path guards.
+Tests cover disabled-by-default legacy XML, explicit exclusions, operator and
+built-in administrator protection, path boundaries, special/system identities,
+loaded-profile and RefCount blockers, Validate/WhatIf immutability, and
+per-SID pre-deletion revalidation against lifecycle/path changes.
+
+**158/158 Pester tests passed, 0 failed, 0 skipped** on Windows Server 2025
+with Windows PowerShell 5.1, GitHub Actions:
+https://github.com/PaulRobert1/BISF-Local/actions/runs/38705010124.
+
+Profile deletion in this CI run was simulated by mocks. No real profile was
+deleted, no real Citrix agent was installed, and no MCS provisioning was tested.
+Actual MCS master image integration and clone acceptance remain required.
+
+## Windows 11 release-awareness tests (2026-10-15)
+
+Platform inventory now recognizes Windows 11 21H2, 22H2, 23H2, 24H2,
+25H2, 26H2, and the special 26H1 release, while checking the workstation
+ProductType separately from Windows Server 2025 (shared 26100 build).
+Unknown future client builds generate an explicit compatibility warning;
+unknown future server builds remain blocked. Regression cases include
+26H2's VDA CU compatibility guidance and negative OS candidates.
+
+**169/169 Pester tests passed** (0 failed, 0 skipped) on Windows Server
+2025 using Windows PowerShell 5.1:
+https://github.com/PaulRobert1/BISF-Local/actions/runs/38726337356
+
+Windows 11 is covered by portable mocked-OS unit tests on the Windows
+Server 2025 GitHub runner. **No actual Windows 11 virtual machine or
+Citrix single-session VDA was tested** by these checks. Verify MCS
+provisioning, user-profile behavior, and Citrix support on an isolated
+Windows 11 template before production rollout.

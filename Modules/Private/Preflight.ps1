@@ -19,16 +19,70 @@ function Get-BISFInventory {
         CMInstalled=(@(Get-Service -Name CcmExec -ErrorAction SilentlyContinue).Count -gt 0)
     }
 }
+function Get-BISFWindowsRelease {
+    param($Inventory)
+    # Marketing release labels are diagnostic only, never a vendor support guarantee.
+    # ProductType distinguishes Windows 11 24H2 from Server 2025: both use build 26100.
+    $build=[int]$Inventory.Build
+    $platform=[pscustomobject]@{
+        Family='Unsupported'
+        Release='Unknown'
+        Build=$build
+        Eligible=$false
+        RecognizedBuild=$false
+        RequiresCompatibilityReview=$true
+        Guidance='Unsupported Windows family or kernel version.'
+    }
+    if ([string]$Inventory.Version -notmatch '^10\.0\.') { return $platform }
+    if ([int]$Inventory.ProductType -eq 1 -and $build -ge 22000) {
+        $platform.Family='Windows 11 workstation'
+        $platform.Eligible=$true
+        $platform.Guidance='Windows 11 single-session VDA is supported where Citrix product/edition requirements are met. Multi-session Windows 11 requires Citrix DaaS.'
+        switch ($build) {
+            22000 { $platform.Release='Windows 11 21H2'; $platform.RecognizedBuild=$true }
+            22621 { $platform.Release='Windows 11 22H2'; $platform.RecognizedBuild=$true }
+            22631 { $platform.Release='Windows 11 23H2'; $platform.RecognizedBuild=$true }
+            26100 { $platform.Release='Windows 11 24H2'; $platform.RecognizedBuild=$true }
+            26200 { $platform.Release='Windows 11 25H2'; $platform.RecognizedBuild=$true }
+            26300 {
+                $platform.Release='Windows 11 26H2'
+                $platform.RecognizedBuild=$true
+                $platform.Guidance='Windows 11 26H2: Citrix lists 2507 LTSR CU2 or newer (or another approved VDA release); multi-session requires DaaS.'
+            }
+            28000 {
+                $platform.Release='Windows 11 26H1 (specialized hardware)'
+                $platform.RecognizedBuild=$true
+                $platform.Guidance='Windows 11 26H1 targets new hardware such as Snapdragon X2; Citrix VDA/CPU architecture support requires separate verification.'
+            }
+            default {
+                $platform.Release='Unrecognized Windows 11-family build'
+                $platform.Guidance='Unknown client build: Windows PowerShell / cleanup eligibility is not Citrix OS certification; verify the exact OS, VDA, and profile provider on a disposable image.'
+            }
+        }
+        $platform.RequiresCompatibilityReview=($build -eq 26300 -or $build -eq 28000 -or -not $platform.RecognizedBuild)
+    } elseif ([int]$Inventory.ProductType -eq 3 -and $build -eq 26100) {
+        $platform.Family='Windows Server'
+        $platform.Release='Windows Server 2025'
+        $platform.Eligible=$true
+        $platform.RecognizedBuild=$true
+        $platform.RequiresCompatibilityReview=$false
+        $platform.Guidance='Supported BISF-Local platform; check the installed Citrix VDA and image prerequisites before capture.'
+    } elseif ([int]$Inventory.ProductType -eq 3 -and $build -gt 26100) {
+        $platform.Family='Windows Server'
+        $platform.Release='Unrecognized future Windows Server build'
+        $platform.Guidance='Later Windows Server releases are not automatically eligible for destructive preparation until platform-specific validation is added.'
+    }
+    $platform
+}
 function Test-BISFPlatform {
     param($Inventory, $Config, [string]$Mode)
     if ($Inventory.Edition -ne 'Desktop' -or $Inventory.PSVersion -notmatch '^5\.1($|\.)' -or -not $Inventory.Is64Bit -or -not $Inventory.IsAdmin) {
         throw 'Requires elevated 64-bit Windows PowerShell 5.1 (Desktop).'
     }
     if ($Inventory.ProductType -eq 2) { throw 'Domain controllers cannot be prepared.' }
-    if ($Inventory.Version -notmatch '^10\.0\.' -or -not (
-        ($Inventory.ProductType -eq 3 -and $Inventory.Build -eq 26100) -or
-        ($Inventory.ProductType -eq 1 -and $Inventory.Build -ge 22000))) {
-        throw 'Target must be Windows Server 2025 (26100) or Windows 11 workstation (22000+).'
+    $platform=Get-BISFWindowsRelease $Inventory
+    if (-not $platform.Eligible) {
+        throw ('Target must be Windows Server 2025 (26100) or Windows 11 workstation (22000+). Detected: {0}, build {1}. {2}' -f $platform.Release,$platform.Build,$platform.Guidance)
     }
     if ($Mode -eq 'Prepare' -and $Inventory.PendingReboot -and $Config.Preflight.BlockPendingReboot) {
         throw 'A pending reboot blocks preparation. Reboot the master and retry.'
@@ -88,6 +142,13 @@ function Test-BISFPreflight {
                 Test-BISFNoReparsePath $path
             }
         }
+    }
+    if ($ids -contains 'UserProfiles') {
+        foreach ($cmd in 'Get-CimInstance','Remove-CimInstance') {
+            $null=Get-Command $cmd -CommandType Cmdlet -ErrorAction Stop
+        }
+        # Win32_UserProfile inventory and path validation take place in Runner
+        # before any image operations. Do not require WEM to be initialized.
     }
     if ($ids -contains 'Shutdown') { $null = Get-Command Stop-Computer -CommandType Cmdlet -ErrorAction Stop }
 }

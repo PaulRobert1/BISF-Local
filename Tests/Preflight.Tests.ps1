@@ -16,6 +16,60 @@ Describe 'Platform and plan validation' {
         $i.ProductType=1; $i.Build=22631
         { Test-BISFPlatform $i $c Prepare } | Should -Not -Throw
     }
+    It 'recognizes Windows 11 client builds through 26H2: <Release>' -ForEach @(
+        @{Build=22000;Release='Windows 11 21H2'},
+        @{Build=22621;Release='Windows 11 22H2'},
+        @{Build=22631;Release='Windows 11 23H2'},
+        @{Build=26100;Release='Windows 11 24H2'},
+        @{Build=26200;Release='Windows 11 25H2'},
+        @{Build=26300;Release='Windows 11 26H2'},
+        @{Build=28000;Release='Windows 11 26H1 (specialized hardware)'}
+    ) {
+        $i.ProductType=1
+        $i.Build=$Build
+        $i.Version="10.0.$Build"
+        $platform=Get-BISFWindowsRelease $i
+        $platform.Eligible | Should -BeTrue
+        $platform.RecognizedBuild | Should -BeTrue
+        $platform.Release | Should -Be $Release
+        { Test-BISFPlatform $i $c Validate } | Should -Not -Throw
+    }
+    It 'distinguishes Windows Server 2025 and Windows 11 24H2 sharing build 26100' {
+        $server=Get-BISFWindowsRelease $i
+        $server.Release | Should -Be 'Windows Server 2025'
+        $server.Family | Should -Be 'Windows Server'
+        $i.ProductType=1
+        $client=Get-BISFWindowsRelease $i
+        $client.Release | Should -Be 'Windows 11 24H2'
+        $client.Family | Should -Be 'Windows 11 workstation'
+    }
+    It 'warns for an unrecognized future Windows client build without claiming Citrix support' {
+        $i.ProductType=1
+        $i.Build=29000
+        $i.Version='10.0.29000'
+        $platform=Get-BISFWindowsRelease $i
+        $platform.Eligible | Should -BeTrue
+        $platform.RecognizedBuild | Should -BeFalse
+        $platform.RequiresCompatibilityReview | Should -BeTrue
+        $platform.Guidance | Should -Match 'Unknown client build'
+    }
+    It 'rejects later Windows Server builds until explicitly validated' {
+        $i.Build=27500
+        $i.Version='10.0.27500'
+        $platform=Get-BISFWindowsRelease $i
+        $platform.Eligible | Should -BeFalse
+        $platform.RequiresCompatibilityReview | Should -BeTrue
+        { Test-BISFPlatform $i $c Prepare } | Should -Throw '*Windows Server*'
+    }
+    It 'flags Windows 11 26H1 and 26H2 for VDA compatibility review' {
+        $i.ProductType=1
+        foreach ($build in @(26300,28000)) {
+            $i.Build=$build
+            $i.Version="10.0.$build"
+            $platform=Get-BISFWindowsRelease $i
+            $platform.RequiresCompatibilityReview | Should -BeTrue
+        }
+    }
     It 'rejects unsupported environment: <Field>=<Value>' -ForEach @(
         @{Field='ProductType';Value=2},@{Field='Build';Value=20348},
         @{Field='Edition';Value='Core'},@{Field='PSVersion';Value='7.6'},
@@ -43,6 +97,15 @@ Describe 'Platform and plan validation' {
         $c.FinalAction='Shutdown'
         $ids=@(Get-BISFPlan $c Prepare).Id -join ','
         $ids | Should -Be 'WindowsTemp,CurrentUserTemp,CMPrepare,Lifecycle,Shutdown'
+    }
+    It 'includes inactive profile deletion between temp cleanup and lifecycle when opted in' {
+        $c.Cleanup.WindowsTemp=$true
+        $c.Cleanup.CurrentUserTemp=$true
+        $c.Cleanup.UserProfiles=$true
+        $c.Personalization.Enabled=$true
+        $c.FinalAction='Shutdown'
+        (@(Get-BISFPlan $c Prepare).Id -join ',') | Should -Be 'WindowsTemp,CurrentUserTemp,UserProfiles,Lifecycle,Shutdown'
+        (@(Get-BISFPlan $c Personalize).Id) | Should -Not -Contain 'UserProfiles'
     }
     It 'plans reset before client start and completion' {
         $c.ConfigurationManager.CloneTrustedRootKeyReset=$true

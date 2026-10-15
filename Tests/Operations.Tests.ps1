@@ -71,7 +71,7 @@ Describe 'Configuration Manager operations' {
         $previous=Invoke-BISFCMPrepare
         $previous | Should -Be 'Running'
         ($script:trace -join ',') | Should -Be 'stop,certs,ini'
-        Should -Invoke Remove-Item -Times 1 -Exactly -ParameterFilter { $LiteralPath -eq "$TestDrive/SMSCFG.ini" }
+        Should -Invoke Remove-Item -Times 1 -Exactly -ParameterFilter { $LiteralPath -eq (Join-Path $TestDrive 'SMSCFG.ini') }
     }
     It 'restores running service state if deletion fails' {
         Mock Remove-BISFSmsCertificates { throw 'certificate failed' }

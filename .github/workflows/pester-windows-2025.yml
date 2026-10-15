@@ -1,0 +1,24 @@
+name: BISF-Local PowerShell 5.1 tests
+
+on:
+  pull_request:
+    branches: [implementation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pester-windows-2025:
+    runs-on: windows-2025
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Install Pester 5
+        shell: powershell
+        run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+      - name: Run portable regression suite in Windows PowerShell 5.1
+        shell: powershell
+        run: .\Tests\Invoke-Tests.ps1

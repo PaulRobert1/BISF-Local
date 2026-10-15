@@ -11,6 +11,7 @@ function Get-BISFPlan {
         foreach ($id in 'WindowsTemp','CurrentUserTemp') {
             if ($Config.Cleanup.$id) { $steps.Add([pscustomobject]@{Id=$id;Description="Remove old temporary files: $id"}) }
         }
+        if ($Config.Cleanup.UserProfiles) { $steps.Add([pscustomobject]@{Id='UserProfiles';Description='Remove inactive non-system local Windows user profiles through CIM'}) }
         if ($Config.ConfigurationManager.PrepareIdentityReset) { $steps.Add([pscustomobject]@{Id='CMPrepare';Description='Stop CcmExec and remove SMS client identity'}) }
         if ($Config.Personalization.Enabled -or $Config.ConfigurationManager.PrepareIdentityReset -or $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
             $steps.Add([pscustomobject]@{Id='Lifecycle';Description='Record a preparation generation and optional startup task'})
@@ -35,6 +36,7 @@ function Invoke-BISFLocal {
     $logger=$null; $lock=$null; $state=$null; $previousCM=$null; $previousVDA=$null; $citrix=$null
     $exitCode=0; $errorMessage=$null; $applying=$false; $stateTouched=$false
     $completionTouched=$false; $journal=$null; $shutdownRequested=$false; $journalStatus=$null
+    $profilePlan=$null
     $currentStep='Preflight'
     try {
         $ScriptRoot=[IO.Path]::GetFullPath($ScriptRoot)
@@ -58,10 +60,50 @@ function Invoke-BISFLocal {
         }
         $logger=New-BISFLogger $config $Mode
         Write-BISFLog $logger Info Inventory ("OS={0}; Build={1}; Computer={2}; CcmExec={3}; Mode={4}" -f $inventory.Caption,$inventory.Build,$inventory.Identity.Name,$inventory.CMInstalled,$Mode)
+        # More detailed platform identity is informational: it never changes
+        # deletion, service, reboot, or Citrix version gating.
+        if ($null -ne $inventory.PSObject.Properties['Version'] -and $null -ne $inventory.PSObject.Properties['ProductType']) {
+            $platform=Get-BISFWindowsRelease $inventory
+            $platformLevel=if ($platform.RequiresCompatibilityReview) { 'Warning' } else { 'Info' }
+            Write-BISFLog $logger $platformLevel Platform ("Family={0}; Release={1}; Build={2}; RecognizedBuild={3}; ScriptEligible={4}. {5}" -f $platform.Family,$platform.Release,$platform.Build,$platform.RecognizedBuild,$platform.Eligible,$platform.Guidance)
+        }
         if ($null -ne $citrix.VDA) { Write-Host "Citrix VDA: $($citrix.VDA.Version); MCS component: $($citrix.VDA.MachineIdentityService)." }
-        if ($null -ne $citrix.WEM) { Write-Host "Citrix WEM: $($citrix.WEM.Version); preserved cache: $($citrix.WEM.CachePath) (exists: $($citrix.WEM.CacheExists))." }
         if ($null -ne $citrix.VDA) { Write-BISFLog $logger Info CitrixVDA ("VDA=$($citrix.VDA.Version); MCS component=$($citrix.VDA.MachineIdentityService); Desktop Service=$($citrix.VDA.State), $($citrix.VDA.Startup)") }
-        if ($null -ne $citrix.WEM) { Write-BISFLog $logger Info CitrixWEM ("WEM=$($citrix.WEM.Version); cache=$($citrix.WEM.CachePath); exists=$($citrix.WEM.CacheExists). Services and cache preserved; confirm cache initialization and persistence on a test clone.") }
+        if ($null -ne $citrix.WEM) {
+            # Older test doubles and callers may not expose the new diagnostics.
+            $cacheStatus='Unknown'; $hostState='Unknown'; $cacheFiles='Unknown'
+            if ($null -ne $citrix.WEM.PSObject.Properties['CacheStatus']) { $cacheStatus=[string]$citrix.WEM.CacheStatus }
+            if ($null -ne $citrix.WEM.PSObject.Properties['HostState']) { $hostState=[string]$citrix.WEM.HostState }
+            if ($null -ne $citrix.WEM.PSObject.Properties['LocalAgentCachePresent'] -and $null -ne $citrix.WEM.PSObject.Properties['LocalAgentDatabasePresent']) {
+                $cacheFiles="LocalAgentCache.db=$($citrix.WEM.LocalAgentCachePresent), LocalAgentDatabase.db=$($citrix.WEM.LocalAgentDatabasePresent)"
+            }
+            $level='Info'
+            $guidance='Cache file existence does not verify WEM synchronization. WEM may purge inherited databases on an MCS clone and rebuild its cache.'
+            if ($cacheStatus -eq 'DirectoryMissing') {
+                $level='Warning'
+                $guidance='Cache directory is absent. Verify the WEM agent has synchronized and check its registration/connectivity on the master and a test clone. BIS-F does not create or refresh WEM cache.'
+            } elseif ($cacheStatus -eq 'Incomplete') {
+                $level='Warning'
+                $guidance='One or both WEM database files are absent. Verify agent synchronization on the master and a test clone. BIS-F does not create or refresh WEM cache.'
+            }
+            if ($hostState -notin @('Running','Unknown')) {
+                $level='Warning'
+                $guidance+=" WEM host service state is $hostState; inspect agent health before image capture."
+            }
+            Write-BISFLog $logger $level CitrixWEM ("WEM=$($citrix.WEM.Version); hostState=$hostState; cache=$($citrix.WEM.CachePath); cacheStatus=$cacheStatus; $cacheFiles. $guidance")
+        }
+        if ($Mode -ne 'Personalize' -and $config.Cleanup.UserProfiles) {
+            $currentStep='UserProfiles'
+            $profilePlan=Get-BISFUserProfilePlan $config.Cleanup.ExcludedProfileSIDs
+            $targets=@($profilePlan.Entries | Where-Object { $_.Status -eq 'Remove' })
+            $blocked=@($profilePlan.Entries | Where-Object { $_.Status -eq 'Blocked' })
+            Write-BISFLog $logger Info UserProfiles ("Profile scan: eligible={0}; blocked={1}; total={2}; root={3}" -f $targets.Count,$blocked.Count,$profilePlan.Entries.Count,$profilePlan.Root)
+            foreach ($item in $profilePlan.Entries) {
+                $level=if ($item.Status -eq 'Blocked') { 'Warning' } else { 'Info' }
+                Write-BISFLog $logger $level UserProfiles ("{0}: SID={1}; path={2}; reason={3}" -f $item.Status,$item.SID,$item.LocalPath,$item.Reason)
+            }
+            $currentStep='Preflight'
+        }
         if ($Mode -eq 'Personalize' -and -not $journalStatus.PersonalizationPending -and (Test-BISFCompletion $state $inventory.Identity)) {
             $results.Add([pscustomobject]@{Id='Personalize';Status='Skipped';Message='This clone already completed this preparation generation.'})
             Write-BISFLog $logger Info Personalize 'Skipped: already completed this generation.'
@@ -91,6 +133,9 @@ function Invoke-BISFLocal {
                 $results.Add([pscustomobject]@{Id='Apply';Status='Skipped';Message='An operation was declined; no changes applied.'})
                 Write-BISFLog $logger Warning Apply 'Skipped: one or more operations were declined.'
             } else {
+                if ($null -ne $profilePlan -and @($profilePlan.Entries | Where-Object { $_.Status -eq 'Blocked' }).Count -gt 0) {
+                    throw 'Refusing profile cleanup while non-exempt profiles are loaded or their lifecycle status is unknown. Log off all other users and retry.'
+                }
                 $applying=$true
                 if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during preflight.' }
                 $needsState=($Mode -eq 'Prepare' -and (@($plan | ForEach-Object { $_.Id }) -contains 'Lifecycle'))
@@ -121,6 +166,9 @@ function Invoke-BISFLocal {
                             $roots=Get-BISFTempRoots
                             $files=@(Get-BISFCleanupCandidates $roots.CurrentUserTemp $config.Cleanup.MinimumAgeDays $protected)
                             Remove-BISFTempFiles $files
+                        }
+                        'UserProfiles' {
+                            Invoke-BISFUserProfileCleanup $profilePlan $logger
                         }
                         'CMPrepare' { $previousCM=Invoke-BISFCMPrepare }
                         'Lifecycle' {
