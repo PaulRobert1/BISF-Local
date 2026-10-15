@@ -36,6 +36,7 @@
     <xs:element name="Preflight"><xs:complexType><xs:sequence>
       <xs:element name="BlockPendingReboot" type="xs:boolean"/>
       <xs:element name="MinimumSystemDriveFreeGB" type="xs:nonNegativeInteger" minOccurs="0"/>
+      <xs:element name="BlockOtherLoadedProfiles" type="xs:boolean" minOccurs="0"/>
     </xs:sequence></xs:complexType></xs:element>
     <xs:element name="Finalization" minOccurs="0"><xs:complexType><xs:sequence>
       <xs:element name="RemoveOperatorProfile" type="xs:boolean"/>
