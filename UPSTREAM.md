@@ -33,6 +33,7 @@ A successful run of this package therefore covers only its explicitly selected a
 | DEP AlwaysOff and other boot configuration changes | Removed; preserve current settings |
 | VMware network tweaks | Excluded |
 | Temporary cleanup | Restricted age-based file cleanup with protected paths and link checks |
+| Inactive profile cleanup (Delprof2 upstream) | Optional, native Win32_UserProfile/Remove-CimInstance implementation; protects active/system/admin and explicitly excluded SIDs; no external executable |
 | SCCM preparation SMS certificates/SMSCFG.ini | Explicit opt-in via PowerShell/.NET, with service stop |
 | SCCM personalization WMIC TrustedRootKey deletion | Explicit opt-in via Get-CimInstance/Remove-CimInstance |
 | SCCM inventory/scheduler history and cache resets | Excluded |
