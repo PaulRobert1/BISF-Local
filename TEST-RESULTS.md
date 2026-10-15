@@ -50,3 +50,16 @@ strings, unknown resources, legacy Norskale host service discovery, absence of t
 optional logon service, existing Windows eligibility checks and existing failure
 recovery. No Citrix version comparison remains. Windows runtime and actual agent/OS
 compatibility remain unverified.
+
+## WEM cache diagnostics regression additions (2026-10-15)
+
+The `fix/wem-cache-diagnostics-20261015` branch adds four read-only
+WEM cache state tests and one integration test verifying that a missing cache
+logs a warning in Validate mode without stopping services or requesting shutdown.
+It also adds a GitHub Actions workflow using the `windows-2025` runner and
+Windows PowerShell 5.1 with Pester 5.7.1.
+
+The previously recorded 130-test pass belongs to the 2026-10-12 revision.
+**These five new tests have not been executed in this authoring environment.**
+Use the pull request's Actions checks for actual regression results; the
+Windows-hosted tests still mock Citrix agents and do not certify an MCS clone.
