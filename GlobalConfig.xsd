@@ -11,9 +11,14 @@
       <!-- Optional for compatibility with deployed XML. Explicit opt-in to irreversible profile deletion. -->
       <xs:element name="UserProfiles" type="xs:boolean" minOccurs="0"/>
       <xs:element name="MinimumAgeDays"><xs:simpleType><xs:restriction base="xs:positiveInteger"><xs:maxInclusive value="3650"/></xs:restriction></xs:simpleType></xs:element>
+      <xs:element name="RecycleBin" type="xs:boolean" minOccurs="0"/>
       <xs:element name="ExcludedProfileSIDs" minOccurs="0"><xs:complexType><xs:sequence>
         <xs:element name="SID" type="NonBlank" minOccurs="1" maxOccurs="unbounded"/>
       </xs:sequence></xs:complexType></xs:element>
+    </xs:sequence></xs:complexType></xs:element>
+    <xs:element name="Servicing" minOccurs="0"><xs:complexType><xs:sequence>
+      <xs:element name="ComponentCleanup" type="xs:boolean"/>
+      <xs:element name="TimeoutMinutes"><xs:simpleType><xs:restriction base="xs:positiveInteger"><xs:maxInclusive value="90"/></xs:restriction></xs:simpleType></xs:element>
     </xs:sequence></xs:complexType></xs:element>
     <xs:element name="ConfigurationManager"><xs:complexType><xs:sequence>
       <xs:element name="PrepareIdentityReset" type="xs:boolean"/><xs:element name="CloneTrustedRootKeyReset" type="xs:boolean"/>
@@ -28,7 +33,14 @@
         <xs:element name="Enabled" type="xs:boolean"/><!-- Legacy setting accepted but ignored: versions are informational. --><xs:element name="ExpectedRelease" type="xs:string" minOccurs="0"/>
       </xs:sequence></xs:complexType></xs:element>
     </xs:sequence></xs:complexType></xs:element>
-    <xs:element name="Preflight"><xs:complexType><xs:sequence><xs:element name="BlockPendingReboot" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element>
+    <xs:element name="Preflight"><xs:complexType><xs:sequence>
+      <xs:element name="BlockPendingReboot" type="xs:boolean"/>
+      <xs:element name="MinimumSystemDriveFreeGB" type="xs:nonNegativeInteger" minOccurs="0"/>
+    </xs:sequence></xs:complexType></xs:element>
+    <xs:element name="Finalization" minOccurs="0"><xs:complexType><xs:sequence>
+      <xs:element name="RemoveOperatorProfile" type="xs:boolean"/>
+      <xs:element name="TimeoutMinutes"><xs:simpleType><xs:restriction base="xs:positiveInteger"><xs:maxInclusive value="90"/></xs:restriction></xs:simpleType></xs:element>
+    </xs:sequence></xs:complexType></xs:element>
     <xs:element name="FinalAction" type="FinalAction"/>
   </xs:sequence><xs:attribute name="SchemaVersion" use="required" fixed="1" type="xs:string"/></xs:complexType></xs:element>
 </xs:schema>
