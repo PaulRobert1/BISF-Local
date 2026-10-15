@@ -14,6 +14,49 @@ The package has no executable payloads, installer, GPO configuration, downloads 
 external executable calls. Optional startup personalization launches only the built-in
 Windows PowerShell host. Existing policy and network/security settings are preserved.
 
+## Windows 11 / Windows Server platform compatibility
+
+BISF-Local targets **Windows 11 single-session MCS templates** and
+**Windows Server 2025 multi-session templates**, using elevated 64-bit
+Windows PowerShell 5.1. Modern Windows 11 retains kernel version 10.0.
+Build 26100 is shared by Windows 11 24H2 and Windows Server 2025;
+`Win32_OperatingSystem.ProductType` separates workstation (1) and
+member server (3). Domain controllers (2) remain blocked.
+
+| Windows edition/release | Base build | BISF-Local platform outcome |
+| --- | --- | --- |
+| Windows 11 21H2 / 22H2 / 23H2 | 22000 / 22621 / 22631 | Recognized client (verify OS lifecycle) |
+| Windows 11 24H2 / 25H2 | 26100 / 26200 | Recognized client |
+| Windows 11 26H2 | 26300 | Recognized client; check Citrix VDA CU |
+| Windows 11 26H1 | 28000 | Recognized specialized new-hardware release; Citrix compatibility not assumed |
+| Other future Windows 11-family 10.0 workstation builds >=22000 | Other | Accepted by existing script-level build gate; **explicit compatibility warning** |
+| Windows Server 2025 | 26100, ProductType 3 | Recognized server |
+| Later Windows Server builds | Other | Blocked until tested and added |
+| Windows 10, Windows Server 2022/2019 and domain controllers | Older/any DC | Outside this specialized package's preparation scope |
+
+**Citrix version support is separate from script eligibility.**
+Per Citrix VDA 2507 LTSR system requirements, Windows 11 single-session
+VDAs are supported, whereas Windows 11 multi-session is supported **only
+with Citrix DaaS**. Citrix's CTX224843 compatibility matrix lists
+**2507 LTSR CU2 or newer** among releases supporting Windows 11 26H2.
+Windows 11 26H1 is designed for specialized new hardware (initially
+Qualcomm Snapdragon X2), and Windows 11 VDA compatibility is not
+established merely by recognizing that OS version.
+
+References:
+- [Microsoft Windows 11 release information](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information)
+- [Microsoft Windows 11 26H1](https://support.microsoft.com/en-us/servicing/os/windows/2026/02/windows-11-version-26h1)
+- [Citrix VDA 2507 LTSR system requirements](https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/2507-ltsr/system-requirements.html)
+- [Citrix Windows 10/11 compatibility CTX224843](https://support.citrix.com/external/article/CTX224843/windows-10-11-compatibility-with-citrix.html)
+
+Windows 11 release labels and vendor-compatibility warnings are logged
+in Validate, Prepare and Personalize when the runtime inventory is available.
+This does not automatically optimize a new Windows release, reset MSIX
+packages, modify security configuration or bypass Citrix installer checks.
+The regression suite exercises Windows 11 build detection using mocked OS
+inventory on Server 2025; **a real Windows 11 MCS clone test is still
+required** before production use.
+
 ## Quick start
 
 Copy the complete folder to a local location, such as `C:\Program Files\BISF-Local`.
