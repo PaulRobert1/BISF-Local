@@ -129,6 +129,50 @@ Describe 'WEM cache location handling' {
         { Get-BISFWEMCache $service } | Should -Throw '*missing WEM settings*'
     }
 }
+Describe 'WEM cache read-only status' {
+    BeforeEach { $script:cacheRoot=Join-Path $TestDrive ([guid]::NewGuid().ToString('N')) }
+    It 'reports a missing cache directory without creating it' {
+        $r=Get-BISFWEMCacheStatus $script:cacheRoot
+        $r.Status | Should -Be 'DirectoryMissing'
+        $r.DirectoryExists | Should -BeFalse
+        $r.LocalAgentCachePresent | Should -BeFalse
+        $r.LocalAgentDatabasePresent | Should -BeFalse
+        (Test-Path -LiteralPath $script:cacheRoot) | Should -BeFalse
+    }
+    It 'does not treat an empty directory as an initialized cache' {
+        New-Item -ItemType Directory -Path $script:cacheRoot | Out-Null
+        $r=Get-BISFWEMCacheStatus $script:cacheRoot
+        $r.Status | Should -Be 'Incomplete'
+        $r.DirectoryExists | Should -BeTrue
+    }
+    It 'reports either individual database file missing' {
+        New-Item -ItemType Directory -Path $script:cacheRoot | Out-Null
+        Set-Content -LiteralPath (Join-Path $script:cacheRoot 'LocalAgentCache.db') -Value 'cache'
+        $r=Get-BISFWEMCacheStatus $script:cacheRoot
+        $r.Status | Should -Be 'Incomplete'
+        $r.LocalAgentCachePresent | Should -BeTrue
+        $r.LocalAgentDatabasePresent | Should -BeFalse
+        Remove-Item -LiteralPath (Join-Path $script:cacheRoot 'LocalAgentCache.db')
+        Set-Content -LiteralPath (Join-Path $script:cacheRoot 'LocalAgentDatabase.db') -Value 'database'
+        $r=Get-BISFWEMCacheStatus $script:cacheRoot
+        $r.Status | Should -Be 'Incomplete'
+        $r.LocalAgentCachePresent | Should -BeFalse
+        $r.LocalAgentDatabasePresent | Should -BeTrue
+    }
+    It 'reports both file names as present without touching their contents' {
+        New-Item -ItemType Directory -Path $script:cacheRoot | Out-Null
+        $cacheDb=Join-Path $script:cacheRoot 'LocalAgentCache.db'
+        $databaseDb=Join-Path $script:cacheRoot 'LocalAgentDatabase.db'
+        Set-Content -LiteralPath $cacheDb -Value 'cache-value'
+        Set-Content -LiteralPath $databaseDb -Value 'database-value'
+        $r=Get-BISFWEMCacheStatus $script:cacheRoot
+        $r.Status | Should -Be 'FilesPresent'
+        $r.LocalAgentCachePresent | Should -BeTrue
+        $r.LocalAgentDatabasePresent | Should -BeTrue
+        (Get-Content -LiteralPath $cacheDb -Raw).Trim() | Should -Be 'cache-value'
+        (Get-Content -LiteralPath $databaseDb -Raw).Trim() | Should -Be 'database-value'
+    }
+}
 Describe 'Citrix local path validation' {
     It 'rejects a nonlocal or ambiguous cache path: <Path>' -ForEach @(
         @{Path='\\server\cache'},@{Path='D:cache'},@{Path='cache'},@{Path='%UNKNOWN%\cache'},@{Path='D:\cache:stream'}
