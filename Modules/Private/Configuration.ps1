@@ -63,6 +63,11 @@ function Read-BISFConfig {
         $servicing.ComponentCleanup=[Xml.XmlConvert]::ToBoolean($b.Servicing.ComponentCleanup.Trim())
         $servicing.TimeoutMinutes=[int]$b.Servicing.TimeoutMinutes
     }
+    $logCleanup=[pscustomobject]@{WindowsEventLogs=$false;BISFLogs=$false}
+    if ($null -ne $doc.SelectSingleNode('/BISF/LogCleanup')) {
+        $logCleanup.WindowsEventLogs=[Xml.XmlConvert]::ToBoolean($b.LogCleanup.WindowsEventLogs.Trim())
+        $logCleanup.BISFLogs=[Xml.XmlConvert]::ToBoolean($b.LogCleanup.BISFLogs.Trim())
+    }
     $finalization=[pscustomobject]@{RemoveOperatorProfile=$false;TimeoutMinutes=30}
     if ($null -ne $doc.SelectSingleNode('/BISF/Finalization')) {
         $finalization.RemoveOperatorProfile=[Xml.XmlConvert]::ToBoolean($b.Finalization.RemoveOperatorProfile.Trim())
@@ -84,6 +89,7 @@ function Read-BISFConfig {
             MinimumAgeDays = [int]$b.Cleanup.MinimumAgeDays
         }
         Servicing = $servicing
+        LogCleanup = $logCleanup
         Finalization = $finalization
         ConfigurationManager = [pscustomobject]@{
             PrepareIdentityReset = [Xml.XmlConvert]::ToBoolean($b.ConfigurationManager.PrepareIdentityReset.Trim())
