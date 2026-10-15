@@ -24,7 +24,7 @@ Describe 'Citrix MCS user profile inventory and safe deletion' {
                 @($script:profiles | Where-Object { "SID='$($_.SID)'" -eq $Filter })
             } else { $script:profiles }
         }
-        Mock Remove-CimInstance { $script:deleted.Add($InputObject.SID) }
+        Mock Remove-BISFCimUserProfile { $script:deleted.Add($Profile.SID) }
         Mock Write-BISFLog {}
     }
     It 'selects inactive, registered, non-special profiles from the configured Users root' {
@@ -104,8 +104,8 @@ Describe 'Citrix MCS user profile inventory and safe deletion' {
         Invoke-BISFUserProfileCleanup $plan $null
         $script:deleted.Count | Should -Be 1
         $script:deleted[0] | Should -Be $script:userSid
-        Should -Invoke Remove-CimInstance -Times 1 -Exactly -ParameterFilter {
-            $InputObject.SID -eq 'S-1-5-21-111-222-333-1001' -and $Confirm -eq $false
+        Should -Invoke Remove-BISFCimUserProfile -Times 1 -Exactly -ParameterFilter {
+            $Profile.SID -eq 'S-1-5-21-111-222-333-1001'
         }
     }
     It 'refuses deletion if the profile becomes loaded after initial preview' {
@@ -140,7 +140,7 @@ Describe 'Citrix MCS user profile inventory and safe deletion' {
         New-Item -ItemType Directory -Path $folder | Out-Null
         $script:profiles=@(New-TestProfile $script:userSid $folder)
         $plan=Get-BISFUserProfilePlan
-        Mock Remove-CimInstance { throw 'profile provider denied deletion' }
+        Mock Remove-BISFCimUserProfile { throw 'profile provider denied deletion' }
         { Invoke-BISFUserProfileCleanup $plan $null } | Should -Throw '*provider denied*'
     }
     It 'blocks unknown Loaded and Special flags instead of assuming inactive' {
