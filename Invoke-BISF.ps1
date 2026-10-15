@@ -14,12 +14,17 @@ performs no image changes; enabled logging may create diagnostic log files.
 #>
 [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
 param(
-    [ValidateSet('Validate','Prepare','Personalize')][string]$Mode='Validate',
+    [ValidateSet('Validate','Prepare','Personalize','Finalize')][string]$Mode='Validate',
     [string]$ConfigPath=(Join-Path $PSScriptRoot 'GlobalConfig.xml')
 )
 $ErrorActionPreference='Stop'
 try {
     Import-Module (Join-Path $PSScriptRoot 'Modules/BISF.Local.psm1') -Force -ErrorAction Stop
+    if ($Mode -eq 'Finalize') {
+        # This is only used by the protected SYSTEM task; the module verifies
+        # the machine identity, staged state, calling SID and unloaded profile.
+        exit [int](Invoke-BISFOperatorSealFinalizer -ScriptRoot $PSScriptRoot -ConfigPath $ConfigPath)
+    }
     $arguments=@{ConfigPath=$ConfigPath;ScriptRoot=$PSScriptRoot;Mode=$Mode}
     if ($PSBoundParameters.ContainsKey('WhatIf')) { $arguments.WhatIf=$PSBoundParameters.WhatIf }
     if ($PSBoundParameters.ContainsKey('Confirm')) { $arguments.Confirm=$PSBoundParameters.Confirm }
