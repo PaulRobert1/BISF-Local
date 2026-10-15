@@ -90,6 +90,10 @@ Unknown future client builds generate an explicit compatibility warning;
 unknown future server builds remain blocked. Regression cases include
 26H2's VDA CU compatibility guidance and negative OS candidates.
 
+**169/169 Pester tests passed** (0 failed, 0 skipped) on Windows Server
+2025 using Windows PowerShell 5.1:
+https://github.com/PaulRobert1/BISF-Local/actions/runs/38726337356
+
 Windows 11 is covered by portable mocked-OS unit tests on the Windows
 Server 2025 GitHub runner. **No actual Windows 11 virtual machine or
 Citrix single-session VDA was tested** by these checks. Verify MCS
