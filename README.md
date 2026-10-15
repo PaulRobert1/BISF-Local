@@ -150,10 +150,10 @@ for a particular Citrix/Windows combination; test the installed agents on an MCS
 WEM cache discovery reads the installed non-policy Agent Host settings, using
 AgentCacheAlternateLocation or `<agent installation>\Local Databases Set`. The path
 must be local and free of reparse points; it is excluded from optional temp cleanup.
-The read-only inventory distinguishes \`DirectoryMissing\` (cache folder absent),
-\`Incomplete\` (folder exists but one or both expected .db files are absent), and
-\`FilesPresent\` (both files exist). The two expected files are
-\`LocalAgentCache.db\` and \`LocalAgentDatabase.db\`. Missing/partial cache is
+The read-only inventory distinguishes `DirectoryMissing` (cache folder absent),
+`Incomplete` (folder exists but one or both expected .db files are absent), and
+`FilesPresent` (both files exist). The two expected files are
+`LocalAgentCache.db` and `LocalAgentDatabase.db`. Missing/partial cache is
 logged as a **warning**, not an automatic preparation failure. Neither an
 existing directory nor both database files prove connectivity, database integrity,
 or that the latest WEM settings were synchronized. This script never creates or
@@ -163,149 +163,14 @@ test MCS image, and check that the agent rebuilds/synchronizes the cache on a cl
 To investigate a missing cache on the master without modifying WEM, use the exact
 path printed in your BIS-F log and inspect the agent's current settings:
 
-\`\`\`powershell
-Get-CimInstance Win32_Service | Where-Object { $_.Name -match '^(WemAgentSvc|Norskale Agent Host Service)
-The script preserves Basic, on-premises or cloud configuration and cannot establish
-endpoint connectivity or the suitability of the selected optimization settings.
-
-This workflow preserves WEM databases and does not restart WEM services or run
-AgentCacheUtility. WEM 2507 documents automatic clone-database checks and cache
-synchronization in [Citrix WEM 2507 agent guidance](https://docs.citrix.com/en-us/workspace-environment-management/2507/install-and-configure/agent-host.html).
-For older agents, verify their documented image-preparation requirements separately;
-version-independent execution does not add legacy vendor sealing utilities.
-
-For automatic power-off, set FinalAction to `Shutdown`. Optionally also set
-Citrix.VDA.StopBeforeShutdown to `true`. After all selected operations and file logging
-succeed, the script stops only BrokerAgent without Force, waits up to 30 seconds for
-Stopped, then requests shutdown. Startup type remains Automatic. If stopping or requesting
-shutdown fails, it attempts to restore the previous running state; recovery failure is
-reported. An already stopped VDA remains stopped. No recovery follows an accepted
-shutdown request. A stopped VDA is not a durable maintenance-mode setting: use your
-normal Citrix administration process to keep users away from the master.
-
-With FinalAction=None, leave StopBeforeShutdown=false, inspect the result and shut down
-the master through your normal process before taking the MCS snapshot. MCS owns machine
-identity preparation; **do not run Sysprep on the MCS master**. Follow the
-[Citrix 2507 master image instructions](https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/2507-ltsr/install-configure/machine-catalogs-create.html).
-Citrix-only use does not require the optional BIS-F Personalize task or its lifecycle
-state. Those features serve the separately selected Configuration Manager workflow.
-
-Before production, create an MCS test catalog from the powered-off snapshot. Verify
-VDA registration and ICA logon, WEM deployment mode and configuration processing,
-clone cache recreation/sync and persistence, and subsequent cold boots. The portable
-unit tests do not certify an actual Citrix installation or provisioning workflow.
-
-## Personalization lifecycle
-
-Enable the applicable ConfigurationManager options on the master. Enable
-Personalization.Enabled for automatic startup execution, or leave it false and invoke
-Personalize manually on the deployed clone. Prepare records an eligible generation
-when either client option or automatic personalization is selected.
-
 ```powershell
-# Run on a clone made from a successfully prepared master:
-.\Invoke-BISF.ps1 -Mode Personalize -WhatIf
-.\Invoke-BISF.ps1 -Mode Personalize
-```
-
-The package records master identity, preparation generation and a configuration hash
-in `state\lifecycle.json`. Personalize requires a successful generation and unchanged
-configuration. **Changing any XML content, including logging, requires running Prepare
-again on the master before recapture.** This avoids silently changing reset behavior
-on existing clones. Do not edit lifecycle state manually.
-
-Personalize requires a changed computer name plus at least one changed valid MachineGuid
-or SMBIOS UUID. The master is refused. Clones with copied identifiers are deliberately
-blocked as ambiguous: resolve the provisioning identity behavior rather than weakening
-this check. The same completed clone/generation becomes a no-op on later boots. A
-failure does not commit completion; rerun after fixing the underlying issue.
-Protected `Prepare.pending` and `Personalize.pending` files guard incomplete runs,
-including failures where the JSON state cannot be rewritten. An incomplete Prepare
-blocks personalization: retry Prepare on the master and recapture. An incomplete
-Personalize makes the same clone retry rather than trust a staged completion. Never
-remove these markers manually to force success.
-
-For automatic startup, script/module/schema/config/state files and their parent paths
-must be local, free of reparse points and protected against modification by untrusted
-users. Owners must be SYSTEM, Administrators or TrustedInstaller. Use an appropriately
-secured deployment folder; copying files there alone does not prove the ACLs are suitable.
-The script checks permissions and refuses unsafe locations; it does not broadly rewrite
-your package ACLs. It sets restricted ACLs only on its own new state files/directory.
-
-The reserved task is `\BISF-Local-Personalize`, runs as SYSTEM at startup and uses the
-built-in Windows PowerShell host. An unrelated task with that name is never overwritten.
-The task remains installed; completion state makes later runs no-ops. A reboot of the
-master will cause personalization to refuse the master, which is expected. Changing
-Personalization.Enabled to false stops future registration; it does not uninstall a
-previous task. To stop an existing task, use `Disable-ScheduledTask -TaskName
-BISF-Local-Personalize -TaskPath "\"` in an elevated PowerShell session.
-
-If nonpersistent storage discards state, personalization can run again at every boot.
-This is not a universal once-per-machine guarantee for PVS/MCS. Verify actual persistence
-and Configuration Manager identity behavior for your deployment technology.
-
-## Results, failure handling and limits
-
-- `0`: successful validation, preview, completion, or already-completed clone.
-- `1`: configuration/preflight/identity/locking failure before apply.
-- `2`: apply failure or a declined required operation.
-
-Operations report Completed, Skipped, Preview or Failed. Log entries saying "Ready
-for state commit" are not a committed lifecycle success; check the exit status and
-absence of the pending marker. Confirmation is collected
-before apply; one declined operation prevents the whole plan. A failure stops later
-operations and prevents a not-yet-requested shutdown. All fallible file logging
-finishes before shutdown is requested. The final pending-marker deletion occurs
-after an accepted shutdown request when one is configured: if that deletion fails,
-the machine may already be shutting down, exit status is 2, and clones remain blocked.
-There is no transactional filesystem-and-power API; the script does not restart
-services or write further logs after shutdown is accepted. Prefer FinalAction=None
-when you want to inspect final state before manually shutting down. Completed
-deletions are not rolled back. The runner
-attempts to restore the previous CcmExec running state after failed preparation and
-reports restoration failures. A prepared client remains stopped on success; capture
-without restarting it, or personalize after deployment. Review failures before retrying.
-
-The original RSS/offloading/DEP actions, GPO reads/writes and WMIC calls are absent.
-Sysprep, license rearm tools, vendor optimizers, antivirus sealing executables, virtual
-disk compaction, SDelete, DelProf2 and Entra leave tools are outside this package.
-Use the supported PVS/MCS/vendor workflow for the steps those products require.
-See UPSTREAM.md for the feature map and source provenance.
-
-## Verification
-
-Development tests require Pester 5 installed separately:
-
-```powershell
-.\Tests\Invoke-Tests.ps1
-```
-
-They exercise the real XML, logging, path traversal, state serialization and orchestration,
-with mocked Windows service/CIM/task operations. Parser and source audit tests also check
-for forbidden execution paths and binary payloads. A static scan is not a proof against
-arbitrary malicious edits; keep the package administrator-controlled.
-
-The delivered TEST-RESULTS.md records the actual test environment and results. Linux
-PowerShell tests cannot establish Windows PowerShell 5.1 runtime behavior or certify a
-Windows image. Before production, use a disposable clone and record:
-
-1. Windows edition/build, VDA/PVS/MCS versions, VM tools/NIC driver, profile agent,
-   Configuration Manager version, and any separately applied optimizer template.
-2. Validate and Prepare -WhatIf outputs; enabled/disabled/custom-path logging behavior.
-3. Actual Prepare changes and unchanged RSS, offloading, DEP and security settings.
-4. Capture/provisioning with the intended product and first-boot personalization.
-5. Subsequent cold boots and persistence of completion state/client identity.
-6. Before/after logon duration, SMB throughput, profile attachment and VDA registration.
-7. Scheduled task execution under SYSTEM and all applicable signing/execution policies.
-
-License: GNU GPLv3; no warranty. See LICENSE and UPSTREAM.md.
- } |
+Get-CimInstance Win32_Service | Where-Object { $_.Name -match '^(WemAgentSvc|Norskale Agent Host Service)$' } |
     Select-Object Name, State, StartMode, PathName
 Get-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\Norskale\Agent Host' |
     Select-Object AgentLocation, AgentCacheAlternateLocation
 Get-ChildItem -LiteralPath 'C:\Program Files (x86)\Citrix\Workspace Environment Management Agent\Local Databases Set' -Force -ErrorAction SilentlyContinue |
     Select-Object Name, Length, LastWriteTime
-\`\`\`
+```
 
 An alternate cache registry value overrides the default installation-folder cache.
 If the WEM service is stopped or the cache remains absent, investigate the agent's
