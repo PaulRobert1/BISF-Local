@@ -185,5 +185,8 @@ function Test-BISFPreflight {
             Test-BISFOperatorSealTaskOwnership $ScriptRoot $ConfigPath
         }
     }
+    if ($ids -contains 'LogCleanup') {
+        Test-BISFLogCleanupPreflight $Config $ScriptRoot
+    }
     if ($ids -contains 'Shutdown') { $null = Get-Command Stop-Computer -CommandType Cmdlet -ErrorAction Stop }
 }
