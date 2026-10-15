@@ -73,6 +73,25 @@ Describe 'Configuration and logging contract' {
         $c.Finalization.RemoveOperatorProfile | Should -BeFalse
         $c.Preflight.BlockOtherLoadedProfiles | Should -BeFalse
     }
+    It 'defaults log cleanup switches to false and accepts existing XML without LogCleanup' {
+        $c=Read-BISFConfig $cfgPath $root
+        $c.LogCleanup.WindowsEventLogs | Should -BeFalse
+        $c.LogCleanup.BISFLogs | Should -BeFalse
+        $source=Get-Content $cfgPath -Raw
+        $source=[regex]::Replace($source,'(?s)\s*<LogCleanup>.*?</LogCleanup>','')
+        $source | Set-Content $cfgPath
+        $legacy=Read-BISFConfig $cfgPath $root
+        $legacy.LogCleanup.WindowsEventLogs | Should -BeFalse
+        $legacy.LogCleanup.BISFLogs | Should -BeFalse
+    }
+    It 'accepts explicit Windows log and BISF-only log deletion switches' {
+        $source=(Get-Content $cfgPath -Raw).Replace('<WindowsEventLogs>false</WindowsEventLogs>','<WindowsEventLogs>true</WindowsEventLogs>')
+        $source=$source.Replace('<BISFLogs>false</BISFLogs>','<BISFLogs>true</BISFLogs>')
+        $source | Set-Content $cfgPath
+        $c=Read-BISFConfig $cfgPath $root
+        $c.LogCleanup.WindowsEventLogs | Should -BeTrue
+        $c.LogCleanup.BISFLogs | Should -BeTrue
+    }
     It 'rejects DTD entities' {
         '<!DOCTYPE BISF [<!ENTITY x "test">]><BISF SchemaVersion="1">&x;</BISF>' | Set-Content $cfgPath
         { Read-BISFConfig $cfgPath $root } | Should -Throw
