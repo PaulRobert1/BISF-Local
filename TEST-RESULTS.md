@@ -99,3 +99,18 @@ Server 2025 GitHub runner. **No actual Windows 11 virtual machine or
 Citrix single-session VDA was tested** by these checks. Verify MCS
 provisioning, user-profile behavior, and Citrix support on an isolated
 Windows 11 template before production rollout.
+
+## Post-logoff operator sealing and maintenance (2026-10-15)
+
+Stacked draft PR #2 adds read-only system-volume, pending reboot and
+profile-management inventory; optional Microsoft Windows Servicing task
+cleanup, current-user Recycle Bin cleanup and protected one-shot SYSTEM
+operator-profile finalization after normal sign-out. All mutating
+operations remain opt-in.
+
+The tests are simulated with Pester mocks on the Windows Server 2025
+runner: no real profile deletion, scheduled SYSTEM worker execution,
+Windows component servicing, Recycle Bin deletion or shutdown is
+performed by CI. **Even a passing CI run does not certify production
+master-image safety.** A disposable MCS master and test catalog
+acceptance is mandatory before enabling operator finalization.
