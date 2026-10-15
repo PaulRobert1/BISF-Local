@@ -44,6 +44,15 @@ Describe 'Platform and plan validation' {
         $ids=@(Get-BISFPlan $c Prepare).Id -join ','
         $ids | Should -Be 'WindowsTemp,CurrentUserTemp,CMPrepare,Lifecycle,Shutdown'
     }
+    It 'includes inactive profile deletion between temp cleanup and lifecycle when opted in' {
+        $c.Cleanup.WindowsTemp=$true
+        $c.Cleanup.CurrentUserTemp=$true
+        $c.Cleanup.UserProfiles=$true
+        $c.Personalization.Enabled=$true
+        $c.FinalAction='Shutdown'
+        (@(Get-BISFPlan $c Prepare).Id -join ',') | Should -Be 'WindowsTemp,CurrentUserTemp,UserProfiles,Lifecycle,Shutdown'
+        (@(Get-BISFPlan $c Personalize).Id) | Should -Not -Contain 'UserProfiles'
+    }
     It 'plans reset before client start and completion' {
         $c.ConfigurationManager.CloneTrustedRootKeyReset=$true
         $c.ConfigurationManager.PrepareIdentityReset=$true
