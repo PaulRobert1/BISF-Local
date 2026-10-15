@@ -59,6 +59,10 @@ Describe 'Two-phase operator seal configuration and trust boundaries' {
         }
         { Test-BISFOperatorSealTaskOwnership 'C:\Install\BISF' 'C:\Install\BISF\GlobalConfig.xml' } | Should -Throw
     }
+    It 'fails closed when Task Scheduler cannot enumerate tasks' {
+        Mock Get-ScheduledTask { Write-Error 'Task Scheduler unavailable' -ErrorAction $ErrorAction }
+        { Test-BISFOperatorSealTaskOwnership $root (Join-Path $root 'GlobalConfig.xml') } | Should -Throw '*Task Scheduler unavailable*'
+    }
     It 'refuses built-in administrator RID 500 even when that account is running Prepare' {
         Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-500' }
         { Get-BISFOperatorSealTarget $c 'C:\Install\BISF' 'C:\Install\BISF\GlobalConfig.xml' } | Should -Throw '*built-in*'
