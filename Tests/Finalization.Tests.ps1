@@ -59,10 +59,6 @@ Describe 'Two-phase operator seal configuration and trust boundaries' {
         }
         { Test-BISFOperatorSealTaskOwnership 'C:\Install\BISF' 'C:\Install\BISF\GlobalConfig.xml' } | Should -Throw
     }
-    It 'fails closed when Task Scheduler cannot enumerate tasks' {
-        Mock Get-ScheduledTask { Write-Error 'Task Scheduler unavailable' -ErrorAction $ErrorAction }
-        { Test-BISFOperatorSealTaskOwnership $root (Join-Path $root 'GlobalConfig.xml') } | Should -Throw '*Task Scheduler unavailable*'
-    }
     It 'refuses built-in administrator RID 500 even when that account is running Prepare' {
         Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-500' }
         { Get-BISFOperatorSealTarget $c 'C:\Install\BISF' 'C:\Install\BISF\GlobalConfig.xml' } | Should -Throw '*built-in*'
@@ -80,6 +76,21 @@ Describe 'Two-phase operator seal configuration and trust boundaries' {
         Mock Get-BISFProfilesRoot { $users }
         Mock Get-CimInstance { [pscustomobject]@{Special=$false;LocalPath=$operator} }
         { Get-BISFOperatorSealTarget $c $root (Join-Path $root 'GlobalConfig.xml') -ProtectedPaths @((Join-Path $operator 'WEM')) } | Should -Throw '*inside*operator profile*'
+    }
+}
+Describe 'Task Scheduler inventory error semantics' {
+    BeforeAll {
+        # Use a real advanced test function: Pester mocks do not inject common
+        # ErrorAction parameters into their body. This models native error
+        # preference handling without contacting the Windows task service.
+        function Get-ScheduledTask {
+            [CmdletBinding()]
+            param([string]$TaskName,[string]$TaskPath)
+            Write-Error 'Task Scheduler unavailable'
+        }
+    }
+    It 'fails closed when Task Scheduler cannot enumerate tasks' {
+        { Test-BISFOperatorSealTaskOwnership $root (Join-Path $root 'GlobalConfig.xml') } | Should -Throw '*Task Scheduler unavailable*'
     }
 }
 Describe 'Operator staging prerequisites before any preparation' {
