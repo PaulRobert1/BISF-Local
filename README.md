@@ -137,6 +137,36 @@ References:
 - [Microsoft: Register-ScheduledTask](https://learn.microsoft.com/en-us/powershell/module/scheduledtasks/register-scheduledtask)
 - [Microsoft: Delete a Windows user profile](https://learn.microsoft.com/en-us/troubleshoot/windows-server/user-profiles-and-logon/delete-user-profile)
 
+### Post-capture MCS clone verification (read-only)
+
+On a disposable, already-provisioned Windows Server 2025 or Windows 11
+MCS test clone, copy the *complete* BISF-Local package and run from an
+elevated 64-bit Windows PowerShell 5.1 console:
+
+```powershell
+.\Invoke-BISF.ps1 -Mode VerifyClone
+```
+
+This does not run Prepare, profile deletion, Windows servicing, scheduled
+tasks or shutdown, and it creates no BIS-F log file. It reports:
+- Local OS/Windows release, hostname, pending reboot, system-disk free space.
+- Domain-join status, installed VDA service state and Machine Identity component.
+- Local WEM host/cache state and FSLogix/Citrix Profile Management services.
+
+**Important:** the resulting report explicitly marks actual **VDA
+registration**, successful **ICA desktop/application launch**, **WEM
+registration/setting synchronization**, Windows activation, and actual
+FSLogix container attachment as **NotVerified**. A running BrokerAgent
+alone cannot establish a registered VDA; confirm the broker state in
+Citrix Studio/Director/Monitor and perform an end-to-end session logon.
+Verify WEM agent registration and cache synchronization in WEM
+administration. Check attached profile state and Windows activation
+through your normal platform tools.
+
+References:
+- [Citrix VDA registration](https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/manage-deployment/vda-registration.html)
+- [Citrix WEM agent registration](https://docs.citrix.com/en-us/workspace-environment-management/2507/user-interface-description/administration)
+
 ## Windows 11 / Windows Server platform compatibility
 
 BISF-Local targets **Windows 11 single-session MCS templates** and
