@@ -46,6 +46,24 @@ function Read-BISFConfig {
             throw "Invalid ExcludedProfileSIDs SID: $sid"
         }
     }
+    $recycleBin=$false
+    if ($null -ne $doc.SelectSingleNode('/BISF/Cleanup/RecycleBin')) {
+        $recycleBin=[Xml.XmlConvert]::ToBoolean($b.Cleanup.RecycleBin.Trim())
+    }
+    $minFreeGB=0
+    if ($null -ne $doc.SelectSingleNode('/BISF/Preflight/MinimumSystemDriveFreeGB')) {
+        $minFreeGB=[int]$b.Preflight.MinimumSystemDriveFreeGB
+    }
+    $servicing=[pscustomobject]@{ComponentCleanup=$false;TimeoutMinutes=75}
+    if ($null -ne $doc.SelectSingleNode('/BISF/Servicing')) {
+        $servicing.ComponentCleanup=[Xml.XmlConvert]::ToBoolean($b.Servicing.ComponentCleanup.Trim())
+        $servicing.TimeoutMinutes=[int]$b.Servicing.TimeoutMinutes
+    }
+    $finalization=[pscustomobject]@{RemoveOperatorProfile=$false;TimeoutMinutes=30}
+    if ($null -ne $doc.SelectSingleNode('/BISF/Finalization')) {
+        $finalization.RemoveOperatorProfile=[Xml.XmlConvert]::ToBoolean($b.Finalization.RemoveOperatorProfile.Trim())
+        $finalization.TimeoutMinutes=[int]$b.Finalization.TimeoutMinutes
+    }
     [pscustomobject]@{
         Citrix = $citrix
         SchemaVersion = 1
@@ -58,14 +76,20 @@ function Read-BISFConfig {
             CurrentUserTemp = [Xml.XmlConvert]::ToBoolean($b.Cleanup.CurrentUserTemp.Trim())
             UserProfiles = [bool]$userProfiles
             ExcludedProfileSIDs = [string[]]$excludedProfileSIDs
+            RecycleBin = [bool]$recycleBin
             MinimumAgeDays = [int]$b.Cleanup.MinimumAgeDays
         }
+        Servicing = $servicing
+        Finalization = $finalization
         ConfigurationManager = [pscustomobject]@{
             PrepareIdentityReset = [Xml.XmlConvert]::ToBoolean($b.ConfigurationManager.PrepareIdentityReset.Trim())
             CloneTrustedRootKeyReset = [Xml.XmlConvert]::ToBoolean($b.ConfigurationManager.CloneTrustedRootKeyReset.Trim())
         }
         Personalization = [pscustomobject]@{ Enabled = [Xml.XmlConvert]::ToBoolean($b.Personalization.Enabled.Trim()) }
-        Preflight = [pscustomobject]@{ BlockPendingReboot = [Xml.XmlConvert]::ToBoolean($b.Preflight.BlockPendingReboot.Trim()) }
+        Preflight = [pscustomobject]@{
+            BlockPendingReboot = [Xml.XmlConvert]::ToBoolean($b.Preflight.BlockPendingReboot.Trim())
+            MinimumSystemDriveFreeGB = [int]$minFreeGB
+        }
         FinalAction = [string]$b.FinalAction
     }
 }
