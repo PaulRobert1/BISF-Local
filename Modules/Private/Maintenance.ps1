@@ -59,7 +59,7 @@ function Invoke-BISFComponentCleanup {
     $task=Get-BISFComponentCleanupTask
     $begin=[datetime]::Now.AddSeconds(-5)
     Write-BISFLog $Logger Info Servicing 'Starting built-in Microsoft Windows Servicing StartComponentCleanup scheduled task.'
-    Start-ScheduledTask -InputObject $task -ErrorAction Stop
+    Start-ScheduledTask -TaskName 'StartComponentCleanup' -TaskPath '\Microsoft\Windows\Servicing\' -ErrorAction Stop
     $deadline=[datetime]::UtcNow.AddMinutes($TimeoutMinutes)
     $started=$false
     while ([datetime]::UtcNow -lt $deadline) {
