@@ -20,6 +20,11 @@
       <xs:element name="ComponentCleanup" type="xs:boolean"/>
       <xs:element name="TimeoutMinutes"><xs:simpleType><xs:restriction base="xs:positiveInteger"><xs:maxInclusive value="90"/></xs:restriction></xs:simpleType></xs:element>
     </xs:sequence></xs:complexType></xs:element>
+    <!-- Master-only end-of-run log hygiene. Security auditing is excluded. -->
+    <xs:element name="LogCleanup" minOccurs="0"><xs:complexType><xs:sequence>
+      <xs:element name="WindowsEventLogs" type="xs:boolean"/>
+      <xs:element name="BISFLogs" type="xs:boolean"/>
+    </xs:sequence></xs:complexType></xs:element>
     <xs:element name="ConfigurationManager"><xs:complexType><xs:sequence>
       <xs:element name="PrepareIdentityReset" type="xs:boolean"/><xs:element name="CloneTrustedRootKeyReset" type="xs:boolean"/>
     </xs:sequence></xs:complexType></xs:element>
