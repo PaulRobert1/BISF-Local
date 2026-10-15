@@ -22,6 +22,8 @@ Describe 'Full workflow safety and results' {
         Mock Get-BISFInventory { [pscustomobject]@{Caption='Test Windows';Build=26100;Identity=$master;CMInstalled=$true} }
         Mock Test-BISFPreflight {}
         Mock Get-BISFPendingRebootReasons { @() }
+        Mock Get-BISFLoadedNonSystemProfiles { @() }
+        Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-1002' }
         Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=$null} }
         Mock Test-BISFProtectedLocation {}
         Mock Write-BISFState { $script:trace.Add('state:'+$State.Status) }
@@ -195,6 +197,35 @@ Describe 'Full workflow safety and results' {
         $r=Invoke-BISFLocal $cfg $root Prepare
         $r.ExitCode | Should -Be 1
         $script:trace.Count | Should -Be 0
+    }
+    It 'protects package, config, state, logging and WEM dependencies during profile planning' {
+        (Get-Content $cfg -Raw).Replace('<UserProfiles>false','<UserProfiles>true') | Set-Content $cfg
+        Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=[pscustomobject]@{Version='2507';CachePath="$TestDrive/WEM"}} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';Entries=@()} }
+        (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0
+        Should -Invoke Get-BISFUserProfilePlan -Times 1 -ParameterFilter {
+            $ProtectedPaths -contains $root -and $ProtectedPaths -contains $cfg -and
+            $ProtectedPaths -contains (Join-Path $root 'state') -and
+            $ProtectedPaths -contains (Join-Path $root 'logs') -and $ProtectedPaths -contains "$TestDrive/WEM"
+        }
+    }
+    It 'cancels if another profile became busy after preflight and before applying' {
+        (Get-Content $cfg -Raw).Replace('<FinalAction>None','<FinalAction>Shutdown') | Set-Content $cfg
+        Mock Get-BISFLoadedNonSystemProfiles { [pscustomobject]@{SID='S-1-5-21-111-222-333-1009'} }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Not -Be 0
+        $script:trace.Count | Should -Be 0
+    }
+    It 'blocks final shutdown when another user logs on during component cleanup' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Servicing.ComponentCleanup='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        $script:busy=$false
+        Mock Get-BISFLoadedNonSystemProfiles { if ($script:busy) { [pscustomobject]@{SID='S-1-5-21-111-222-333-1009'} } }
+        Mock Invoke-BISFComponentCleanup { $script:busy=$true; $script:trace.Add('servicing') }
+        (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2
+        ($script:trace -join ',') | Should -Be 'servicing'
     }
     It 'stops after failed preparation without successful state or shutdown' {
         (Get-Content $cfg -Raw).Replace('<PrepareIdentityReset>false','<PrepareIdentityReset>true').Replace('<FinalAction>None','<FinalAction>Shutdown') | Set-Content $cfg
@@ -394,6 +425,8 @@ Describe 'Citrix final shutdown boundary' {
         $script:trace=New-Object 'System.Collections.Generic.List[string]'
         Mock Get-BISFInventory { [pscustomobject]@{Caption='Test';Build=26100;Identity=[pscustomobject]@{Name='MASTER'};CMInstalled=$false} }
         Mock Test-BISFPreflight {}
+        Mock Get-BISFLoadedNonSystemProfiles { @() }
+        Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-1002' }
         Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=[pscustomobject]@{Version='2507';CachePath="$TestDrive/cache";CacheExists=$true}} }
         Mock Get-BISFVDARunningState { 'Running' }
         Mock Stop-BISFVDA { $script:trace.Add('vda-stop') }
@@ -478,3 +511,4 @@ Describe 'Citrix final shutdown boundary' {
         Should -Invoke Restore-BISFCMService -Times 0
     }
 }
+

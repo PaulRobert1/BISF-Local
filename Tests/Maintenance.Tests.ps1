@@ -33,6 +33,14 @@ Describe 'Read-only pre-capture health inventory' {
         Mock Get-ItemProperty { [pscustomobject]@{} }
         @(Get-BISFPendingRebootReasons).Count | Should -Be 0
     }
+    It 'treats an unloaded profile with outstanding references as busy' {
+        Mock Get-CimInstance { [pscustomobject]@{SID='S-1-5-21-1-2-3-1011';Loaded=$false;Special=$false;RefCount=1} }
+        @(Get-BISFLoadedNonSystemProfiles '').Count | Should -Be 1
+    }
+    It 'fails closed on unknown lifecycle state for another profile' {
+        Mock Get-CimInstance { [pscustomobject]@{SID='S-1-5-21-1-2-3-1011';Loaded=$null;Special=$false} }
+        { Get-BISFLoadedNonSystemProfiles '' } | Should -Throw '*lifecycle*'
+    }
     It 'reports other loaded user profiles while ignoring the current user and special accounts' {
         Mock Get-CimInstance { @(
             [pscustomobject]@{SID='S-1-5-21-1-2-3-1010';Loaded=$true;Special=$false},
@@ -72,13 +80,41 @@ Describe 'Windows component store cleanup through Microsoft Servicing task' {
         { Get-BISFComponentCleanupTask } | Should -Throw '*Expected one*'
     }
     It 'successfully starts and awaits a completed servicing maintenance task' {
+        $script:infoReads=0
+        Mock Get-ScheduledTaskInfo {
+            $script:infoReads++
+            $last=if ($script:infoReads -eq 1) { [datetime]::Now.AddMinutes(-1) } else { [datetime]::Now }
+            [pscustomobject]@{LastRunTime=$last;LastTaskResult=0}
+        }
         Invoke-BISFComponentCleanup 2 $null
         Should -Invoke Start-ScheduledTask -Times 1
-        Should -Invoke Get-ScheduledTaskInfo -Times 1
+        Should -Invoke Get-ScheduledTaskInfo -Times 2
     }
     It 'surfaces an error result and refuses a successful seal' {
-        Mock Get-ScheduledTaskInfo { [pscustomobject]@{LastRunTime=[datetime]::Now;LastTaskResult=123} }
+        $script:infoReads=0
+        Mock Get-ScheduledTaskInfo {
+            $script:infoReads++
+            $last=if ($script:infoReads -eq 1) { [datetime]::Now.AddMinutes(-1) } else { [datetime]::Now }
+            [pscustomobject]@{LastRunTime=$last;LastTaskResult=123}
+        }
         { Invoke-BISFComponentCleanup 2 $null } | Should -Throw '*result 123*'
+    }
+    It 'waits for a new run instead of accepting a recent previous success or a queued task' {
+        $script:infoReads=0
+        $script:recent=[datetime]::Now.AddSeconds(-1)
+        $script:newRun=[datetime]::Now
+        Mock Get-ScheduledTask {
+            $status=if ($script:infoReads -eq 1) { 'Queued' } elseif ($script:infoReads -eq 2) { 'Running' } else { 'Ready' }
+            [pscustomobject]@{TaskName='StartComponentCleanup';TaskPath='\Microsoft\Windows\Servicing\';State=$status}
+        }
+        Mock Get-ScheduledTaskInfo {
+            $script:infoReads++
+            $last=if ($script:infoReads -le 2) { $script:recent } else { $script:newRun }
+            [pscustomobject]@{LastRunTime=$last;LastTaskResult=0}
+        }
+        Invoke-BISFComponentCleanup 2 $null
+        $script:infoReads | Should -Be 4
+        Should -Invoke Start-Sleep -Times 2
     }
     It 'times out without proceeding if servicing never starts' {
         Mock Get-ScheduledTaskInfo { [pscustomobject]@{LastRunTime=[datetime]'2000-01-01';LastTaskResult=0} }
@@ -97,3 +133,4 @@ Describe 'System drive Recycle Bin cleanup opt in' {
         } finally { $env:SystemDrive=$orig }
     }
 }
+
