@@ -60,6 +60,13 @@ function Invoke-BISFLocal {
         }
         $logger=New-BISFLogger $config $Mode
         Write-BISFLog $logger Info Inventory ("OS={0}; Build={1}; Computer={2}; CcmExec={3}; Mode={4}" -f $inventory.Caption,$inventory.Build,$inventory.Identity.Name,$inventory.CMInstalled,$Mode)
+        # More detailed platform identity is informational: it never changes
+        # deletion, service, reboot, or Citrix version gating.
+        if ($null -ne $inventory.PSObject.Properties['Version'] -and $null -ne $inventory.PSObject.Properties['ProductType']) {
+            $platform=Get-BISFWindowsRelease $inventory
+            $platformLevel=if ($platform.RequiresCompatibilityReview) { 'Warning' } else { 'Info' }
+            Write-BISFLog $logger $platformLevel Platform ("Family={0}; Release={1}; Build={2}; RecognizedBuild={3}; ScriptEligible={4}. {5}" -f $platform.Family,$platform.Release,$platform.Build,$platform.RecognizedBuild,$platform.Eligible,$platform.Guidance)
+        }
         if ($null -ne $citrix.VDA) { Write-Host "Citrix VDA: $($citrix.VDA.Version); MCS component: $($citrix.VDA.MachineIdentityService)." }
         if ($null -ne $citrix.VDA) { Write-BISFLog $logger Info CitrixVDA ("VDA=$($citrix.VDA.Version); MCS component=$($citrix.VDA.MachineIdentityService); Desktop Service=$($citrix.VDA.State), $($citrix.VDA.Startup)") }
         if ($null -ne $citrix.WEM) {
