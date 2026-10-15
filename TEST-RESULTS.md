@@ -1,5 +1,33 @@
 # Verification record
 
+## Latest continuation verification — 2026-10-15
+
+Runtime commit `a26ca25a65596a33b428c02de466df35ee15bcec` passed the full
+`Tests/Invoke-Tests.ps1` suite on GitHub's Windows Server 2025 runner,
+Windows PowerShell 5.1 and Pester 5.7.1: **264 passed, 0 failed, 0 skipped**.
+Run: https://github.com/PaulRobert1/BISF-Local/actions/runs/38737851224
+
+The starting PR #2 head passed 232 tests. This continuation adds 32 cases,
+including profile dependency boundaries and ambiguous provider results, changed
+session state, staging trust/state prerequisites, new servicing-run detection,
+Finalize preview, safe checkbox XML saves, configuration approval races and
+Task Scheduler enumeration errors. Regression-only CI runs were observed failing
+before fixes; see [REVIEW-2026-10-15.md](REVIEW-2026-10-15.md) for exact evidence.
+
+XML/file operations use disposable Pester TestDrive data; the editor's locked-file
+and atomic-replacement behavior is exercised on the Windows runner. Profile
+removal, servicing, SYSTEM task execution, event clearing and shutdown remain
+mocked. The real GUI and native ACL enforcement have not been accepted.
+No operation was executed on SWCTXMASTER05. PR #1 is unchanged and PR #2 remains
+open, unmerged and draft. The shipped XML/XSD and destructive defaults are unchanged.
+
+All disposable Server 2025 and Windows 11 MCS acceptance rows in
+[ACCEPTANCE-TESTING.md](ACCEPTANCE-TESTING.md) remain **NOT RUN**. Passing CI is
+not production certification. Later documentation commits can advance the head;
+verify the current head's Actions result before continuing.
+
+## Earlier verification history
+
 2026-10-12, Linux x86_64 development host.
 
 - PowerShell 7.6.6, Pester 5.7.1: 130 tests passed, 0 failed.
@@ -139,3 +167,4 @@ The editor's source was syntax-checked, but the GUI has NOT been exercised
 interactively. Provider operations were mocked: no production logs were
 cleared, no administrator profile was removed, and no real SYSTEM
 sign-out/shutdown cycle was tested. Production readiness is NOT established.
+

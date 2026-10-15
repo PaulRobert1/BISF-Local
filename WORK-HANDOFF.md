@@ -27,7 +27,7 @@ Build a Windows PowerShell 5.1 Citrix MCS golden-image preparation framework for
 - Main implementation: `implementation` (do not replace or force-push).
 - PR #1: https://github.com/PaulRobert1/BISF-Local/pull/1 — `fix/wem-cache-diagnostics-20261015` into `implementation`. WEM diagnostics, safe ordinary profile cleanup, Windows 11 release awareness; passing test suite. Open/unmerged.
 - PR #2: https://github.com/PaulRobert1/BISF-Local/pull/2 — `feature/seal-finalization-maintenance-20261015` into PR #1 branch. **Draft**, open/unmerged. This is the branch to continue for master maintenance, operator finalization, log-cleanup checkboxes and clone health.
-- Latest confirmed completed full test: 232 passed, 0 failed, Windows Server 2025 with Windows PowerShell 5.1, GitHub Actions https://github.com/PaulRobert1/BISF-Local/actions/runs/38732870070 at commit `81eef67be621a0d21ea267392b09c55d7dc07aac`. Recheck current head CI, because documentation changes can advance the SHA.
+- Latest confirmed completed full test: **264 passed, 0 failed, 0 skipped**, Windows Server 2025 / Windows PowerShell 5.1 / Pester 5.7.1, https://github.com/PaulRobert1/BISF-Local/actions/runs/38737851224 at runtime commit `a26ca25a65596a33b428c02de466df35ee15bcec`. Recheck the current head and its CI; later documentation commits can advance the SHA.
 
 ## Existing evidence on the actual master — do not assume updated package is deployed
 - `SWCTXMASTER05`: Windows Server 2025 Standard build 26100, elevated 64-bit Windows PowerShell 5.1.

@@ -19,6 +19,8 @@ log cleanup, shutdown and clone workflow still requires disposable Windows Serve
 2025 and Windows 11 testing. See [ACCEPTANCE-TESTING.md](ACCEPTANCE-TESTING.md) for
 the per-platform evidence matrix and failure cases. Do not use SWCTXMASTER05 for
 destructive testing or mark PR #2 ready based on mocked CI alone.
+[REVIEW-2026-10-15.md](REVIEW-2026-10-15.md) records the independent findings
+and regression evidence.
 
 ## Additional master-image maintenance and shutdown finalization
 
