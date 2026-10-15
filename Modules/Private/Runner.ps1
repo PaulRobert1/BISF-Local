@@ -11,6 +11,7 @@ function Get-BISFPlan {
         foreach ($id in 'WindowsTemp','CurrentUserTemp') {
             if ($Config.Cleanup.$id) { $steps.Add([pscustomobject]@{Id=$id;Description="Remove old temporary files: $id"}) }
         }
+        if ($Config.Cleanup.UserProfiles) { $steps.Add([pscustomobject]@{Id='UserProfiles';Description='Remove inactive non-system local Windows user profiles through CIM'}) }
         if ($Config.ConfigurationManager.PrepareIdentityReset) { $steps.Add([pscustomobject]@{Id='CMPrepare';Description='Stop CcmExec and remove SMS client identity'}) }
         if ($Config.Personalization.Enabled -or $Config.ConfigurationManager.PrepareIdentityReset -or $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
             $steps.Add([pscustomobject]@{Id='Lifecycle';Description='Record a preparation generation and optional startup task'})
@@ -35,6 +36,7 @@ function Invoke-BISFLocal {
     $logger=$null; $lock=$null; $state=$null; $previousCM=$null; $previousVDA=$null; $citrix=$null
     $exitCode=0; $errorMessage=$null; $applying=$false; $stateTouched=$false
     $completionTouched=$false; $journal=$null; $shutdownRequested=$false; $journalStatus=$null
+    $profilePlan=$null
     $currentStep='Preflight'
     try {
         $ScriptRoot=[IO.Path]::GetFullPath($ScriptRoot)
@@ -83,6 +85,18 @@ function Invoke-BISFLocal {
             }
             Write-BISFLog $logger $level CitrixWEM ("WEM=$($citrix.WEM.Version); hostState=$hostState; cache=$($citrix.WEM.CachePath); cacheStatus=$cacheStatus; $cacheFiles. $guidance")
         }
+        if ($Mode -ne 'Personalize' -and $config.Cleanup.UserProfiles) {
+            $currentStep='UserProfiles'
+            $profilePlan=Get-BISFUserProfilePlan $config.Cleanup.ExcludedProfileSIDs
+            $targets=@($profilePlan.Entries | Where-Object { $_.Status -eq 'Remove' })
+            $blocked=@($profilePlan.Entries | Where-Object { $_.Status -eq 'Blocked' })
+            Write-BISFLog $logger Info UserProfiles ("Profile scan: eligible={0}; blocked={1}; total={2}; root={3}" -f $targets.Count,$blocked.Count,$profilePlan.Entries.Count,$profilePlan.Root)
+            foreach ($item in $profilePlan.Entries) {
+                $level=if ($item.Status -eq 'Blocked') { 'Warning' } else { 'Info' }
+                Write-BISFLog $logger $level UserProfiles ("{0}: SID={1}; path={2}; reason={3}" -f $item.Status,$item.SID,$item.LocalPath,$item.Reason)
+            }
+            $currentStep='Preflight'
+        }
         if ($Mode -eq 'Personalize' -and -not $journalStatus.PersonalizationPending -and (Test-BISFCompletion $state $inventory.Identity)) {
             $results.Add([pscustomobject]@{Id='Personalize';Status='Skipped';Message='This clone already completed this preparation generation.'})
             Write-BISFLog $logger Info Personalize 'Skipped: already completed this generation.'
@@ -112,6 +126,9 @@ function Invoke-BISFLocal {
                 $results.Add([pscustomobject]@{Id='Apply';Status='Skipped';Message='An operation was declined; no changes applied.'})
                 Write-BISFLog $logger Warning Apply 'Skipped: one or more operations were declined.'
             } else {
+                if ($null -ne $profilePlan -and @($profilePlan.Entries | Where-Object { $_.Status -eq 'Blocked' }).Count -gt 0) {
+                    throw 'Refusing profile cleanup while non-exempt profiles are loaded or their lifecycle status is unknown. Log off all other users and retry.'
+                }
                 $applying=$true
                 if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during preflight.' }
                 $needsState=($Mode -eq 'Prepare' -and (@($plan | ForEach-Object { $_.Id }) -contains 'Lifecycle'))
@@ -142,6 +159,9 @@ function Invoke-BISFLocal {
                             $roots=Get-BISFTempRoots
                             $files=@(Get-BISFCleanupCandidates $roots.CurrentUserTemp $config.Cleanup.MinimumAgeDays $protected)
                             Remove-BISFTempFiles $files
+                        }
+                        'UserProfiles' {
+                            Invoke-BISFUserProfileCleanup $profilePlan $logger
                         }
                         'CMPrepare' { $previousCM=Invoke-BISFCMPrepare }
                         'Lifecycle' {
