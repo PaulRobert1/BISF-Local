@@ -33,6 +33,10 @@ A successful run of this package therefore covers only its explicitly selected a
 | DEP AlwaysOff and other boot configuration changes | Removed; preserve current settings |
 | VMware network tweaks | Excluded |
 | Temporary cleanup | Restricted age-based file cleanup with protected paths and link checks |
+| Windows component cleanup | Optional Microsoft-installed Servicing StartComponentCleanup task via ScheduledTasks cmdlets, waits for completion; no direct DISM.exe |
+| Recycle Bin cleanup | Optional current-user system drive Clear-RecycleBin |
+| Operator's active profile removal | Optional protected SYSTEM one-shot finalizer after normal user sign-out; irreversible cleanup only after profile unload |
+| Storage / session readiness | Optional minimum system-drive free-space and other loaded-profile preflight gates |
 | Inactive profile cleanup (Delprof2 upstream) | Optional, native Win32_UserProfile/Remove-CimInstance implementation; protects active/system/admin and explicitly excluded SIDs; no external executable |
 | SCCM preparation SMS certificates/SMSCFG.ini | Explicit opt-in via PowerShell/.NET, with service stop |
 | SCCM personalization WMIC TrustedRootKey deletion | Explicit opt-in via Get-CimInstance/Remove-CimInstance |
