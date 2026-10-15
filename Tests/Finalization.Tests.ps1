@@ -102,6 +102,27 @@ Describe 'SYSTEM finalizer operator profile safety rules' {
         $script:p.LocalPath=Join-Path $script:rootPath 'Other'
         { Test-BISFOperatorSealCandidate $script:state $script:c } | Should -Throw '*no longer matches*'
     }
+    It 'permits a normal RID >=1000 operator even when its profile directory is named Administrator' {
+        $adminNamed=Join-Path $script:rootPath 'Administrator'
+        New-Item -ItemType Directory -Path $adminNamed | Out-Null
+        $script:p.LocalPath=$adminNamed
+        $script:state.OperatorPath=$adminNamed
+        Test-BISFOperatorSealCandidate $script:state $script:c | Should -BeTrue
+    }
+    It 'refuses an operator whose profile becomes special or points at a template directory' {
+        $script:p.Special=$true
+        { Test-BISFOperatorSealCandidate $script:state $script:c } | Should -Throw '*special*'
+        $script:p.Special=$false
+        $template=Join-Path $script:rootPath 'Default'
+        New-Item -ItemType Directory -Path $template | Out-Null
+        $script:p.LocalPath=$template
+        $script:state.OperatorPath=$template
+        { Test-BISFOperatorSealCandidate $script:state $script:c } | Should -Throw '*template*'
+    }
+    It 'waits while an unloaded profile retains a nonzero reference count' {
+        $script:p.RefCount=1
+        Test-BISFOperatorSealCandidate $script:state $script:c | Should -BeFalse
+    }
     It 'fails on changed configuration or disabled finalization' {
         $script:state.ConfigHash='b'*64
         { Test-BISFOperatorSealCandidate $script:state $script:c } | Should -Throw '*Configuration changed*'
