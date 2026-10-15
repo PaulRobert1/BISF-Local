@@ -122,3 +122,20 @@ broker registration, ICA logon, WEM synchronization, activation and
 profile-container attachment as NotVerified until externally tested.
 GitHub CI invokes the verification with mocked service/CIM responses,
 not with a real Citrix session.
+
+## Log hygiene configuration checkboxes (2026-10-15)
+
+Added optional Windows Forms configuration editor Configure-BISF-LogCleanup.ps1,
+optional LogCleanup XML flags (both false by default), late-stage cleanup,
+and regression tests for preview isolation, fixed log scope, file matching,
+deferred finalization and fail-closed shutdown boundaries.
+
+Windows Server 2025 / Windows PowerShell 5.1 GitHub Actions Pester suite:
+232 passed, 0 failed, 0 skipped for commit
+81eef67be621a0d21ea267392b09c55d7dc07aac.
+Run: https://github.com/PaulRobert1/BISF-Local/actions/runs/38732870070
+
+The editor's source was syntax-checked, but the GUI has NOT been exercised
+interactively. Provider operations were mocked: no production logs were
+cleared, no administrator profile was removed, and no real SYSTEM
+sign-out/shutdown cycle was tested. Production readiness is NOT established.
