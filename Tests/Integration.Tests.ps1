@@ -88,6 +88,57 @@ Describe 'Full workflow safety and results' {
         ($script:trace -join ',') | Should -Be 'profiles'
         Should -Invoke Invoke-BISFUserProfileCleanup -Times 1
     }
+    It 'stages SYS operator profile cleanup without immediate shutdown or forced logoff' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{
+            Root='C:\Users'
+            CurrentSid='S-1-5-21-111-222-333-1001'
+            ExcludedSIDs=@()
+            Entries=@([pscustomobject]@{SID='S-1-5-21-111-222-333-1001';LocalPath='C:\Users\Operator';Status='Protected';Reason='Current user'})
+        } }
+        Mock Invoke-BISFUserProfileCleanup { $script:trace.Add('other-profiles') }
+        Mock Register-BISFOperatorSeal { $script:trace.Add('stage') }
+        Mock Stop-Computer { throw 'Must not shut down before administrator signs out' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 0
+        ($script:trace -join ',') | Should -Be 'other-profiles,stage'
+        $r.Results.Status | Should -Contain 'Staged'
+        Should -Invoke Stop-Computer -Times 0
+    }
+    It 'keeps operator finalizer and servicing read-only in Validate/WhatIf' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.BISF.Servicing.ComponentCleanup='true'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';CurrentSid='S-1-5-21-111-222-333-1001';ExcludedSIDs=@();Entries=@()} }
+        Mock Invoke-BISFComponentCleanup { throw 'Must not run servicing in previews' }
+        Mock Register-BISFOperatorSeal { throw 'Must not stage SYSTEM worker in previews' }
+        (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0
+        (Invoke-BISFLocal $cfg $root Prepare -WhatIf).ExitCode | Should -Be 0
+        Should -Invoke Invoke-BISFComponentCleanup -Times 0
+        Should -Invoke Register-BISFOperatorSeal -Times 0
+        $script:trace.Count | Should -Be 0
+    }
+    It 'stops later profile deletion if Windows servicing fails' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Servicing.ComponentCleanup='true'
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.Save($cfg)
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';CurrentSid='S-1-5-21-111-222-333-1001';ExcludedSIDs=@();Entries=@()} }
+        Mock Invoke-BISFComponentCleanup { throw 'servicing failure' }
+        Mock Invoke-BISFUserProfileCleanup { throw 'Should not delete profiles after servicing fails' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        Should -Invoke Invoke-BISFUserProfileCleanup -Times 0
+    }
     It 'preflight failure prevents every requested mutation' {
         Mock Test-BISFPreflight { throw 'missing prerequisite' }
         $r=Invoke-BISFLocal $cfg $root Prepare
