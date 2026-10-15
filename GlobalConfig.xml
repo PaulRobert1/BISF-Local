@@ -19,6 +19,12 @@
     <ComponentCleanup>false</ComponentCleanup>
     <TimeoutMinutes>75</TimeoutMinutes>
   </Servicing>
+  <!-- Optional final seal cleanup: Windows Event Logs (Application/System/Setup)
+       and BISF-generated diagnostic logs. Security audit and Citrix logs preserved. -->
+  <LogCleanup>
+    <WindowsEventLogs>false</WindowsEventLogs>
+    <BISFLogs>false</BISFLogs>
+  </LogCleanup>
   <ConfigurationManager>
     <PrepareIdentityReset>false</PrepareIdentityReset>
     <CloneTrustedRootKeyReset>false</CloneTrustedRootKeyReset>
