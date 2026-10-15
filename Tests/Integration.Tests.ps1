@@ -1,7 +1,7 @@
 BeforeAll {
     Set-StrictMode -Version Latest
     $root=Split-Path $PSScriptRoot -Parent
-    foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Citrix','Profiles','Maintenance','Finalization','Runner') { . "$root/Modules/Private/$n.ps1" }
+    foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Citrix','Profiles','Maintenance','LogCleanup','Finalization','Runner') { . "$root/Modules/Private/$n.ps1" }
     foreach ($n in 'Enter-BISFJournal','Clear-BISFJournal','Get-BISFJournalStatus') {
         if (-not (Get-Command $n -ErrorAction SilentlyContinue)) { Set-Item -Path ('Function:'+ $n) -Value {} }
     }
@@ -138,6 +138,57 @@ Describe 'Full workflow safety and results' {
         $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
         $r.ExitCode | Should -Be 2
         Should -Invoke Invoke-BISFUserProfileCleanup -Times 0
+    }
+    It 'previews log cleanup without deleting data in Validate and Prepare WhatIf' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.LogCleanup.WindowsEventLogs='true'
+        $xml.BISF.LogCleanup.BISFLogs='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Invoke-BISFLogCleanup { throw 'Log cleanup must never run in a preview' }
+        (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0
+        (Invoke-BISFLocal $cfg $root Prepare -WhatIf).ExitCode | Should -Be 0
+        Should -Invoke Invoke-BISFLogCleanup -Times 0
+        $script:trace.Count | Should -Be 0
+    }
+    It 'runs selected log cleanup immediately before normal master shutdown' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.LogCleanup.WindowsEventLogs='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Invoke-BISFLogCleanup { $script:trace.Add('log-clean') }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 0
+        ($script:trace -join ',') | Should -Be 'log-clean,shutdown'
+    }
+    It 'refuses shutdown if the final log cleanup operation fails' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.LogCleanup.WindowsEventLogs='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Invoke-BISFLogCleanup { throw 'Event Log provider failed' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $script:trace | Should -Not -Contain 'shutdown'
+    }
+    It 'defers the log purge to SYSTEM when operator profile finalization is enabled' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.LogCleanup.WindowsEventLogs='true'
+        $xml.BISF.LogCleanup.BISFLogs='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';CurrentSid='S-1-5-21-111-222-333-1001';ExcludedSIDs=@();Entries=@()} }
+        Mock Register-BISFOperatorSeal { $script:trace.Add('stage') }
+        Mock Invoke-BISFLogCleanup { throw 'Operator profile has not been removed yet' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 0
+        $script:trace | Should -Contain 'stage'
+        $r.Results.Status | Should -Contain 'Staged'
+        Should -Invoke Invoke-BISFLogCleanup -Times 0
+        Should -Invoke Stop-Computer -Times 0
     }
     It 'preflight failure prevents every requested mutation' {
         Mock Test-BISFPreflight { throw 'missing prerequisite' }
