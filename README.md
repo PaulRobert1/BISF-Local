@@ -83,6 +83,8 @@ invalid values and XML DTDs are rejected. Boolean values are XML booleans (`true
 | Logging.Path | `.\logs` | Script-relative or absolute log destination |
 | Cleanup.WindowsTemp | false | Delete old files under `%SystemRoot%\Temp` |
 | Cleanup.CurrentUserTemp | false | Delete old files under the executing user's LocalApplicationData\Temp; not every profile |
+| Cleanup.UserProfiles | false | **Opt-in** removal of unloaded, non-system Windows user profiles from master image via `Win32_UserProfile` and `Remove-CimInstance`; no age threshold |
+| Cleanup.ExcludedProfileSIDs | none | Optional `<ExcludedProfileSIDs><SID>...</SID></ExcludedProfileSIDs>`: protect domain/admin/service-account profile SIDs from cleanup |
 | Cleanup.MinimumAgeDays | 7 | Last-write age threshold, integer 1–3650 days |
 | ConfigurationManager.PrepareIdentityReset | false | Stop CcmExec; remove SMS store certificates and `%SystemRoot%\SMSCFG.ini`; leave client stopped |
 | ConfigurationManager.CloneTrustedRootKeyReset | false | Use CIM to delete TrustedRootKey instances during Personalize, then start CcmExec |
@@ -93,9 +95,11 @@ invalid values and XML DTDs are rejected. Boolean values are XML booleans (`true
 | Preflight.BlockPendingReboot | true | Pending reboot blocks Prepare and its Validate preflight; false permits continuing |
 | FinalAction | None | `Shutdown` requests shutdown after all selected Prepare operations succeed |
 
-The cleanup traversal excludes reparse points and protects the package, configuration,
-state, configured logs and the detected WEM cache when WEM checks are enabled. It rechecks candidates before deletion. It does not delete
-profiles, directories, event logs, update caches, or arbitrary user-supplied roots.
+The temporary-file cleanup excludes reparse points and protects the package, configuration,
+state, configured logs and the detected WEM cache when WEM checks are enabled. It rechecks
+candidates before deletion. Temporary-file cleanup never deletes profile directories or arbitrary
+roots. User-profile cleanup is a **separate, explicitly enabled** Windows profile-provider operation;
+it removes the registered profile and its local content and associated profile metadata.
 A file that changes, disappears, becomes inaccessible or becomes a link can fail the
 run; retry after resolving active writers. Run with the image quiescent: path checks
 are not a security sandbox against concurrent hostile filesystem changes.
@@ -105,6 +109,74 @@ store, machine-wide crypto folder or Entra join is reset. The installed Configur
 Manager service, certificate store and configured CIM class must be available.
 The certificate store may be empty, but must exist. Client version compatibility
 still requires an actual deployment test.
+
+## User profile cleanup before an MCS snapshot
+
+Citrix Profile Management 2507 documentation for **Provisioning Services** recommends
+removing non-essential, locally cached profiles before capturing the master vDisk,
+while retaining the currently logged-on local administrator. Applying the same
+local-cache hygiene to an MCS master is reasonable, but this is **not** a claim that
+Citrix prescribes this exact script for MCS:
+[Citrix Profile Management guidance](https://docs.citrix.com/en-us/profile-management/2507-ltsr/integrate/provisioning-services).
+
+Optional profile cleanup uses Windows' own Win32_UserProfile provider rather than
+raw recursive deletion of C:\Users or the upstream BIS-F's external Delprof2
+executable. The provider manages the registered Windows profile and settings:
+[Microsoft Win32_UserProfile](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ee886409(v=vs.85)),
+[Remove-CimInstance](https://learn.microsoft.com/en-us/powershell/module/cimcmdlets/remove-ciminstance?view=powershell-5.1).
+
+Set the following **only on a backed-up, quiescent master** with no other user
+sessions. The setting is optional in legacy XML and defaults to false:
+
+    <Cleanup>
+      <WindowsTemp>true</WindowsTemp>
+      <CurrentUserTemp>true</CurrentUserTemp>
+      <UserProfiles>true</UserProfiles>
+      <MinimumAgeDays>7</MinimumAgeDays>
+      <!-- Optional: known administrative/service profile SIDs to preserve. -->
+      <ExcludedProfileSIDs>
+        <SID>S-1-5-21-111-222-333-1001</SID>
+      </ExcludedProfileSIDs>
+    </Cleanup>
+
+The sample SID is illustrative; replace it with a real SID or omit
+ExcludedProfileSIDs entirely. Exclusions are never inferred from user display names.
+The seven-day MinimumAgeDays threshold applies **only to temporary files**;
+opted-in user-profile cleanup removes *all* eligible inactive profiles irrespective
+of last-use date.
+
+The safe selection rules are:
+- Use only locally registered Win32_UserProfile objects returned from the OS,
+  with valid domain/local user SIDs (S-1-5-21-...). No folder-tree search.
+- Protect system/special identities, current administrator SID, built-in/reserved
+  accounts (RID below 1000), template profile directories (Default/Public),
+  explicitly excluded SIDs, nonstandard identities and profiles outside the
+  configured Windows ProfilesDirectory.
+- Only consider a direct child of the configured local ProfilesDirectory whose
+  directory exists and has no reparse-point ancestor.
+- If another non-exempt profile is **loaded**, has active references or has
+  unknown lifecycle flags, **Prepare fails before image changes**. Log off that
+  user, stop only its legitimate workloads through normal maintenance procedures
+  and retry. The script never logs off users or forces profile deletion.
+- Enumerate candidate SIDs and paths with reasons in Validate and Prepare -WhatIf.
+  During Prepare, re-query each SID, re-check profile status/path and remove via
+  Remove-CimInstance -InputObject. Any failure stops the workflow.
+- Profile deletion is **irreversible** within the running master. Make a VM
+  snapshot or backup first; there is no rollback of prior successfully deleted
+  user profiles if a later operation fails.
+
+Run first:
+
+    .\Invoke-BISF.ps1 -Mode Validate
+    .\Invoke-BISF.ps1 -Mode Prepare -WhatIf
+
+Review the exact proposed SIDs and local paths in the resulting log. Profiles of
+other domain administrators may have normal S-1-5-21 SIDs with RIDs >= 1000:
+exclude their SIDs explicitly if those profiles must survive. Keep service
+accounts, installation accounts and any data stored solely in local user profiles
+backed up. This step does **not** delete profiles in FSLogix containers, Citrix
+Profile Management's network user store, or other remote stores; it targets the
+local cached Windows profile registered on the master only.
 
 ## Citrix VDA and WEM for MCS
 
