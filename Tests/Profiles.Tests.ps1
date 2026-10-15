@@ -88,7 +88,7 @@ Describe 'Citrix MCS user profile inventory and safe deletion' {
         $script:profiles=@(New-TestProfile $script:userSid $folder $true)
         $plan=Get-BISFUserProfilePlan
         $plan.Entries[0].Status | Should -Be 'Blocked'
-        Should -Invoke Remove-CimInstance -Times 0
+        Should -Invoke Remove-BISFCimUserProfile -Times 0
     }
     It 'blocks a profile with a nonzero reference count despite Loaded=false' {
         $folder=Join-Path $script:profileRoot 'session'
