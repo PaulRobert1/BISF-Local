@@ -1,0 +1,5 @@
+N
+
+
+Exit=0
+Declined Finalize with nonexistent config: no config/state access error, no logs/state changes.

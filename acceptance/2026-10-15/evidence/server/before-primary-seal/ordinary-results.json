@@ -1,0 +1,48 @@
+[
+    {
+        "Case":  "Prepare exit zero",
+        "Pass":  true
+    },
+    {
+        "Case":  "Profile BISFInactive",
+        "Pass":  true,
+        "Registered":  false,
+        "DirectoryExists":  false
+    },
+    {
+        "Case":  "Profile BISFExcluded",
+        "Pass":  true,
+        "Registered":  true,
+        "DirectoryExists":  true
+    },
+    {
+        "Case":  "Profile BISFDependency",
+        "Pass":  true,
+        "Registered":  true,
+        "DirectoryExists":  true
+    },
+    {
+        "Case":  "Temp C:\\Windows\\Temp\\BISF-old-fixture.txt",
+        "Pass":  true,
+        "Exists":  false
+    },
+    {
+        "Case":  "Temp C:\\Windows\\Temp\\BISF-new-fixture.txt",
+        "Pass":  true,
+        "Exists":  true
+    },
+    {
+        "Case":  "Temp C:\\Users\\BISFOP~1\\AppData\\Local\\Temp\\BISF-old-fixture.txt",
+        "Pass":  true,
+        "Exists":  false
+    },
+    {
+        "Case":  "Temp C:\\Users\\BISFOP~1\\AppData\\Local\\Temp\\BISF-new-fixture.txt",
+        "Pass":  true,
+        "Exists":  true
+    },
+    {
+        "Case":  "Unrelated file",
+        "Pass":  true
+    }
+]

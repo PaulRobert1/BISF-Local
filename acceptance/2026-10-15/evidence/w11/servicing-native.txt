@@ -1,0 +1,16 @@
+2026-10-15T16:02:11.2550430Z [Info] [Inventory] OS=Microsoft Windows 11 Pro; Build=26200; 
+Computer=BISF-W11-TEST; CcmExec=False; Mode=Prepare
+2026-10-15T16:02:11.3504772Z [Info] [Platform] Family=Windows 11 workstation; Release=Windows 11 
+25H2; Build=26200; RecognizedBuild=True; ScriptEligible=True. Windows 11 single-session VDA is 
+supported where Citrix product/edition requirements are met. Multi-session Windows 11 requires 
+Citrix DaaS.
+2026-10-15T16:02:11.4369249Z [Info] [Disk] System drive=C:; FreeGB=37.01; TotalGB=63.01; 
+RequiredFreeGB=0
+2026-10-15T16:02:12.5247677Z [Info] [Servicing] Starting: Run built-in Windows Servicing 
+component cleanup (no ResetBase)
+2026-10-15T16:02:15.5427240Z [Info] [Servicing] Starting built-in Microsoft Windows Servicing 
+StartComponentCleanup scheduled task.
+2026-10-15T16:08:34.2505655Z [Info] [Servicing] Built-in component cleanup completed successfully.
+2026-10-15T16:08:34.2566296Z [Info] [Servicing] Completed.
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=1, Failed=0
+BISF exit=0

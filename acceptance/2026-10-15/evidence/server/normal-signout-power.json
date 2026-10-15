@@ -1,0 +1,44 @@
+[
+  {
+    "utc": "2026-10-15T17:48:59.126266+00:00",
+    "vm": "vm-10021",
+    "uuid": "42278f25-213b-1b16-d672-3d986a65c65c",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T17:49:04.159473+00:00",
+    "vm": "vm-10021",
+    "uuid": "42278f25-213b-1b16-d672-3d986a65c65c",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T17:49:09.191538+00:00",
+    "vm": "vm-10021",
+    "uuid": "42278f25-213b-1b16-d672-3d986a65c65c",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T17:49:14.225881+00:00",
+    "vm": "vm-10021",
+    "uuid": "42278f25-213b-1b16-d672-3d986a65c65c",
+    "power": "poweredOn",
+    "tools": "guestToolsNotRunning"
+  },
+  {
+    "utc": "2026-10-15T17:49:19.256023+00:00",
+    "vm": "vm-10021",
+    "uuid": "42278f25-213b-1b16-d672-3d986a65c65c",
+    "power": "poweredOn",
+    "tools": "guestToolsNotRunning"
+  },
+  {
+    "utc": "2026-10-15T17:49:24.301756+00:00",
+    "vm": "vm-10021",
+    "uuid": "42278f25-213b-1b16-d672-3d986a65c65c",
+    "power": "poweredOff",
+    "tools": "guestToolsNotRunning"
+  }
+]

@@ -1,0 +1,13 @@
+{
+    "Product":  "FSLogix",
+    "Exit":  0,
+    "Version":  "3.26.826.17182",
+    "TimeUtc":  "2026-10-15T18:02:21.6053447Z"
+}
+
+Name     Status StartType
+----     ------ ---------
+frxccds Running Automatic
+frxsvc  Running Automatic
+
+

@@ -1,0 +1,16 @@
+
+
+Algorithm : SHA256
+Hash      : 6B084021132915686649260378953C7ED5ACC217F30368DE66C1857E0DE288DF
+Path      : C:\BISF\GlobalConfig.xml
+
+
+
+2026-10-15T15:41:42.0191640Z [Error] [Preflight] Required Citrix service missing or ambiguous: 
+BrokerAgent 
+BIS-F Local: Mode=Validate, ExitCode=1, Completed=0, Failed=1
+Shipped default Validate exit=1
+2026-10-15T15:41:42.9070827Z [Error] [Preflight] Required Citrix service missing or ambiguous: 
+BrokerAgent 
+BIS-F Local: Mode=Prepare, ExitCode=1, Completed=0, Failed=1
+Shipped default Prepare -WhatIf exit=1

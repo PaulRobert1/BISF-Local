@@ -1,0 +1,24 @@
+**********************
+Windows PowerShell transcript start
+Start time: 20261015153537
+Username: BISF-W11-TEST\Administrator
+RunAs User: BISF-W11-TEST\Administrator
+Configuration Name: 
+Machine: BISF-W11-TEST (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -Command $v=Get-Volume | Where-Object FileSystemLabel -eq 'BISFSEED' | Select-Object -First 1; & ($v.DriveLetter+':\bootstrap.ps1')
+Process ID: 8000
+PSVersion: 5.1.26100.6584
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.6584
+BuildVersion: 10.0.26100.6584
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is C:\BISF-Evidence\bootstrap.txt
+VMware Tools installation exit: 3010
+**********************
+Windows PowerShell transcript end
+End time: 20261015153919
+**********************

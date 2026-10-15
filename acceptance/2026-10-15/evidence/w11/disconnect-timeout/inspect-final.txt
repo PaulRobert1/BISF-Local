@@ -1,0 +1,75 @@
+ USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME
+ bisfoperator                              3  Disc            1  10/15/2026 4:01 PM
+[
+    {
+        "SID":  "S-1-5-21-1208933770-1335860016-3683188281-500",
+        "LocalPath":  "C:\\Users\\Administrator",
+        "Loaded":  true,
+        "Special":  false
+    },
+    {
+        "SID":  "S-1-5-21-1208933770-1335860016-3683188281-1004",
+        "LocalPath":  "C:\\Users\\BISFDependency",
+        "Loaded":  false,
+        "Special":  false
+    },
+    {
+        "SID":  "S-1-5-21-1208933770-1335860016-3683188281-1003",
+        "LocalPath":  "C:\\Users\\BISFExcluded",
+        "Loaded":  false,
+        "Special":  false
+    },
+    {
+        "SID":  "S-1-5-21-1208933770-1335860016-3683188281-1000",
+        "LocalPath":  "C:\\Users\\BISFOperator",
+        "Loaded":  true,
+        "Special":  false
+    },
+    {
+        "SID":  "S-1-5-20",
+        "LocalPath":  "C:\\WINDOWS\\ServiceProfiles\\NetworkService",
+        "Loaded":  true,
+        "Special":  true
+    },
+    {
+        "SID":  "S-1-5-19",
+        "LocalPath":  "C:\\WINDOWS\\ServiceProfiles\\LocalService",
+        "Loaded":  true,
+        "Special":  true
+    },
+    {
+        "SID":  "S-1-5-18",
+        "LocalPath":  "C:\\WINDOWS\\system32\\config\\systemprofile",
+        "Loaded":  true,
+        "Special":  true
+    }
+]
+{
+    "State":  "Ready",
+    "User":  "SYSTEM",
+    "RunLevel":  "Highest",
+    "Triggers":  1,
+    "Action":  "-NoProfile -NonInteractive -File \"C:\\BISF\\Invoke-BISF.ps1\" -Mode Finalize -ConfigPath \"C:\\BISF\\seal.xml\""
+}
+{
+    "LastRunTime":  "\/Date(1792080650000)\/",
+    "LastTaskResult":  2
+}
+{
+    "SchemaVersion":  1,
+    "Generation":  "44f2135a-5bbd-495d-bee9-c8d5d133ba7f",
+    "Status":  "Pending",
+    "ConfigHash":  "D93F0974138B528D3F970E11E02B677DF77C9A8BE28F12EE7002D8073646C140",
+    "Master":  {
+                   "Name":  "BISF-W11-TEST",
+                   "MachineGuid":  "f204e7a1-7ab8-4f2b-9192-5e147beb4ffe",
+                   "SmbiosUuid":  "DB012742-9A72-1C18-AF1A-947E82170327"
+               },
+    "OperatorSid":  "S-1-5-21-1208933770-1335860016-3683188281-1000",
+    "OperatorPath":  "C:\\Users\\BISFOperator",
+    "ProfilesRoot":  "C:\\Users",
+    "TimeoutMinutes":  2,
+    "StagedUtc":  "2026-10-15T16:10:49.7600333Z"
+}
+2026-10-15T16:10:58.5972268Z [Info] [Finalize] SYSTEM finalizer started; waiting for the administrator to sign out normally. No forced logoff will be used.
+2026-10-15T16:13:04.2925941Z [Error] [Finalize] Operator profile did not fully unload before timeout; shutdown is refused.

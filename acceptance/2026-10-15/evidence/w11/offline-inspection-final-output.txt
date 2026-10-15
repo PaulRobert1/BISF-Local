@@ -1,0 +1,19 @@
+
+Case                                             Exists Pass
+----                                             ------ ----
+Offline operator profile registration             False True
+Offline operator directory                        False True
+Offline seal task file and TaskCache Tree absent        True
+Offline state absent                                    True
+Offline BISF log fixture                          False True
+Offline preserve Citrix.log                             True
+Offline preserve WEM.log                                True
+Offline preserve FSLogix.log                            True
+Offline preserve unrelated.txt                          True
+Offline Application original record                     True
+Offline System original record                          True
+Offline Setup original record                           True
+Offline Security original record                        True
+
+
+Evidence: C:\BISF-Evidence\offline-w11-normal-signout-both-logs-3a2851dce6c54df499843942a5525705

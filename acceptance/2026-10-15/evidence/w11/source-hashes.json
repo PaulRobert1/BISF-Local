@@ -1,0 +1,178 @@
+[
+    {
+        "Path":  "C:\\BISF\\.gitignore",
+        "Hash":  "42447B04FC539BC10A02E3171CA36A732B0ED356950421266297F641799D3626"
+    },
+    {
+        "Path":  "C:\\BISF\\ACCEPTANCE-TESTING.md",
+        "Hash":  "32499B455BFB281D3E4E444B30A6AE13461E57937F463FE8444003D1E3EBC0CF"
+    },
+    {
+        "Path":  "C:\\BISF\\Configure-BISF-LogCleanup.ps1",
+        "Hash":  "546287773FA9BBF1B8A7E745DA23CA61C9F37C414A567D8E2900353354F49647"
+    },
+    {
+        "Path":  "C:\\BISF\\CONTINUE-HERE.txt",
+        "Hash":  "0084BE3666621E50AE69ECF43296084CAF89763EEC71404B7A8E826BA74E135C"
+    },
+    {
+        "Path":  "C:\\BISF\\GlobalConfig.xml",
+        "Hash":  "6B084021132915686649260378953C7ED5ACC217F30368DE66C1857E0DE288DF"
+    },
+    {
+        "Path":  "C:\\BISF\\GlobalConfig.xsd",
+        "Hash":  "D9CB30A9A088979B4206D5018D8AF094B0152668AB022002B74B8B154A108920"
+    },
+    {
+        "Path":  "C:\\BISF\\IMPLEMENTATION-NOTES.md",
+        "Hash":  "509BD40388F17511A8B9837D2C7AFD48CAD9056309B5D5AA935EDC7924E55BA2"
+    },
+    {
+        "Path":  "C:\\BISF\\Invoke-BISF.ps1",
+        "Hash":  "538F7B14485F41CB08C7815B1D6189F70DF60FF187EDD681CA75A67A648D4FA7"
+    },
+    {
+        "Path":  "C:\\BISF\\LICENSE",
+        "Hash":  "42289AFE97723DED3B5BA603DB0EBE16B8BFB33680F675D1565527C2273392F1"
+    },
+    {
+        "Path":  "C:\\BISF\\README.md",
+        "Hash":  "8370785A915CB091A8851DB7AB491C0BC02B5EC57FEBE8C71E1E83F5069C3C85"
+    },
+    {
+        "Path":  "C:\\BISF\\REVIEW-2026-10-15.md",
+        "Hash":  "FDCDAAA47A9DD96E1D2DE32AEFC401B30B1599E2D38AEBE72CB53C1145AC6202"
+    },
+    {
+        "Path":  "C:\\BISF\\TEST-RESULTS.md",
+        "Hash":  "558EBA313C379CE85EBBDF440FED9C48ACDD668501475258E260D6239BA89E41"
+    },
+    {
+        "Path":  "C:\\BISF\\UPSTREAM.md",
+        "Hash":  "8A9BC2169C0D3BF2933B91CB098B98D8821D8128E506B8F5CF8BEC9A01CFA761"
+    },
+    {
+        "Path":  "C:\\BISF\\WORK-HANDOFF.md",
+        "Hash":  "F40752F3CDDE79B42983BD0055A84BF8C68078456AAFC157745FA8CAB27E9150"
+    },
+    {
+        "Path":  "C:\\BISF\\.github\\workflows\\pester-windows-2025.yml",
+        "Hash":  "9E784B12B7C31EDC97B10BA88A71AF849FF52FF7542B67B465A0F8685127027C"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\BISF.Local.psm1",
+        "Hash":  "7658E5C6C0EB3FA1D56F5A62E73307832A4CA77EE45A0AC0152C525F9E09FF7D"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\Citrix.ps1",
+        "Hash":  "EA03A1A85557117D92B1E144D612AD11447B0B79D72BF49A0772AA09CA2A4DF7"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\CloneHealth.ps1",
+        "Hash":  "7B422C038923D61FD92D88C50D5F198E9DB6AC8998E7BE6D6A70B5418D495DBD"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\Configuration.ps1",
+        "Hash":  "EFFF26CA0CCFE7BAD768745315D509588F8E3CF2EF7F8C2B319C13D200A6688E"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\Finalization.ps1",
+        "Hash":  "D6A83AFCE1365BF64016F872F3CF02B84D2D6BFA06D042962D18D51E973FB631"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\Lifecycle.ps1",
+        "Hash":  "516922A53DE8D8B8B4ECB6A11E6750B3F6DDAA9213C8F1C36DB00DC56A4D7DC7"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\LogCleanup.ps1",
+        "Hash":  "9D4B7E2D0BC844C69397C71E2645CBB9DFCC22A37E755A36AFE999AC787911FB"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\Logging.ps1",
+        "Hash":  "4ECB383B9521869EF885B89DA4433A4BB31F7A357EB4D8522C9A631445F94AB3"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\Maintenance.ps1",
+        "Hash":  "69DD33181521C7913F0047A621596607AF33ECC674AA0B94295BA5A3AAA76A86"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\Operations.ps1",
+        "Hash":  "686B94E861BADF65EF95549459689792CA985156B1ED699EDBB7D1F2B0499EEC"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\Preflight.ps1",
+        "Hash":  "C254FD6E335E744B6E725C81EACF90F6269F90F0077E41741ED94D7F505BC758"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\Profiles.ps1",
+        "Hash":  "224CBCD3FE33EC12F5327F397618592CC59E79B0CD444D4312758073EAC83304"
+    },
+    {
+        "Path":  "C:\\BISF\\Modules\\Private\\Runner.ps1",
+        "Hash":  "17B36CB78235BEC7AD3FECD56415B9714C041BC1C6C306FEF6993C3E7056B220"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Citrix.Tests.ps1",
+        "Hash":  "C08860D2BF07F055BE85A5F5442FF79F3F3F1633318E55CA257738CD2A9D5714"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\CloneHealth.Tests.ps1",
+        "Hash":  "0F7A86EDA559E81C778E1A39C2706BD8B9C5EE41756F1815044637D62ABFFC6E"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Configuration.Tests.ps1",
+        "Hash":  "D43A270A94418F78437817894AE7389CE90BB0F7861411F96995C84706170851"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Finalization.Tests.ps1",
+        "Hash":  "152DDE2324874C4E981FD91AE8D217402D1D185E370FB6D8C92B7CC912460B22"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Integration.Tests.ps1",
+        "Hash":  "92A351984FE89595DF1A3EE76F7FF1FCB36911EBA130929B8B2D913F9A65FA63"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Invoke-Tests.ps1",
+        "Hash":  "18C535E5FAF9477D75E644B75A98AC2F86707CF5E126A2A557EF7694026F12CD"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Lifecycle.Tests.ps1",
+        "Hash":  "E86663014A2812839C7ECBEEF8D06ABB227AB6AFF6A1C39F413AB0027D489BB5"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\LogCleanup.Tests.ps1",
+        "Hash":  "79DAF92E44E175D7AF3579509D1DEBAACF7DE7B4C0459C9F068F961C4118C391"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\LogCleanupEditor.Tests.ps1",
+        "Hash":  "4253185D7D5D8B70E1F6650EA07F29F1D6FA736C6090435428CEE6A56A14EFDC"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Maintenance.Tests.ps1",
+        "Hash":  "686293699F2812A905614A46946054BEF8B586AB8E495318395BD85BA0231C94"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Module.Tests.ps1",
+        "Hash":  "64A408DC58678B3A5727313307D0E4EF16F331A268C82E2646733A9FBE47EBB9"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Operations.Tests.ps1",
+        "Hash":  "83B9AAA079A4BB8C8328CF7219A7C3D902593C7F4656D02A3C2D79D3DBFED7C6"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Preflight.Tests.ps1",
+        "Hash":  "C3C3D5D83A84434C942323CFF8A2A1911138F3212A6D8BF1AB2A84948052F5B6"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Profiles.Tests.ps1",
+        "Hash":  "9B7F3D0FE3EA90F2D052791D5886191A4B2EEEB6668D6EF6252346D743C70329"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\SourceAudit.ps1",
+        "Hash":  "5083858A0102E8C5E059DF2A51DE0B25AABC9C2D640C032E57AC19BF4715F488"
+    },
+    {
+        "Path":  "C:\\BISF\\Tests\\Static.Tests.ps1",
+        "Hash":  "27AF6813BD946AF8E94F07C19C0E6E2ACEBEEACCA4E95FECDF58A0CCECED5778"
+    }
+]

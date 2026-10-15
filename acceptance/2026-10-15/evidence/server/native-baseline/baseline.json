@@ -1,0 +1,178 @@
+{
+    "Computer":  "BISF-S25-TEST",
+    "OS":  {
+               "Caption":  "Microsoft Windows Server 2025 Standard Evaluation",
+               "Version":  "10.0.26100",
+               "BuildNumber":  "26100",
+               "OSArchitecture":  "64-bit"
+           },
+    "PowerShell":  "5.1.26100.7462",
+    "Is64Bit":  true,
+    "Profiles":  [
+                     {
+                         "SID":  "S-1-5-21-2179150373-3800760875-3562492511-500",
+                         "LocalPath":  "C:\\Users\\Administrator",
+                         "Loaded":  true,
+                         "Special":  false,
+                         "RefCount":  null
+                     },
+                     {
+                         "SID":  "S-1-5-20",
+                         "LocalPath":  "C:\\WINDOWS\\ServiceProfiles\\NetworkService",
+                         "Loaded":  true,
+                         "Special":  true,
+                         "RefCount":  null
+                     },
+                     {
+                         "SID":  "S-1-5-19",
+                         "LocalPath":  "C:\\WINDOWS\\ServiceProfiles\\LocalService",
+                         "Loaded":  true,
+                         "Special":  true,
+                         "RefCount":  null
+                     },
+                     {
+                         "SID":  "S-1-5-18",
+                         "LocalPath":  "C:\\WINDOWS\\system32\\config\\systemprofile",
+                         "Loaded":  true,
+                         "Special":  true,
+                         "RefCount":  1
+                     }
+                 ],
+    "Accounts":  [
+                     {
+                         "Name":  "Administrator",
+                         "SID":  {
+                                     "BinaryLength":  28,
+                                     "AccountDomainSid":  {
+                                                              "BinaryLength":  24,
+                                                              "AccountDomainSid":  {
+                                                                                       "BinaryLength":  24,
+                                                                                       "AccountDomainSid":  {
+                                                                                                                "BinaryLength":  24,
+                                                                                                                "AccountDomainSid":  "S-1-5-21-2179150373-3800760875-3562492511",
+                                                                                                                "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                                                                            },
+                                                                                       "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                                                   },
+                                                              "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                          },
+                                     "Value":  "S-1-5-21-2179150373-3800760875-3562492511-500"
+                                 },
+                         "Enabled":  true
+                     },
+                     {
+                         "Name":  "BISFOperator",
+                         "SID":  {
+                                     "BinaryLength":  28,
+                                     "AccountDomainSid":  {
+                                                              "BinaryLength":  24,
+                                                              "AccountDomainSid":  {
+                                                                                       "BinaryLength":  24,
+                                                                                       "AccountDomainSid":  {
+                                                                                                                "BinaryLength":  24,
+                                                                                                                "AccountDomainSid":  "S-1-5-21-2179150373-3800760875-3562492511",
+                                                                                                                "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                                                                            },
+                                                                                       "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                                                   },
+                                                              "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                          },
+                                     "Value":  "S-1-5-21-2179150373-3800760875-3562492511-1000"
+                                 },
+                         "Enabled":  true
+                     },
+                     {
+                         "Name":  "DefaultAccount",
+                         "SID":  {
+                                     "BinaryLength":  28,
+                                     "AccountDomainSid":  {
+                                                              "BinaryLength":  24,
+                                                              "AccountDomainSid":  {
+                                                                                       "BinaryLength":  24,
+                                                                                       "AccountDomainSid":  {
+                                                                                                                "BinaryLength":  24,
+                                                                                                                "AccountDomainSid":  "S-1-5-21-2179150373-3800760875-3562492511",
+                                                                                                                "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                                                                            },
+                                                                                       "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                                                   },
+                                                              "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                          },
+                                     "Value":  "S-1-5-21-2179150373-3800760875-3562492511-503"
+                                 },
+                         "Enabled":  false
+                     },
+                     {
+                         "Name":  "Guest",
+                         "SID":  {
+                                     "BinaryLength":  28,
+                                     "AccountDomainSid":  {
+                                                              "BinaryLength":  24,
+                                                              "AccountDomainSid":  {
+                                                                                       "BinaryLength":  24,
+                                                                                       "AccountDomainSid":  {
+                                                                                                                "BinaryLength":  24,
+                                                                                                                "AccountDomainSid":  "S-1-5-21-2179150373-3800760875-3562492511",
+                                                                                                                "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                                                                            },
+                                                                                       "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                                                   },
+                                                              "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                          },
+                                     "Value":  "S-1-5-21-2179150373-3800760875-3562492511-501"
+                                 },
+                         "Enabled":  false
+                     },
+                     {
+                         "Name":  "WDAGUtilityAccount",
+                         "SID":  {
+                                     "BinaryLength":  28,
+                                     "AccountDomainSid":  {
+                                                              "BinaryLength":  24,
+                                                              "AccountDomainSid":  {
+                                                                                       "BinaryLength":  24,
+                                                                                       "AccountDomainSid":  {
+                                                                                                                "BinaryLength":  24,
+                                                                                                                "AccountDomainSid":  "S-1-5-21-2179150373-3800760875-3562492511",
+                                                                                                                "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                                                                            },
+                                                                                       "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                                                   },
+                                                              "Value":  "S-1-5-21-2179150373-3800760875-3562492511"
+                                                          },
+                                     "Value":  "S-1-5-21-2179150373-3800760875-3562492511-504"
+                                 },
+                         "Enabled":  false
+                     }
+                 ],
+    "Policies":  [
+                     {
+                         "Scope":  4,
+                         "ExecutionPolicy":  5
+                     },
+                     {
+                         "Scope":  3,
+                         "ExecutionPolicy":  5
+                     },
+                     {
+                         "Scope":  0,
+                         "ExecutionPolicy":  5
+                     },
+                     {
+                         "Scope":  1,
+                         "ExecutionPolicy":  5
+                     },
+                     {
+                         "Scope":  2,
+                         "ExecutionPolicy":  1
+                     }
+                 ],
+    "Services":  [
+                     {
+                         "Name":  "VMTools",
+                         "Status":  4,
+                         "StartType":  2
+                     }
+                 ],
+    "PendingFileRename":  null
+}

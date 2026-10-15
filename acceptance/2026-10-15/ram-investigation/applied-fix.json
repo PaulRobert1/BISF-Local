@@ -1,0 +1,21 @@
+{
+  "time": "2026-10-15T15:24:44.562972+00:00",
+  "vm": "vm-10009",
+  "name": "OpenWebUI",
+  "before": {
+    "memoryMB": 40960,
+    "reservationMB": 40960,
+    "locked": true,
+    "cpu": 16,
+    "changeVersion": "2026-10-15T06:54:50.744136Z"
+  },
+  "after": {
+    "memoryMB": 34816,
+    "reservationMB": 34816,
+    "locked": true,
+    "cpu": 16,
+    "changeVersion": "2026-10-15T15:24:42.673546Z"
+  },
+  "reason": "Guest measured peak21.59GiB with existing30GiB service cap. Preserve~3.2GiB guest OS margin and free6GiB host admission for sequential4GiBWindows tests. No guest model cap/settings changes.",
+  "rollback": "While guest gracefully powered off, set memoryMB and reservationMB back40960; existing capacity admission remains marginal."
+}

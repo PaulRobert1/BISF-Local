@@ -1,0 +1,41 @@
+2026-10-15T17:40:01.3708290Z [Info] [Inventory] OS=Microsoft Windows Server 2025 Standard 
+Evaluation; Build=26100; Computer=BISF-S25-TEST; CcmExec=False; Mode=Validate
+2026-10-15T17:40:01.4776414Z [Info] [Platform] Family=Windows Server; Release=Windows Server 
+2025; Build=26100; RecognizedBuild=True; ScriptEligible=True. Supported BISF-Local platform; 
+check the installed Citrix VDA and image prerequisites before capture.
+Citrix VDA: 2012.0.0.28051, 7.28.0.6; MCS component: PvsVmAgent.
+2026-10-15T17:40:01.4834533Z [Info] [CitrixVDA] VDA=2012.0.0.28051, 7.28.0.6; MCS 
+component=PvsVmAgent; Desktop Service=Running, Auto
+2026-10-15T17:40:01.4915276Z [Warning] [CitrixWEM] WEM=2005.2.0.1; hostState=Running; 
+cache=C:\Program Files (x86)\Citrix\Workspace Environment Management Agent\Local Databases Set; 
+cacheStatus=DirectoryMissing; LocalAgentCache.db=False, LocalAgentDatabase.db=False. Cache 
+directory is absent. Verify the WEM agent has synchronized and check its 
+registration/connectivity on the master and a test clone. BIS-F does not create or refresh WEM 
+cache.
+2026-10-15T17:40:01.5662746Z [Info] [Disk] System drive=C:; FreeGB=45.68; TotalGB=62.96; 
+RequiredFreeGB=0
+2026-10-15T17:40:01.9203016Z [Info] [ProfileManager] Name=ctxProfile; State=Running; 
+StartMode=Auto
+2026-10-15T17:40:01.9223210Z [Info] [ProfileManager] Name=frxsvc; State=Running; StartMode=Auto
+2026-10-15T17:40:01.9243485Z [Info] [Validate] Validation completed. No image operations applied.
+BIS-F Local: Mode=Validate, ExitCode=0, Completed=0, Failed=0
+2026-10-15T17:40:02.8937662Z [Info] [Inventory] OS=Microsoft Windows Server 2025 Standard 
+Evaluation; Build=26100; Computer=BISF-S25-TEST; CcmExec=False; Mode=Prepare
+2026-10-15T17:40:02.8957861Z [Info] [Platform] Family=Windows Server; Release=Windows Server 
+2025; Build=26100; RecognizedBuild=True; ScriptEligible=True. Supported BISF-Local platform; 
+check the installed Citrix VDA and image prerequisites before capture.
+Citrix VDA: 2012.0.0.28051, 7.28.0.6; MCS component: PvsVmAgent.
+2026-10-15T17:40:02.8998240Z [Info] [CitrixVDA] VDA=2012.0.0.28051, 7.28.0.6; MCS 
+component=PvsVmAgent; Desktop Service=Running, Auto
+2026-10-15T17:40:02.9018410Z [Warning] [CitrixWEM] WEM=2005.2.0.1; hostState=Running; 
+cache=C:\Program Files (x86)\Citrix\Workspace Environment Management Agent\Local Databases Set; 
+cacheStatus=DirectoryMissing; LocalAgentCache.db=False, LocalAgentDatabase.db=False. Cache 
+directory is absent. Verify the WEM agent has synchronized and check its 
+registration/connectivity on the master and a test clone. BIS-F does not create or refresh WEM 
+cache.
+2026-10-15T17:40:02.9185687Z [Info] [Disk] System drive=C:; FreeGB=45.68; TotalGB=62.96; 
+RequiredFreeGB=0
+2026-10-15T17:40:03.2563045Z [Info] [ProfileManager] Name=ctxProfile; State=Running; 
+StartMode=Auto
+2026-10-15T17:40:03.2583280Z [Info] [ProfileManager] Name=frxsvc; State=Running; StartMode=Auto
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=0, Failed=0

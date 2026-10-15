@@ -1,0 +1,28 @@
+[
+    {
+        "Case":  "Shipped Validate",
+        "Pass":  true,
+        "Exit":  0
+    },
+    {
+        "Case":  "Shipped Prepare WhatIf",
+        "Pass":  true,
+        "Exit":  0
+    },
+    {
+        "Case":  "No change Profiles",
+        "Pass":  true
+    },
+    {
+        "Case":  "No change Tasks",
+        "Pass":  true
+    },
+    {
+        "Case":  "No change State",
+        "Pass":  true
+    },
+    {
+        "Case":  "No change Config",
+        "Pass":  true
+    }
+]

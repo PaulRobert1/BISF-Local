@@ -1,0 +1,57 @@
+2026-10-15T16:01:31.3270721Z [Info] [Inventory] OS=Microsoft Windows 11 Pro; Build=26200; 
+Computer=BISF-W11-TEST; CcmExec=False; Mode=Prepare
+2026-10-15T16:01:31.4522534Z [Info] [Platform] Family=Windows 11 workstation; Release=Windows 11 
+25H2; Build=26200; RecognizedBuild=True; ScriptEligible=True. Windows 11 single-session VDA is 
+supported where Citrix product/edition requirements are met. Multi-session Windows 11 requires 
+Citrix DaaS.
+2026-10-15T16:01:31.5222324Z [Info] [Disk] System drive=C:; FreeGB=37.04; TotalGB=63.01; 
+RequiredFreeGB=0
+2026-10-15T16:01:32.4527949Z [Info] [UserProfiles] Profile scan: eligible=1; blocked=0; total=8; 
+root=C:\Users
+2026-10-15T16:01:32.4568331Z [Info] [UserProfiles] Protected: 
+SID=S-1-5-21-1208933770-1335860016-3683188281-500; path=C:\Users\Administrator; reason=Built-in 
+or reserved account RID
+2026-10-15T16:01:32.4568331Z [Info] [UserProfiles] Protected: 
+SID=S-1-5-21-1208933770-1335860016-3683188281-1004; path=C:\Users\BISFDependency; reason=Explicit 
+SID exclusion
+2026-10-15T16:01:32.4588597Z [Info] [UserProfiles] Protected: 
+SID=S-1-5-21-1208933770-1335860016-3683188281-1003; path=C:\Users\BISFExcluded; reason=Explicit 
+SID exclusion
+2026-10-15T16:01:32.4608812Z [Info] [UserProfiles] Remove: 
+SID=S-1-5-21-1208933770-1335860016-3683188281-1002; path=C:\Users\BISFInactive; reason=Inactive, 
+registered, non-special user profile
+2026-10-15T16:01:32.4608812Z [Info] [UserProfiles] Protected: 
+SID=S-1-5-21-1208933770-1335860016-3683188281-1000; path=C:\Users\BISFOperator; reason=Current 
+administrator profile
+2026-10-15T16:01:32.4629072Z [Info] [UserProfiles] Protected: SID=S-1-5-20; 
+path=C:\WINDOWS\ServiceProfiles\NetworkService; reason=Special system profile
+2026-10-15T16:01:32.4649346Z [Info] [UserProfiles] Protected: SID=S-1-5-19; 
+path=C:\WINDOWS\ServiceProfiles\LocalService; reason=Special system profile
+2026-10-15T16:01:32.4649346Z [Info] [UserProfiles] Protected: SID=S-1-5-18; 
+path=C:\WINDOWS\system32\config\systemprofile; reason=Special system profile
+2026-10-15T16:01:32.7014615Z [Info] [WindowsTemp] Starting: Remove old temporary files: 
+WindowsTemp
+2026-10-15T16:01:32.8511259Z [Info] [WindowsTemp] Completed.
+2026-10-15T16:01:32.9138884Z [Info] [CurrentUserTemp] Starting: Remove old temporary files: 
+CurrentUserTemp
+2026-10-15T16:01:32.9401941Z [Info] [CurrentUserTemp] Completed.
+2026-10-15T16:01:32.9969088Z [Info] [UserProfiles] Starting: Remove inactive non-system local 
+Windows user profiles through CIM
+2026-10-15T16:01:34.9194743Z [Info] [UserProfiles] Removed profile 
+SID=S-1-5-21-1208933770-1335860016-3683188281-1002; path=C:\Users\BISFInactive
+2026-10-15T16:01:34.9518468Z [Info] [UserProfiles] Completed.
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=3, Failed=0
+
+Case                                                           Pass
+----                                                           ----
+Prepare exit zero                                              True
+Profile BISFInactive                                           True
+Profile BISFExcluded                                           True
+Profile BISFDependency                                         True
+Temp C:\Windows\Temp\BISF-old-fixture.txt                      True
+Temp C:\Windows\Temp\BISF-new-fixture.txt                      True
+Temp C:\Users\BISFOP~1\AppData\Local\Temp\BISF-old-fixture.txt True
+Temp C:\Users\BISFOP~1\AppData\Local\Temp\BISF-new-fixture.txt True
+Unrelated file                                                 True
+
+

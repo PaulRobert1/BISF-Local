@@ -1,0 +1,17 @@
+Thu Oct 15 03:26:28 PM UTC 2026
+{"status":"ok"}               total        used        free      shared  buff/cache   available
+Mem:     35715612672  1586487296 11283832832    20447232 23306932224 34129125376
+Swap:    21474828288           0 21474828288
+name, memory.total [MiB], memory.used [MiB]
+NVIDIA GeForce GTX 1080 Ti, 11264 MiB, 9397 MiB
+/srv/agent/models/Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf 22360456160 bytes
+Failed to connect to bus: No medium found
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.max 32212254720
+COMMAND           RSS
+llama-server    14517448
+dockerd         86628
+snapd           50816
+containerd      46568
+python          31068
+multipathd      27592
+unattended-upgr 23104

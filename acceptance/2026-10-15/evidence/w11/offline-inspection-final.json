@@ -1,0 +1,83 @@
+{
+    "CaseName":  "w11-normal-signout-both-logs",
+    "ExpectedCaseName":  "normal-signout-events-and-BISF-logs",
+    "Receiver":  "BISF-S25-TEST",
+    "DiskNumber":  1,
+    "ExpectedUniqueId":  "6000C2903B03E58D670313E1BF865826",
+    "ExpectedSerial":  "6000c2903b03e58d670313e1bf865826",
+    "ConfigHash":  "503BE11F04D890DD4EE5328712359EC71976D975160857ED5767C8641DB3B225",
+    "ReadOnly":  true,
+    "Cases":  [
+                  {
+                      "Case":  "Offline operator profile registration",
+                      "Exists":  false,
+                      "Pass":  true
+                  },
+                  {
+                      "Case":  "Offline operator directory",
+                      "Exists":  false,
+                      "Pass":  true
+                  },
+                  {
+                      "Case":  "Offline seal task file and TaskCache Tree absent",
+                      "FileExists":  false,
+                      "RegistryExists":  false,
+                      "Pass":  true,
+                      "Limit":  "Orphan TaskCache Tasks GUID entries not excluded without preseal GUID."
+                  },
+                  {
+                      "Case":  "Offline state absent",
+                      "Pass":  true
+                  },
+                  {
+                      "Case":  "Offline BISF log fixture",
+                      "Exists":  false,
+                      "Pass":  true
+                  },
+                  {
+                      "Case":  "Offline preserve Citrix.log",
+                      "Pass":  true,
+                      "Limit":  "Exact known fixture content only; not actual vendor-channel retention."
+                  },
+                  {
+                      "Case":  "Offline preserve WEM.log",
+                      "Pass":  true,
+                      "Limit":  "Exact known fixture content only; not actual vendor-channel retention."
+                  },
+                  {
+                      "Case":  "Offline preserve FSLogix.log",
+                      "Pass":  true,
+                      "Limit":  "Exact known fixture content only; not actual vendor-channel retention."
+                  },
+                  {
+                      "Case":  "Offline preserve unrelated.txt",
+                      "Pass":  true,
+                      "Limit":  "Exact known fixture content only; not actual vendor-channel retention."
+                  },
+                  {
+                      "Case":  "Offline Application original record",
+                      "Retained":  false,
+                      "Pass":  true,
+                      "EvtxReadable":  true
+                  },
+                  {
+                      "Case":  "Offline System original record",
+                      "Retained":  false,
+                      "Pass":  true,
+                      "EvtxReadable":  true
+                  },
+                  {
+                      "Case":  "Offline Setup original record",
+                      "Retained":  false,
+                      "Pass":  true,
+                      "EvtxReadable":  true
+                  },
+                  {
+                      "Case":  "Offline Security original record",
+                      "Retained":  true,
+                      "Pass":  true,
+                      "EvtxReadable":  true
+                  }
+              ],
+    "Scope":  "Offline COPY inspection; null Pass is NOT TESTED; no source VM boot."
+}

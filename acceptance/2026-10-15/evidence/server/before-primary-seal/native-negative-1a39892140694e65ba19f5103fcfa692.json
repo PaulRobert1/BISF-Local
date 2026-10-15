@@ -1,0 +1,42 @@
+{
+    "Computer":  "BISF-S25-TEST",
+    "Time":  "2026-10-15T17:43:49.4269761Z",
+    "Scope":  "Real provider guards; no destructive orchestration or mocks",
+    "Cases":  [
+                  {
+                      "Case":  "Unsafe actual NTFS ACL refuses untrusted write access",
+                      "Status":  "PASS",
+                      "Detail":  "Location is writable by untrusted principal S-1-1-0."
+                  },
+                  {
+                      "Case":  "Actual config junction refuses redirected protected path",
+                      "Status":  "PASS",
+                      "Detail":  "Refusing reparse point: C:\\BISF-Negative-1a39892140694e65ba19f5103fcfa692\\config-link"
+                  },
+                  {
+                      "Case":  "Conflicting real scheduled task refuses ownership",
+                      "Status":  "PASS",
+                      "Detail":  "Refusing to overwrite an unrelated BISF-Local-Personalize task."
+                  },
+                  {
+                      "Case":  "Real pending-reboot registry marker refuses Prepare platform gate",
+                      "Status":  "PASS",
+                      "Detail":  "A pending reboot blocks preparation. Reboot the master and retry."
+                  },
+                  {
+                      "Case":  "Runtime dependency protects real profile and leaves sibling eligible",
+                      "Status":  "PASS",
+                      "Detail":  "SID                                            LocalPath               Status    Reason           \r\n---                                            ---------               ------    ------           \r\nS-1-5-21-2179150373-3800760875-3562492511-1007 C:\\Users\\BISFDependency Protected Profile contai...\r\nS-1-5-21-2179150373-3800760875-3562492511-1005 C:\\Users\\BISFInactive   Remove    Inactive, regi..."
+                  },
+                  {
+                      "Case":  "Operator runtime dependency refuses finalization target selection",
+                      "Status":  "PASS",
+                      "Detail":  "The BISF package, config or log path is inside the operator profile scheduled for deletion."
+                  },
+                  {
+                      "Case":  "Original package bytes and profile registrations preserved",
+                      "Status":  "PASS",
+                      "Detail":  ""
+                  }
+              ]
+}

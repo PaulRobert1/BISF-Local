@@ -1,0 +1,1051 @@
+Logs before: False
+Testing with Desktop 5.1.26100.6584 on Microsoft Windows NT 10.0.26200.0. Windows operations are 
+mocked.
+Pester v5.7.1
+
+Starting discovery in 14 files.
+Discovery found 264 tests in 4.07s.
+Running tests.
+
+Running tests from 'Citrix.Tests.ps1'
+Describing Citrix XML and MCS validation
+  [+] enables VDA and WEM release checks in the supplied configuration
+ 2.3s (1.75s|551ms)
+  [+] keeps older configurations without Citrix disabled
+ 87ms (85ms|2ms)
+  [+] requires shutdown for an enabled stop option
+ 740ms (738ms|2ms)
+  [+] places optional VDA stop immediately before shutdown
+ 765ms (763ms|2ms)
+
+Describing Citrix prerequisite checks preserve installed configuration
+  [+] returns detected versions and a protected cache path without changing services
+ 3.64s (3.63s|4ms)
+  [+] requires the MCS Machine Identity component
+ 507ms (475ms|33ms)
+  [+] accepts an older installed release
+ 837ms (825ms|12ms)
+  [+] requires both WEM services and automatic SENS startup
+ 877ms (859ms|18ms)
+  [+] rejects a WEM host service running under another account
+ 207ms (201ms|6ms)
+  [+] accepts the legacy WEM host without a separate user logon service
+ 283ms (272ms|11ms)
+  [+] does not discover Citrix when both integrations are disabled
+ 1.28s (1.27s|16ms)
+  [+] does not impose master image checks during optional clone personalization
+ 81ms (77ms|4ms)
+
+Describing Citrix installed version evidence
+  [+] uses the binary marketing release if uninstall metadata is absent
+ 265ms (201ms|64ms)
+  [+] reports internal versions without guessing or blocking their release
+ 106ms (95ms|10ms)
+  [+] reports unknown version resources without blocking preparation
+ 154ms (152ms|2ms)
+  [+] requires the installed binary even when the product registration matches
+ 180ms (171ms|8ms)
+
+Describing WEM cache location handling
+  [+] preserves an explicitly configured alternate cache
+ 740ms (708ms|32ms)
+  [+] uses the WEM installation folder when no alternate cache is set
+ 192ms (187ms|6ms)
+  [+] refuses a missing registry configuration rather than silently choosing another 
+cache
+ 405ms (318ms|87ms)
+
+Describing WEM cache read-only status
+  [+] reports a missing cache directory without creating it
+ 37ms (15ms|22ms)
+  [+] does not treat an empty directory as an initialized cache
+ 17ms (15ms|2ms)
+  [+] reports either individual database file missing
+ 74ms (71ms|4ms)
+  [+] reports both file names as present without touching their contents
+ 40ms (38ms|1ms)
+
+Describing Citrix local path validation
+  [+] rejects a nonlocal or ambiguous cache path: \\server\cache
+ 19ms (13ms|6ms)
+  [+] rejects a nonlocal or ambiguous cache path: D:cache
+ 6ms (4ms|2ms)
+  [+] rejects a nonlocal or ambiguous cache path: cache
+ 6ms (4ms|2ms)
+  [+] rejects a nonlocal or ambiguous cache path: %UNKNOWN%\cache
+ 6ms (4ms|2ms)
+  [+] rejects a nonlocal or ambiguous cache path: D:\cache:stream
+ 9ms (7ms|2ms)
+
+Describing VDA service rollback
+  [+] never starts a previously stopped VDA during recovery
+ 25ms (21ms|4ms)
+
+Describing VDA bounded service-control operations
+  [+] issues nonblocking stop without force or another confirmation then waits at most 
+thirty seconds
+ 561ms (557ms|4ms)
+  [+] waits for pending stop before starting and bounding the recovery wait
+ 29ms (28ms|2ms)
+  [+] surfaces a stop timeout to the runner recovery path
+ 40ms (38ms|2ms)
+
+Describing Citrix version-independent inventory
+  [+] accepts installed version 7.15.0.1 without a release gate
+ 60ms (43ms|17ms)
+  [+] accepts installed version 1912.0.1 without a release gate
+ 32ms (26ms|6ms)
+  [+] accepts installed version 2402.0.1 without a release gate
+ 28ms (22ms|6ms)
+  [+] accepts installed version 2507.0.1 without a release gate
+ 28ms (24ms|4ms)
+  [+] accepts installed version 2607.0.1 without a release gate
+ 26ms (22ms|4ms)
+  [+] accepts installed version future-version without a release gate
+ 29ms (23ms|6ms)
+
+Running tests from 'CloneHealth.Tests.ps1'
+Describing Read-only MCS test clone verification report
+==== BISF-Local MCS clone health (READ ONLY) ====
+Computer=MCS-CLONE-001; OS=Microsoft Windows Server 2025 Standard; Build=26100; Release=Windows 
+Server 2025; PendingReboot=False
+Citrix DesktopService=Running; MachineIdentity=PvsVmAgent; VDA=2507
+WEM Host=Running; WEM cache=FilesPresent; Version=2507
+Profile manager: frxsvc = Running, Auto
+System drive=C:; FreeGB=24; TotalGB=100
+DomainJoined=True; Domain=example.test
+VDA registration: NOT VERIFIED locally; inspect Studio/Director/Monitor.
+ICA logon/HDX: NOT VERIFIED; launch a desktop or application on a disposable MCS clone.
+WEM registration/synchronization: NOT VERIFIED; inspect WEM console and applied settings.
+Windows licensing / FSLogix container attach: NOT VERIFIED by service status.
+No image preparation, cleanup, shutdown, task registration or file logging was executed.
+  [+] reports meaningful local service evidence without claiming VDA registered
+ 940ms (938ms|3ms)
+==== BISF-Local MCS clone health (READ ONLY) ====
+Computer=MCS-CLONE-001; OS=Microsoft Windows 11 Enterprise; Build=26100; Release=Windows 11 24H2; 
+PendingReboot=False
+Citrix DesktopService=Running; MachineIdentity=PvsVmAgent; VDA=2507
+WEM Host=Running; WEM cache=FilesPresent; Version=2507
+Profile manager: frxsvc = Running, Auto
+System drive=C:; FreeGB=24; TotalGB=100
+DomainJoined=True; Domain=example.test
+VDA registration: NOT VERIFIED locally; inspect Studio/Director/Monitor.
+ICA logon/HDX: NOT VERIFIED; launch a desktop or application on a disposable MCS clone.
+WEM registration/synchronization: NOT VERIFIED; inspect WEM console and applied settings.
+Windows licensing / FSLogix container attach: NOT VERIFIED by service status.
+No image preparation, cleanup, shutdown, task registration or file logging was executed.
+  [+] recognizes a Windows 11 client clone using ProductType not just build 26100
+ 100ms (99ms|1ms)
+==== BISF-Local MCS clone health (READ ONLY) ====
+Computer=MCS-CLONE-001; OS=Microsoft Windows Server 2025 Standard; Build=26100; Release=Windows 
+Server 2025; PendingReboot=False
+Citrix local readiness check failed: VDA services unavailable
+Profile manager: frxsvc = Running, Auto
+System drive=C:; FreeGB=24; TotalGB=100
+DomainJoined=True; Domain=example.test
+VDA registration: NOT VERIFIED locally; inspect Studio/Director/Monitor.
+ICA logon/HDX: NOT VERIFIED; launch a desktop or application on a disposable MCS clone.
+WEM registration/synchronization: NOT VERIFIED; inspect WEM console and applied settings.
+Windows licensing / FSLogix container attach: NOT VERIFIED by service status.
+No image preparation, cleanup, shutdown, task registration or file logging was executed.
+  [+] does not claim full Citrix health if the local VDA readiness query fails
+ 110ms (108ms|2ms)
+==== BISF-Local MCS clone health (READ ONLY) ====
+Computer=MCS-CLONE-001; OS=Microsoft Windows Server 2025 Standard; Build=26100; Release=Windows 
+Server 2025; PendingReboot=True
+Citrix DesktopService=Running; MachineIdentity=PvsVmAgent; VDA=2507
+WEM Host=Running; WEM cache=FilesPresent; Version=2507
+Profile manager: frxsvc = Running, Auto
+System drive=C:; FreeGB=24; TotalGB=100
+DomainJoined=True; Domain=example.test
+VDA registration: NOT VERIFIED locally; inspect Studio/Director/Monitor.
+ICA logon/HDX: NOT VERIFIED; launch a desktop or application on a disposable MCS clone.
+WEM registration/synchronization: NOT VERIFIED; inspect WEM console and applied settings.
+Windows licensing / FSLogix container attach: NOT VERIFIED by service status.
+No image preparation, cleanup, shutdown, task registration or file logging was executed.
+  [+] reports a pending reboot but never performs image modifications on the clone
+ 97ms (96ms|2ms)
+
+Running tests from 'Configuration.Tests.ps1'
+Describing Configuration and logging contract
+  [+] loads real booleans and resolves logs against the script root
+ 63ms (60ms|3ms)
+  [+] rejects malformed and unknown settings: unknown
+ 50ms (46ms|4ms)
+  [+] rejects malformed and unknown settings: duplicate
+ 26ms (24ms|2ms)
+  [+] rejects malformed and unknown settings: boolean
+ 17ms (15ms|2ms)
+  [+] rejects malformed and unknown settings: blank
+ 26ms (24ms|2ms)
+  [+] rejects malformed and unknown settings: enum
+ 16ms (14ms|2ms)
+  [+] rejects malformed and unknown settings: version
+ 17ms (15ms|2ms)
+  [+] defaults profile cleanup to disabled when an older XML omits it
+ 24ms (22ms|2ms)
+  [+] accepts explicit profile cleanup and protected SID list without affecting temp file 
+age
+ 55ms (54ms|1ms)
+  [+] rejects malformed SID exclusions in strict XML
+ 17ms (16ms|1ms)
+  [+] parses safe maintenance defaults without changing older XML compatibility
+ 22ms (21ms|1ms)
+  [+] accepts legacy XML with optional maintenance sections absent and defaults to 
+non-destructive
+ 33ms (32ms|1ms)
+  [+] defaults log cleanup switches to false and accepts existing XML without LogCleanup
+ 20ms (19ms|1ms)
+  [+] accepts explicit Windows log and BISF-only log deletion switches
+ 15ms (14ms|1ms)
+  [+] rejects DTD entities
+ 22ms (21ms|1ms)
+2026-10-15T15:48:53.0447917Z [Error] [Test] failure
+  [+] does not create anything when logging is disabled even for errors
+ 28ms (27ms|1ms)
+2026-10-15T15:48:53.0791830Z [Info] [Test] Completed cafÃ©
+  [+] creates distinct UTF8 logs in the requested folder
+ 40ms (38ms|1ms)
+  [+] fails without fallback when the requested folder is a file
+ 15ms (13ms|1ms)
+2026-10-15T15:48:53.1317519Z [Error] [Test] failed
+  [+] propagates a failed log write
+ 16ms (14ms|2ms)
+
+Running tests from 'Finalization.Tests.ps1'
+Describing Two-phase operator seal configuration and trust boundaries
+  [+] requires opt-in profile cleanup
+ 19ms (16ms|3ms)
+  [+] never replaces the approved config hash with an edit made before state staging
+ 49ms (48ms|1ms)
+  [+] requires an actual final shutdown, not an unattended profile deletion
+ 11ms (10ms|1ms)
+  [+] refuses clone-personalization and Configuration Manager identity changes
+ 17ms (16ms|1ms)
+  [+] refuses premature VDA stopping and bypassed pending-reboot safeguards
+ 17ms (16ms|1ms)
+  [+] uses a fixed quoted PowerShell action with no execution policy bypass
+ 19ms (17ms|1ms)
+  [+] refuses to overwrite an existing reserved task without trusting its owner
+ 240ms (239ms|1ms)
+  [+] refuses built-in administrator RID 500 even when that account is running Prepare
+ 51ms (50ms|1ms)
+  [+] refuses to stage if the current profile has an explicit SID exclusion
+ 34ms (33ms|1ms)
+  [+] refuses an operator profile containing the detected WEM cache
+ 121ms (119ms|2ms)
+
+Describing Task Scheduler inventory error semantics
+  [+] fails closed when Task Scheduler cannot enumerate tasks
+ 23ms (19ms|4ms)
+
+Describing Operator staging prerequisites before any preparation
+  [+] checks the Modules trust boundary before preparation
+ 236ms (232ms|5ms)
+  [+] checks the GlobalConfig.xsd trust boundary before preparation
+ 158ms (156ms|2ms)
+  [+] refuses retained operator state during preflight rather than after ordinary cleanup
+ 240ms (238ms|1ms)
+
+Describing SYSTEM finalizer operator profile safety rules
+  [+] never permits finalization from an interactive administrator account
+ 64ms (60ms|4ms)
+  [+] waits instead of deleting while any non-system profile is loaded
+ 205ms (204ms|1ms)
+  [+] refuses finalization on a provisioned clone with a changed machine identity
+ 51ms (50ms|1ms)
+  [+] accepts only an eligible unloaded profile at the original path
+ 152ms (151ms|1ms)
+  [+] permits a normal RID >=1000 operator even when its profile directory is named 
+Administrator
+ 85ms (83ms|1ms)
+  [+] refuses an operator whose profile becomes special or points at a template directory
+ 103ms (101ms|2ms)
+  [+] waits while an unloaded profile retains a nonzero reference count
+ 71ms (70ms|1ms)
+  [+] fails on changed configuration or disabled finalization
+ 65ms (64ms|1ms)
+
+Describing Finalization shutdown boundary
+  [+] deletes the verified profile and cleans task/state BEFORE accepting shutdown
+ 453ms (449ms|4ms)
+  [+] previews Finalize without reading staged state or applying any mutation
+ 131ms (129ms|2ms)
+  [+] performs explicitly enabled log cleanup after profile deletion and before shutdown
+ 227ms (226ms|1ms)
+  [+] refuses shutdown if log cleanup fails after an operator profile was removed
+ 230ms (228ms|2ms)
+  [+] refuses shutdown when profile provider fails to delete
+ 163ms (161ms|1ms)
+  [+] revalidates the actual deletion object when SID changes after the candidate check
+ 149ms (148ms|2ms)
+  [+] revalidates the actual deletion object when LocalPath changes after the candidate 
+check
+ 142ms (140ms|2ms)
+  [+] revalidates the actual deletion object when Loaded changes after the candidate 
+check
+ 161ms (157ms|4ms)
+  [+] revalidates the actual deletion object when Special changes after the candidate 
+check
+ 147ms (140ms|7ms)
+  [+] revalidates the actual deletion object when RefCount changes after the candidate 
+check
+ 162ms (158ms|4ms)
+  [+] refuses shutdown when preparation is incomplete
+ 134ms (132ms|1ms)
+  [+] refuses shutdown if servicing leaves a pending reboot
+ 141ms (139ms|1ms)
+  [+] refuses shutdown when scheduled task deregistration fails
+ 170ms (169ms|1ms)
+
+Running tests from 'Integration.Tests.ps1'
+Describing Full workflow safety and results
+2026-10-15T15:48:58.5658883Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Validate
+2026-10-15T15:48:58.5658883Z [Info] [Validate] Validation completed. No image operations applied.
+BIS-F Local: Mode=Validate, ExitCode=0, Completed=0, Failed=0
+  [+] validates without image mutations or log creation when disabled
+ 192ms (189ms|3ms)
+2026-10-15T15:48:58.7682047Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:48:58.7762861Z [Info] [CMPrepare] Preview: Stop CcmExec and remove SMS client 
+identity
+2026-10-15T15:48:58.7783098Z [Info] [Lifecycle] Preview: Record a preparation generation and 
+optional startup task
+2026-10-15T15:48:58.7783098Z [Info] [Shutdown] Preview: Request computer shutdown
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=0, Failed=0
+  [+] previews selected operations without mutations
+ 204ms (202ms|1ms)
+2026-10-15T15:48:59.0473883Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Validate
+2026-10-15T15:48:59.0858191Z [Info] [UserProfiles] Profile scan: eligible=1; blocked=0; total=1; 
+root=C:\Users
+2026-10-15T15:48:59.0898682Z [Info] [UserProfiles] Remove: SID=S-1-5-21-111-222-333-1001; 
+path=C:\Users\test; reason=Inactive
+2026-10-15T15:48:59.0898682Z [Info] [UserProfiles] Validated plan: Remove inactive non-system 
+local Windows user profiles through CIM
+2026-10-15T15:48:59.0918921Z [Info] [Validate] Validation completed. No image operations applied.
+BIS-F Local: Mode=Validate, ExitCode=0, Completed=0, Failed=0
+2026-10-15T15:48:59.1161639Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:48:59.1222359Z [Info] [UserProfiles] Profile scan: eligible=1; blocked=0; total=1; 
+root=C:\Users
+2026-10-15T15:48:59.1222359Z [Info] [UserProfiles] Remove: SID=S-1-5-21-111-222-333-1001; 
+path=C:\Users\test; reason=Inactive
+2026-10-15T15:48:59.1242588Z [Info] [UserProfiles] Preview: Remove inactive non-system local 
+Windows user profiles through CIM
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=0, Failed=0
+  [+] shows eligible user profiles in Validate and WhatIf without deleting anything
+ 311ms (309ms|2ms)
+2026-10-15T15:48:59.4600980Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:48:59.4702168Z [Info] [UserProfiles] Profile scan: eligible=0; blocked=1; total=1; 
+root=C:\Users
+2026-10-15T15:48:59.4722411Z [Warning] [UserProfiles] Blocked: SID=S-1-5-21-111-222-333-1001; 
+path=C:\Users\test; reason=Profile still loaded
+2026-10-15T15:48:59.4803415Z [Error] [Preflight] Refusing profile cleanup while non-exempt 
+profiles are loaded or their lifecycle status is unknown. Log off all other users and retry.
+BIS-F Local: Mode=Prepare, ExitCode=1, Completed=0, Failed=1
+  [+] refuses destructive preparation if a non-admin profile is still loaded
+ 334ms (321ms|13ms)
+2026-10-15T15:48:59.6886920Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:48:59.6967645Z [Info] [UserProfiles] Profile scan: eligible=1; blocked=0; total=1; 
+root=C:\Users
+2026-10-15T15:48:59.6987888Z [Info] [UserProfiles] Remove: SID=S-1-5-21-111-222-333-1001; 
+path=C:\Users\test; reason=Inactive
+2026-10-15T15:48:59.7331798Z [Info] [UserProfiles] Starting: Remove inactive non-system local 
+Windows user profiles through CIM
+2026-10-15T15:48:59.7453083Z [Info] [UserProfiles] Completed.
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=1, Failed=0
+  [+] invokes native profile cleanup only during applying Prepare
+ 374ms (373ms|1ms)
+2026-10-15T15:49:00.0830730Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:00.0992566Z [Info] [OperatorFinalize] Operator SID=S-1-5-21-111-222-333-1001; 
+local profile=C:\Users\Operator; planned SYSTEM deletion only after normal sign-out.
+2026-10-15T15:49:00.1053304Z [Info] [UserProfiles] Profile scan: eligible=0; blocked=0; total=1; 
+root=C:\Users
+2026-10-15T15:49:00.1073547Z [Info] [UserProfiles] Protected: SID=S-1-5-21-111-222-333-1001; 
+path=C:\Users\Operator; reason=Current user
+2026-10-15T15:49:00.1275860Z [Info] [UserProfiles] Starting: Remove inactive non-system local 
+Windows user profiles through CIM
+2026-10-15T15:49:00.1336529Z [Info] [UserProfiles] Completed.
+2026-10-15T15:49:00.1457822Z [Info] [OperatorFinalize] Starting one-shot protected SYSTEM task. 
+Sign out normally. If the user profile stays loaded or cleanup fails, the image will NOT shut 
+down.
+BIS-F Local: SYSTEM finalizer staged. Sign out (do not disconnect) after reviewing the result. No 
+automatic logoff will be performed.
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=1, Failed=0
+  [+] stages SYS operator profile cleanup without immediate shutdown or forced logoff
+ 277ms (275ms|1ms)
+2026-10-15T15:49:00.3561789Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Validate
+2026-10-15T15:49:00.3642813Z [Info] [OperatorFinalize] Operator SID=S-1-5-21-111-222-333-1001; 
+local profile=C:\Users\Operator; planned SYSTEM deletion only after normal sign-out.
+2026-10-15T15:49:00.3703529Z [Info] [UserProfiles] Profile scan: eligible=0; blocked=0; total=0; 
+root=C:\Users
+2026-10-15T15:49:00.3703529Z [Info] [Servicing] Validated plan: Run built-in Windows Servicing 
+component cleanup (no ResetBase)
+2026-10-15T15:49:00.3723714Z [Info] [UserProfiles] Validated plan: Remove inactive non-system 
+local Windows user profiles through CIM
+2026-10-15T15:49:00.3723714Z [Info] [OperatorFinalize] Validated plan: Stage SYSTEM profile 
+cleanup, then require normal operator sign-out before shutdown
+2026-10-15T15:49:00.3743975Z [Info] [Validate] Validation completed. No image operations applied.
+BIS-F Local: Mode=Validate, ExitCode=0, Completed=0, Failed=0
+2026-10-15T15:49:00.4067584Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:00.4108067Z [Info] [OperatorFinalize] Operator SID=S-1-5-21-111-222-333-1001; 
+local profile=C:\Users\Operator; planned SYSTEM deletion only after normal sign-out.
+2026-10-15T15:49:00.4148559Z [Info] [UserProfiles] Profile scan: eligible=0; blocked=0; total=0; 
+root=C:\Users
+2026-10-15T15:49:00.4168769Z [Info] [Servicing] Preview: Run built-in Windows Servicing component 
+cleanup (no ResetBase)
+2026-10-15T15:49:00.4189020Z [Info] [UserProfiles] Preview: Remove inactive non-system local 
+Windows user profiles through CIM
+2026-10-15T15:49:00.4189020Z [Info] [OperatorFinalize] Preview: Stage SYSTEM profile cleanup, 
+then require normal operator sign-out before shutdown
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=0, Failed=0
+  [+] keeps operator finalizer and servicing read-only in Validate/WhatIf
+ 232ms (231ms|1ms)
+2026-10-15T15:49:00.5979603Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:00.6040380Z [Info] [UserProfiles] Profile scan: eligible=0; blocked=0; total=0; 
+root=C:\Users
+2026-10-15T15:49:00.6242654Z [Info] [Servicing] Starting: Run built-in Windows Servicing 
+component cleanup (no ResetBase)
+2026-10-15T15:49:00.6445057Z [Error] [Servicing] servicing failure
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=0, Failed=1
+  [+] stops later profile deletion if Windows servicing fails
+ 200ms (198ms|1ms)
+2026-10-15T15:49:00.8103363Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Validate
+2026-10-15T15:49:00.8103363Z [Info] [LogCleanup] Validated plan: Clear opted-in Windows Event 
+Logs and/or BISF diagnostic logs at final shutdown
+2026-10-15T15:49:00.8123596Z [Info] [Shutdown] Validated plan: Request computer shutdown
+2026-10-15T15:49:00.8123596Z [Info] [Validate] Validation completed. No image operations applied.
+BIS-F Local: Mode=Validate, ExitCode=0, Completed=0, Failed=0
+2026-10-15T15:49:00.8325971Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:00.8346217Z [Info] [LogCleanup] Preview: Clear opted-in Windows Event Logs 
+and/or BISF diagnostic logs at final shutdown
+2026-10-15T15:49:00.8366467Z [Info] [Shutdown] Preview: Request computer shutdown
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=0, Failed=0
+  [+] previews log cleanup without deleting data in Validate and Prepare WhatIf
+ 180ms (178ms|1ms)
+2026-10-15T15:49:01.0044558Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:01.0368032Z [Info] [Shutdown] Requesting shutdown. No further log writes follow 
+an accepted request.
+2026-10-15T15:49:01.0368032Z [Info] [LogCleanup] Final-stage log hygiene requested. Security 
+audit log and Citrix/WEM logs are not touched.
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=2, Failed=0
+  [+] runs selected log cleanup immediately before normal master shutdown
+ 194ms (192ms|1ms)
+2026-10-15T15:49:01.1936232Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:01.2178778Z [Info] [Shutdown] Requesting shutdown. No further log writes follow 
+an accepted request.
+2026-10-15T15:49:01.2178778Z [Info] [LogCleanup] Final-stage log hygiene requested. Security 
+audit log and Citrix/WEM logs are not touched.
+2026-10-15T15:49:01.2279858Z [Error] [LogCleanup] Event Log provider failed
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=0, Failed=1
+  [+] refuses shutdown if the final log cleanup operation fails
+ 163ms (162ms|1ms)
+2026-10-15T15:49:01.4120658Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:01.4181376Z [Info] [OperatorFinalize] Operator SID=S-1-5-21-111-222-333-1001; 
+local profile=C:\Users\Operator; planned SYSTEM deletion only after normal sign-out.
+2026-10-15T15:49:01.4242043Z [Info] [UserProfiles] Profile scan: eligible=0; blocked=0; total=0; 
+root=C:\Users
+2026-10-15T15:49:01.4444249Z [Info] [UserProfiles] Starting: Remove inactive non-system local 
+Windows user profiles through CIM
+2026-10-15T15:49:01.4484684Z [Info] [UserProfiles] Completed.
+2026-10-15T15:49:01.4605995Z [Info] [OperatorFinalize] Starting one-shot protected SYSTEM task. 
+Sign out normally. If the user profile stays loaded or cleanup fails, the image will NOT shut 
+down.
+BIS-F Local: SYSTEM finalizer staged. Sign out (do not disconnect) after reviewing the result. No 
+automatic logoff will be performed.
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=1, Failed=0
+  [+] defers the log purge to SYSTEM when operator profile finalization is enabled
+ 224ms (223ms|1ms)
+2026-10-15T15:49:01.6123036Z [Error] [Preflight] missing prerequisite
+BIS-F Local: Mode=Prepare, ExitCode=1, Completed=0, Failed=1
+  [+] preflight failure prevents every requested mutation
+ 127ms (125ms|1ms)
+2026-10-15T15:49:01.7741772Z [Error] [Preflight] Configuration changed while reading settings. 
+Retry with a stable configuration.
+BIS-F Local: Mode=Prepare, ExitCode=1, Completed=0, Failed=1
+  [+] rejects a configuration replaced while its settings are being read
+ 150ms (148ms|1ms)
+2026-10-15T15:49:01.9319930Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:01.9663670Z [Info] [Servicing] Starting: Run built-in Windows Servicing 
+component cleanup (no ResetBase)
+2026-10-15T15:49:02.0310508Z [Info] [Servicing] Completed.
+2026-10-15T15:49:02.0977803Z [Error] [Finalize] Configuration changed before final sealing.
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=1, Failed=1
+  [+] refuses shutdown when configuration changes during servicing
+ 321ms (320ms|1ms)
+2026-10-15T15:49:02.2817743Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:02.2878469Z [Info] [OperatorFinalize] Operator SID=S-1-5-21-111-222-333-1001; 
+local profile=C:\Users\Operator; planned SYSTEM deletion only after normal sign-out.
+2026-10-15T15:49:02.2939200Z [Info] [UserProfiles] Profile scan: eligible=0; blocked=0; total=0; 
+root=C:\Users
+2026-10-15T15:49:02.3141411Z [Info] [Servicing] Starting: Run built-in Windows Servicing 
+component cleanup (no ResetBase)
+2026-10-15T15:49:02.3222364Z [Info] [Servicing] Completed.
+2026-10-15T15:49:02.3424762Z [Error] [UserProfiles] Configuration changed during image operations.
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=1, Failed=1
+  [+] never stages newly enabled log cleanup that was absent from the confirmed operator 
+plan
+ 220ms (219ms|1ms)
+2026-10-15T15:49:02.5002532Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Validate
+2026-10-15T15:49:02.5022781Z [Info] [CitrixWEM] WEM=2507; hostState=Unknown; 
+cache=C:\Users\Administrator\AppData\Local\Temp\e1fcbfe3-8f21-4f9a-9869-2863b9eade28/WEM; 
+cacheStatus=Unknown; Unknown. Cache file existence does not verify WEM synchronization. WEM may 
+purge inherited databases on an MCS clone and rebuild its cache.
+2026-10-15T15:49:02.5083436Z [Info] [UserProfiles] Profile scan: eligible=0; blocked=0; total=0; 
+root=C:\Users
+2026-10-15T15:49:02.5103698Z [Info] [UserProfiles] Validated plan: Remove inactive non-system 
+local Windows user profiles through CIM
+2026-10-15T15:49:02.5103698Z [Info] [Validate] Validation completed. No image operations applied.
+BIS-F Local: Mode=Validate, ExitCode=0, Completed=0, Failed=0
+  [+] protects package, config, state, logging and WEM dependencies during profile 
+planning
+ 161ms (159ms|2ms)
+2026-10-15T15:49:02.6823277Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:02.6964963Z [Error] [Preflight] Other loaded or referenced local user profiles 
+appeared; preparation and shutdown are refused.
+BIS-F Local: Mode=Prepare, ExitCode=1, Completed=0, Failed=1
+  [+] cancels if another profile became busy after preflight and before applying
+ 148ms (146ms|1ms)
+2026-10-15T15:49:02.8441746Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:02.8886595Z [Info] [Servicing] Starting: Run built-in Windows Servicing 
+component cleanup (no ResetBase)
+2026-10-15T15:49:02.9268016Z [Info] [Servicing] Completed.
+2026-10-15T15:49:02.9530878Z [Error] [Finalize] Other loaded or referenced local user profiles 
+appeared; preparation and shutdown are refused.
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=1, Failed=1
+  [+] blocks final shutdown when another user logs on during component cleanup
+ 258ms (257ms|1ms)
+2026-10-15T15:49:03.1189419Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:03.1735628Z [Info] [CMPrepare] Starting: Stop CcmExec and remove SMS client 
+identity
+2026-10-15T15:49:03.1917683Z [Error] [CMPrepare] reset failure
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=0, Failed=1
+  [+] stops after failed preparation without successful state or shutdown
+ 208ms (206ms|1ms)
+2026-10-15T15:49:03.3374363Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:03.3657509Z [Info] [CMPrepare] Starting: Stop CcmExec and remove SMS client 
+identity
+2026-10-15T15:49:03.3698011Z [Info] [CMPrepare] Completed.
+2026-10-15T15:49:03.3778988Z [Info] [Lifecycle] Starting: Record a preparation generation and 
+optional startup task
+2026-10-15T15:49:03.3799083Z [Info] [Lifecycle] Ready for state commit.
+2026-10-15T15:49:03.3940788Z [Info] [Shutdown] Requesting shutdown. No further log writes follow 
+an accepted request.
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=3, Failed=0
+  [+] commits a successful generation before requesting shutdown
+ 203ms (201ms|1ms)
+2026-10-15T15:49:03.5539133Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:03.5903061Z [Info] [CMPrepare] Starting: Stop CcmExec and remove SMS client 
+identity
+2026-10-15T15:49:03.5943813Z [Info] [CMPrepare] Completed.
+2026-10-15T15:49:03.6024757Z [Info] [Lifecycle] Starting: Record a preparation generation and 
+optional startup task
+2026-10-15T15:49:03.6024757Z [Info] [Lifecycle] Ready for state commit.
+2026-10-15T15:49:03.6166504Z [Info] [Shutdown] Requesting shutdown. No further log writes follow 
+an accepted request.
+2026-10-15T15:49:03.6409264Z [Error] [Shutdown] shutdown denied
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=1, Failed=1
+  [+] restores the service and invalidates state if shutdown fails
+ 215ms (214ms|1ms)
+2026-10-15T15:49:03.8088499Z [Error] [Preflight] Preparation did not complete successfully; 
+refusing personalization.
+BIS-F Local: Mode=Personalize, ExitCode=1, Completed=0, Failed=1
+  [+] refuses personalization on the master before any mutation
+ 153ms (152ms|1ms)
+2026-10-15T15:49:03.9909065Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=CLONE; 
+CcmExec=True; Mode=Personalize
+2026-10-15T15:49:03.9949450Z [Info] [Personalize] Skipped: already completed this generation.
+BIS-F Local: Mode=Personalize, ExitCode=0, Completed=0, Failed=0
+  [+] skips a completed clone
+ 171ms (170ms|1ms)
+2026-10-15T15:49:04.1704784Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=CLONE; 
+CcmExec=True; Mode=Personalize
+2026-10-15T15:49:04.1906908Z [Info] [CloneGuard] Starting: Verify prepared generation and clone 
+identity
+2026-10-15T15:49:04.2008022Z [Info] [CloneGuard] Completed.
+2026-10-15T15:49:04.2149497Z [Info] [CMCloneReset] Starting: Reset Configuration Manager 
+TrustedRootKey through CIM
+2026-10-15T15:49:04.2553760Z [Info] [CMCloneReset] Completed.
+2026-10-15T15:49:04.2654847Z [Info] [CMStart] Starting: Start Configuration Manager client
+2026-10-15T15:49:04.3301799Z [Info] [CMStart] Completed.
+2026-10-15T15:49:04.3322052Z [Info] [Complete] Starting: Record successful clone personalization
+2026-10-15T15:49:04.3342321Z [Info] [Complete] Ready for state commit.
+BIS-F Local: Mode=Personalize, ExitCode=0, Completed=4, Failed=0
+  [+] resets before starting the client then records completion
+ 338ms (336ms|1ms)
+2026-10-15T15:49:04.5163035Z [Error] [Preflight] Configuration changed since preparation. Prepare 
+the master again with the intended configuration.
+BIS-F Local: Mode=Personalize, ExitCode=1, Completed=0, Failed=1
+  [+] cannot personalize with changed configuration
+ 151ms (150ms|1ms)
+2026-10-15T15:49:04.7058837Z [Error] [Preflight] log denied
+BIS-F Local: Mode=Prepare, ExitCode=1, Completed=0, Failed=1
+  [+] does not apply if logging initialization fails
+ 192ms (190ms|1ms)
+Log write failed. Original error: log device lost
+BIS-F Local: Mode=Prepare, ExitCode=1, Completed=0, Failed=1
+  [+] reports a log write failure without recursive errors or shutdown
+ 191ms (189ms|2ms)
+2026-10-15T15:49:05.1542666Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:05.1805690Z [Warning] [Apply] Skipped: one or more operations were declined.
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=0, Failed=0
+  [+] declining any operation prevents the entire plan and shutdown
+ 166ms (163ms|2ms)
+2026-10-15T15:49:05.3481473Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:05.3784824Z [Info] [CMPrepare] Starting: Stop CcmExec and remove SMS client 
+identity
+2026-10-15T15:49:05.3865707Z [Info] [CMPrepare] Completed.
+2026-10-15T15:49:05.3946606Z [Info] [Lifecycle] Starting: Record a preparation generation and 
+optional startup task
+2026-10-15T15:49:05.4270118Z [Error] [Lifecycle] task registration failed
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=1, Failed=1
+  [+] task registration failure invalidates state and restores the client
+ 239ms (237ms|1ms)
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=1, Failed=1
+  [+] a late log failure suppresses shutdown and invalidates preparation
+ 354ms (353ms|1ms)
+2026-10-15T15:49:06.0992349Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=CLONE; 
+CcmExec=True; Mode=Personalize
+2026-10-15T15:49:06.1174357Z [Info] [CloneGuard] Preview: Verify prepared generation and clone 
+identity
+2026-10-15T15:49:06.1174357Z [Info] [Complete] Preview: Record successful clone personalization
+BIS-F Local: Mode=Personalize, ExitCode=0, Completed=0, Failed=0
+  [+] previews personalization without reset or completion writes
+ 264ms (261ms|4ms)
+2026-10-15T15:49:06.3822540Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=CLONE; 
+CcmExec=True; Mode=Personalize
+2026-10-15T15:49:06.4004324Z [Info] [CloneGuard] Starting: Verify prepared generation and clone 
+identity
+2026-10-15T15:49:06.4024359Z [Info] [CloneGuard] Completed.
+2026-10-15T15:49:06.4105265Z [Info] [CMCloneReset] Starting: Reset Configuration Manager 
+TrustedRootKey through CIM
+2026-10-15T15:49:06.4287201Z [Error] [CMCloneReset] CIM failed
+BIS-F Local: Mode=Personalize, ExitCode=2, Completed=1, Failed=1
+  [+] a failed clone reset never starts the client or records completion
+ 264ms (263ms|1ms)
+BIS-F Local: Mode=Personalize, ExitCode=2, Completed=1, Failed=1
+  [+] does not leave completion recorded when logging fails after completion
+ 207ms (205ms|2ms)
+2026-10-15T15:49:06.8068496Z [Error] [Preflight] state writable by nonadmin
+BIS-F Local: Mode=Personalize, ExitCode=1, Completed=0, Failed=1
+  [+] rejects an unsafe lifecycle state file before clone actions
+ 142ms (141ms|1ms)
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=1, Failed=0
+  [+] performs no fallible log writes after requesting shutdown
+ 159ms (158ms|1ms)
+2026-10-15T15:49:07.1285569Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:07.1548514Z [Info] [CMPrepare] Starting: Stop CcmExec and remove SMS client 
+identity
+2026-10-15T15:49:07.1588996Z [Info] [CMPrepare] Completed.
+2026-10-15T15:49:07.1690045Z [Info] [Lifecycle] Starting: Record a preparation generation and 
+optional startup task
+2026-10-15T15:49:07.1690045Z [Info] [Lifecycle] Ready for state commit.
+2026-10-15T15:49:07.1912531Z [Info] [Shutdown] Requesting shutdown. No further log writes follow 
+an accepted request.
+Could not invalidate preparation state: disk inaccessible
+2026-10-15T15:49:07.2094606Z [Error] [Shutdown] power request failed
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=1, Failed=1
+  [+] retains a pending guard if shutdown and state invalidation both fail
+ 212ms (210ms|1ms)
+2026-10-15T15:49:07.3632033Z [Error] [Preflight] Incomplete preparation journal found. Retry 
+Prepare on the master and recapture.
+BIS-F Local: Mode=Personalize, ExitCode=1, Completed=0, Failed=1
+  [+] blocks clones captured with an incomplete preparation journal
+ 140ms (139ms|1ms)
+2026-10-15T15:49:07.5048186Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=MASTER; 
+CcmExec=True; Mode=Prepare
+2026-10-15T15:49:07.5311227Z [Info] [CMPrepare] Starting: Stop CcmExec and remove SMS client 
+identity
+2026-10-15T15:49:07.5351558Z [Info] [CMPrepare] Completed.
+2026-10-15T15:49:07.5432564Z [Info] [Lifecycle] Starting: Record a preparation generation and 
+optional startup task
+2026-10-15T15:49:07.5432564Z [Info] [Lifecycle] Ready for state commit.
+2026-10-15T15:49:07.5594371Z [Info] [Shutdown] Requesting shutdown. No further log writes follow 
+an accepted request.
+Shutdown was accepted, but finalization failed; the incomplete-run journal remains. cannot clear 
+journal
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=2, Failed=1
+  [+] a failed final journal clear leaves clone blocked without restoring services after 
+shutdown
+ 196ms (195ms|1ms)
+2026-10-15T15:49:07.7311381Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=CLONE; 
+CcmExec=True; Mode=Personalize
+2026-10-15T15:49:07.7412612Z [Info] [CloneGuard] Starting: Verify prepared generation and clone 
+identity
+2026-10-15T15:49:07.7432841Z [Info] [CloneGuard] Completed.
+2026-10-15T15:49:07.7452956Z [Info] [Complete] Starting: Record successful clone personalization
+2026-10-15T15:49:07.7452956Z [Info] [Complete] Ready for state commit.
+BIS-F Local: Mode=Personalize, ExitCode=0, Completed=2, Failed=0
+  [+] retries a clone whose completion write succeeded but journal clear failed 
+previously
+ 170ms (169ms|1ms)
+2026-10-15T15:49:07.9172545Z [Info] [Inventory] OS=Test Windows; Build=26100; Computer=CLONE; 
+CcmExec=True; Mode=Personalize
+2026-10-15T15:49:07.9273731Z [Info] [CloneGuard] Starting: Verify prepared generation and clone 
+identity
+2026-10-15T15:49:07.9293975Z [Info] [CloneGuard] Completed.
+2026-10-15T15:49:07.9314217Z [Info] [Complete] Starting: Record successful clone personalization
+2026-10-15T15:49:07.9314217Z [Info] [Complete] Ready for state commit.
+2026-10-15T15:49:07.9476166Z [Error] [Finalize] state write failed
+BIS-F Local: Mode=Personalize, ExitCode=2, Completed=1, Failed=1
+  [+] does not report completion when the durable state commit fails
+ 185ms (183ms|1ms)
+2026-10-15T15:49:08.0932665Z [Error] [Preflight] Another run active
+BIS-F Local: Mode=Prepare, ExitCode=1, Completed=0, Failed=1
+  [+] rejects concurrent apply lock acquisition before mutation
+ 133ms (131ms|1ms)
+
+Describing Citrix final shutdown boundary
+BIS-F Local: Mode=Validate, ExitCode=0, Completed=0, Failed=0
+  [+] warns on absent WEM cache in Validate without stopping a service or requesting 
+shutdown
+ 140ms (136ms|4ms)
+BIS-F Local: Mode=Validate, ExitCode=0, Completed=0, Failed=0
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=0, Failed=0
+  [+] does not stop or shut down in Validate or WhatIf
+ 137ms (135ms|1ms)
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=2, Failed=0
+  [+] stops immediately before power with no intervening log writes
+ 361ms (359ms|1ms)
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=1, Failed=1
+  [+] restores a running VDA after a failed shutdown request
+ 335ms (333ms|2ms)
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=0, Failed=1
+  [+] attempts recovery even when service stop partially fails
+ 336ms (334ms|1ms)
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=1, Failed=1
+  [+] preserves originally stopped state on recovery
+ 328ms (327ms|1ms)
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=0, Failed=1
+  [+] does not stop the VDA if earlier cleanup fails
+ 298ms (297ms|1ms)
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=3, Failed=0
+  [+] protects the detected WEM cache from temp cleanup
+ 428ms (426ms|1ms)
+Shutdown was accepted, but finalization failed; the incomplete-run journal remains. journal 
+failure
+BIS-F Local: Mode=Prepare, ExitCode=2, Completed=3, Failed=1
+  [+] does not restore after accepted shutdown even if journal finalization fails
+ 697ms (692ms|5ms)
+
+Running tests from 'Lifecycle.Tests.ps1'
+Describing Clone identity and durable state
+  [+] refuses the master and a renamed machine with unchanged identifiers
+ 16ms (13ms|3ms)
+  [+] accepts changed name plus a changed valid identifier
+ 7ms (6ms|1ms)
+  [+] does not trust invalid or all-zero identifiers
+ 9ms (8ms|1ms)
+  [+] matches completion to the full clone identity and generation
+ 7ms (6ms|1ms)
+  [+] rejects malformed state rather than treating it as first boot
+ 86ms (85ms|1ms)
+  [+] atomically replaces state and reads the new generation
+ 111ms (110ms|1ms)
+  [+] locks applying runs and releases the lock
+ 7ms (6ms|1ms)
+
+Describing Protected locations and startup ownership
+  [+] rejects remote task dependencies
+ 16ms (12ms|4ms)
+  [+] rejects untrusted write grants but accepts read-only grants
+ 26ms (24ms|2ms)
+  [+] rejects untrusted owners and ancestor deletion grants
+ 14ms (13ms|1ms)
+  [+] quotes host arguments without bypassing policy
+ 14ms (12ms|1ms)
+  [+] rejects an unrelated task with the reserved name
+ 26ms (25ms|1ms)
+
+Describing Persistent incomplete-run journals
+  [+] retains an incomplete preparation until final commit
+ 112ms (85ms|28ms)
+  [+] separates retryable personalization from master preparation
+ 57ms (56ms|1ms)
+  [+] does not erase an incomplete marker when permission verification fails
+ 42ms (41ms|1ms)
+
+Running tests from 'LogCleanup.Tests.ps1'
+Describing Opt-in log cleanup XML and strict selection
+  [+] defaults both cleanup switches to disabled
+ 17ms (14ms|3ms)
+  [+] does not automatically clear logs during ordinary master preparation
+ 39ms (36ms|3ms)
+  [+] requires explicit FinalAction Shutdown when any log deletion is opted in
+ 17ms (16ms|1ms)
+  [+] never accepts Security or arbitrary operational channels
+ 16ms (15ms|1ms)
+  [+] uses the fixed three Windows channels and optional own logs only when selected
+ 61ms (59ms|1ms)
+  [+] refuses log clearing without a readable target event channel
+ 386ms (384ms|1ms)
+  [+] checks trust for a missing log directory before a logger can create it
+ 34ms (33ms|1ms)
+
+Describing BISF-only generated log removal and path protection
+  [+] deletes ONLY BISF generated names, never unrelated application or Citrix logs
+ 110ms (106ms|4ms)
+  [+] does not delete anything if the log directory does not exist
+ 21ms (20ms|2ms)
+  [+] refuses the log folder if it is a symlink
+ 28ms (26ms|1ms)
+
+Describing Optional checkbox GUI source parse
+  [+] parses Configure-BISF-LogCleanup.ps1 in PowerShell without running its UI
+ 21ms (17ms|4ms)
+
+Running tests from 'LogCleanupEditor.Tests.ps1'
+Describing Checkbox editor configuration writes
+  [+] saves only the chosen flags while preserving other settings and XML comments
+ 144ms (126ms|18ms)
+  [+] refuses to overwrite configuration edited while the dialog was open
+ 39ms (38ms|1ms)
+  [+] never enables shutdown implicitly when either checkbox is selected
+ 60ms (58ms|2ms)
+  [+] inserts the optional section in schema order for legacy configuration
+ 104ms (102ms|2ms)
+  [+] leaves malformed input byte-for-byte intact
+ 44ms (42ms|1ms)
+  [+] preserves the original file if Windows refuses atomic replacement
+ 87ms (86ms|1ms)
+  [+] rejects a redirected config path without changing its target
+ 31ms (30ms|1ms)
+
+Running tests from 'Maintenance.Tests.ps1'
+Describing Read-only pre-capture health inventory
+  [+] reports free space for the local system drive using CIM only
+ 88ms (85ms|3ms)
+  [+] refuses a system drive whose capacity cannot be measured
+ 35ms (33ms|2ms)
+  [+] reports all reboot reasons, including pending file renames
+ 104ms (102ms|1ms)
+  [+] does not report a pending reboot when all indicators are clear
+ 87ms (86ms|1ms)
+  [+] treats an unloaded profile with outstanding references as busy
+ 25ms (24ms|1ms)
+  [+] fails closed on unknown lifecycle state for another profile
+ 30ms (29ms|2ms)
+  [+] reports other loaded user profiles while ignoring the current user and special 
+accounts
+ 34ms (33ms|1ms)
+
+Describing Windows component store cleanup through Microsoft Servicing task
+  [+] locates the exact built-in Servicing task, not a custom task
+ 64ms (60ms|4ms)
+  [+] refuses to run a disabled or already-running servicing task
+ 54ms (52ms|1ms)
+  [+] fails closed if the task name or task location was changed
+ 63ms (62ms|1ms)
+  [+] successfully starts and awaits a completed servicing maintenance task
+ 149ms (148ms|1ms)
+  [+] surfaces an error result and refuses a successful seal
+ 102ms (100ms|1ms)
+  [+] waits for a new run instead of accepting a recent previous success or a queued task
+ 119ms (117ms|1ms)
+  [+] times out without proceeding if servicing never starts
+ 114ms (112ms|2ms)
+
+Describing System drive Recycle Bin cleanup opt in
+  [+] calls Clear-RecycleBin only for the Windows system drive when explicitly invoked
+ 88ms (84ms|4ms)
+
+Running tests from 'Module.Tests.ps1'
+Describing Exported module under production strict mode
+2026-10-15T15:49:16.5385251Z [Info] [Inventory] OS=Test; Build=26100; Computer=MASTER; 
+CcmExec=False; Mode=Prepare
+2026-10-15T15:49:16.7005334Z [Info] [Prepare] No image operations enabled. Nothing was sealed or 
+captured.
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=0, Failed=0
+  [+] can execute a default empty preparation with disabled logging
+ 921ms (918ms|3ms)
+
+Describing Citrix production module strict mode
+  [+] discovers and reports an enabled VDA without relying on dot-source test scope
+ 107ms (97ms|10ms)
+
+Running tests from 'Operations.Tests.ps1'
+Describing Bounded temporary cleanup
+  [+] removes only old files and preserves excluded trees
+ 131ms (126ms|5ms)
+  [+] rejects an arbitrary deletion root
+ 35ms (31ms|4ms)
+  [+] does not follow directory links or delete files replaced with links
+ 70ms (68ms|2ms)
+  [+] rechecks age before deleting a changed file
+ 105ms (103ms|2ms)
+  [+] rejects a linked cleanup root
+ 81ms (79ms|2ms)
+
+Describing Configuration Manager operations
+  [+] stops the client before deleting only SMS identity
+ 202ms (196ms|6ms)
+  [+] restores running service state if deletion fails
+ 103ms (101ms|1ms)
+  [+] uses CIM for trusted root keys and propagates provider failure
+ 96ms (95ms|2ms)
+  [+] treats an empty successful CIM query as a no-op
+ 1.45s (1.44s|16ms)
+
+Running tests from 'Preflight.Tests.ps1'
+Describing Platform and plan validation
+  [+] accepts Server 2025 and Windows 11 workstation builds
+ 84ms (43ms|40ms)
+  [+] recognizes Windows 11 client builds through 26H2: Windows 11 21H2
+ 29ms (22ms|7ms)
+  [+] recognizes Windows 11 client builds through 26H2: Windows 11 22H2
+ 21ms (14ms|7ms)
+  [+] recognizes Windows 11 client builds through 26H2: Windows 11 23H2
+ 21ms (20ms|2ms)
+  [+] recognizes Windows 11 client builds through 26H2: Windows 11 24H2
+ 38ms (34ms|4ms)
+  [+] recognizes Windows 11 client builds through 26H2: Windows 11 25H2
+ 17ms (15ms|2ms)
+  [+] recognizes Windows 11 client builds through 26H2: Windows 11 26H2
+ 16ms (14ms|2ms)
+  [+] recognizes Windows 11 client builds through 26H2: Windows 11 26H1 (specialized 
+hardware)
+ 12ms (11ms|2ms)
+  [+] distinguishes Windows Server 2025 and Windows 11 24H2 sharing build 26100
+ 20ms (19ms|1ms)
+  [+] warns for an unrecognized future Windows client build without claiming Citrix 
+support
+ 23ms (22ms|1ms)
+  [+] rejects later Windows Server builds until explicitly validated
+ 25ms (23ms|2ms)
+  [+] flags Windows 11 26H1 and 26H2 for VDA compatibility review
+ 16ms (15ms|1ms)
+  [+] rejects unsupported environment: ProductType=2
+ 16ms (15ms|2ms)
+  [+] rejects unsupported environment: Build=20348
+ 11ms (9ms|3ms)
+  [+] rejects unsupported environment: Edition=Core
+ 11ms (9ms|2ms)
+  [+] rejects unsupported environment: PSVersion=7.6
+ 12ms (10ms|2ms)
+  [+] rejects unsupported environment: Is64Bit=False
+ 14ms (12ms|2ms)
+  [+] rejects unsupported environment: IsAdmin=False
+ 13ms (12ms|2ms)
+  [+] rejects unsupported environment: Version=11.0.0
+ 16ms (14ms|2ms)
+  [+] blocks pending reboot only for preparation and permits configured override
+ 28ms (26ms|2ms)
+  [+] has no destructive default operation
+ 13ms (11ms|2ms)
+  [+] orders selected preparation steps before shutdown
+ 15ms (13ms|1ms)
+  [+] includes inactive profile deletion between temp cleanup and lifecycle when opted in
+ 16ms (10ms|6ms)
+  [+] plans reset before client start and completion
+ 15ms (13ms|2ms)
+
+Describing Enabled integration dependencies
+  [+] blocks another interactive profile when the readiness option is enabled
+ 96ms (78ms|18ms)
+  [+] blocks preparation with insufficient system-drive space
+ 53ms (51ms|1ms)
+  [+] allows sufficient disk space while keeping user-session checks independent
+ 60ms (59ms|2ms)
+  [+] does not require client or scheduler commands when their features are disabled
+ 67ms (65ms|1ms)
+  [+] accepts ScheduledTasks commands implemented as CDXML functions
+ 315ms (313ms|2ms)
+
+Running tests from 'Profiles.Tests.ps1'
+Describing Citrix MCS user profile inventory and safe deletion
+  [+] selects inactive, registered, non-special profiles from the configured Users root
+ 190ms (186ms|4ms)
+  [+] protects the currently logged-on administrator even when inactive
+ 69ms (67ms|2ms)
+  [+] protects the built-in administrator SID regardless of the profile folder name
+ 70ms (68ms|2ms)
+  [+] protects special system accounts and non-user SIDs
+ 76ms (74ms|2ms)
+  [+] protects explicitly excluded SIDs, including other administrator accounts
+ 68ms (64ms|3ms)
+  [+] protects names used by template and built-in profile directories
+ 53ms (52ms|1ms)
+  [+] refuses paths outside or below a subdirectory of the configured profile root
+ 126ms (122ms|3ms)
+  [+] protects missing profile directories rather than erasing orphaned registry records
+ 153ms (145ms|8ms)
+  [+] blocks preparation if an unprotected user profile is loaded
+ 66ms (65ms|1ms)
+  [+] blocks a profile with a nonzero reference count despite Loaded=false
+ 86ms (85ms|2ms)
+  [+] calls the Windows profile provider, never raw folder deletion
+ 151ms (150ms|2ms)
+  [+] refuses deletion if the profile becomes loaded after initial preview
+ 105ms (104ms|2ms)
+  [+] refuses deletion if a SID is reassigned to another profile folder
+ 112ms (110ms|1ms)
+  [+] refuses duplicate provider SIDs instead of acting on an ambiguous profile
+ 77ms (76ms|1ms)
+  [+] does not swallow CIM errors during removal
+ 105ms (103ms|2ms)
+  [+] blocks unknown Loaded and Special flags instead of assuming inactive
+ 56ms (54ms|1ms)
+  [+] protects profiles containing package, configuration, state, log or WEM paths
+ 142ms (140ms|1ms)
+  [+] refuses a different SID returned by the final filtered provider query
+ 105ms (104ms|2ms)
+  [+] refuses duplicate profile paths shared by a protected current SID and another SID
+ 69ms (67ms|1ms)
+
+Running tests from 'Static.Tests.ps1'
+Describing Source-only runtime audit
+  [+] detects forbidden external and dynamic execution: Start-Process tool.exe
+ 44ms (41ms|3ms)
+  [+] detects forbidden external and dynamic execution: & "wmic.exe" x
+ 7ms (5ms|2ms)
+  [+] detects forbidden external and dynamic execution: Invoke-Expression $command
+ 5ms (3ms|2ms)
+  [+] detects forbidden external and dynamic execution: & $command
+ 9ms (5ms|4ms)
+  [+] detects forbidden external and dynamic execution: 
+[Diagnostics.Process]::Start("tool")
+ 5ms (3ms|2ms)
+  [+] detects forbidden external and dynamic execution: Set-ItemProperty 
+HKLM:\Software\Policies\BISF -Name X -Value 1
+ 5ms (4ms|2ms)
+  [+] detects forbidden external and dynamic execution: netsh int tcp set global 
+rss=disable
+ 7ms (6ms|2ms)
+  [+] allows PowerShell cmdlets and the fixed scheduled PowerShell host
+ 9ms (8ms|1ms)
+  [+] parses all runtime scripts and rejects forbidden runtime operations
+ 336ms (323ms|12ms)
+  [+] contains no executable or compiled payload
+ 19ms (18ms|1ms)
+Tests completed in 61s
+Tests Passed: 264, 
+Failed: 0, 
+Skipped: 0, 
+Inconclusive: 0, 
+
+NotRun: 0
+Pester script exit=0

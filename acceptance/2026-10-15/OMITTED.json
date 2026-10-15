@@ -1,0 +1,10 @@
+[
+  {
+    "path": "native-account-unknown.ps1",
+    "reason": "excluded type/sensitive scope/size"
+  },
+  {
+    "path": "native-negative-preflight.ps1",
+    "reason": "excluded type/sensitive scope/size"
+  }
+]

@@ -1,0 +1,4 @@
+{
+    "CSName":  "BISF-S25-TEST",
+    "LastBootUpTime":  "\/Date(1792085939500)\/"
+}

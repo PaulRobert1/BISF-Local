@@ -1,0 +1,62 @@
+models {"models": [{"name": "pip-qwen3.6-35b", "model": "pip-qwen3.6-35b", "modified_at": "", "size": "", "digest": "", "type": "model", "description": "", "tags": [""], "capabilities": ["completion"], "parameters": "", "details": {"parent_model": "", "format": "gguf", "family": "", "families": [""], "parameter_size": "", "quantization_level": ""}}], "object": "list", "data": [{"id": "pip-qwen3.6-35b", "aliases": ["pip-qwen3.6-35b"], "tags": [], "object": "model", "created": 1792077962, "owned_by": "llamacpp", "meta": {"vocab_type": 2, "n_vocab": 248320, "n_ctx": 8192, "n_ctx_train": 262144, "n_embd": 2048, "n_params": 34660610688, "size": 22349466112, "ftype": "Q4_K - Medium"}}]}
+inference {"seconds": 2.224135404000009, "result": {"created": 1792077964, "model": "pip-qwen3.6-35b", "system_fingerprint": "b1-6c59c40", "object": "chat.completion", "usage": {"completion_tokens": 32, "prompt_tokens": 17, "total_tokens": 49, "prompt_tokens_details": {"cached_tokens": 0}}, "id": "chatcmpl-3EmxUNkkidMxlj8yQDJE7rAtoI7creku", "timings": {"cache_n": 0, "prompt_n": 17, "prompt_ms": 782.588, "prompt_per_token_ms": 46.034588235294116, "prompt_per_second": 21.72279666951193, "predicted_n": 32, "predicted_ms": 1435.582, "predicted_per_token_ms": 46.30909677419355, "predicted_per_second": 21.594029459828835}}}
+200000000-7ffc9dfdb000 ---p 00000000 00:00 0                             [rollup]
+Rss:            14517412 kB
+Pss:            14512923 kB
+Pss_Dirty:        346764 kB
+Pss_Anon:         318624 kB
+Pss_File:       14175859 kB
+Pss_Shmem:         18440 kB
+Shared_Clean:       5240 kB
+Shared_Dirty:          0 kB
+Private_Clean:  14165408 kB
+Private_Dirty:    346764 kB
+Referenced:     14517412 kB
+Anonymous:        318624 kB
+KSM:                   0 kB
+LazyFree:              0 kB
+AnonHugePages:         0 kB
+ShmemPmdMapped:        0 kB
+FilePmdMapped:         0 kB
+Shared_Hugetlb:        0 kB
+Private_Hugetlb:       0 kB
+Swap:                  0 kB
+SwapPss:               0 kB
+Locked:                0 kB
+
+               total        used        free      shared  buff/cache   available
+Mem:     35715612672  1600143360 11270270976    20447232 23306903552 34115469312
+Swap:    21474828288           0 21474828288
+some avg10=0.00 avg60=0.00 avg300=0.00 total=4
+full avg10=0.00 avg60=0.00 avg300=0.00 total=4
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.current
+22901387264
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.events
+low 0
+high 0
+max 0
+oom 0
+oom_kill 0
+oom_group_kill 0
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.high
+max
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.max
+32212254720
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.peak
+22901673984
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.swap.current
+0
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.swap.events
+high 0
+max 0
+fail 0
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.swap.high
+max
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.swap.max
+0
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.swap.peak
+0
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.zswap.current
+0
+/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/pip-inverter-model.service/memory.zswap.max
+max

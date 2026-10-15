@@ -1,0 +1,5 @@
+{
+    "Path":  "Microsoft.PowerShell.Core\\FileSystem::C:\\BISF\\state\\operator-seal.json",
+    "Owner":  "BUILTIN\\Administrators",
+    "Sddl":  "O:BAG:S-1-5-21-2179150373-3800760875-3562492511-513D:PAI(A;;FA;;;SY)(A;;FA;;;BA)"
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "file": "FSLogix_26.08.zip",
+    "bytes": 119201073,
+    "sha256": "129e111d4acf8502b9351e1cec0c92212dce8222ae5b8223163fbbea518e857c",
+    "source": "https://download.microsoft.com/download/ae6d2014-e692-45fa-a88b-ee552567cdc1/FSLogix_26.08.zip",
+    "documentation": "https://learn.microsoft.com/en-us/fslogix/how-to-install-fslogix"
+  },
+  {
+    "file": "FSLogixAppsSetup.exe",
+    "bytes": 69460200,
+    "sha256": "0baf7fe8195571060f0361b351e58fe6cd422ae521a96bab3e66d900544e8a30",
+    "source": "https://download.microsoft.com/download/ae6d2014-e692-45fa-a88b-ee552567cdc1/FSLogix_26.08.zip",
+    "documentation": "https://learn.microsoft.com/en-us/fslogix/how-to-install-fslogix"
+  },
+  {
+    "file": "WEM-Agent-Setup.exe",
+    "bytes": 44359992,
+    "sha256": "4f5db875cb621632077c1d463bdf04d23d1422186662668b552657e655ec5149",
+    "productVersion": "2005.2.0.1",
+    "source": "\\\\win-nas02.b0ashe.xml\\data\\Citrix\\Citrix Workspace Environment Management Agent Setup.exe"
+  },
+  {
+    "file": "CVAD-2012.iso",
+    "bytes": 2586771456,
+    "sha256": "521f5d038a5552deb0df82f4243eb5fb72d5d3c4edde9239bce29fa481bc1953",
+    "source": "\\\\win-nas02.b0ashe.xml\\data\\Citrix\\Citrix_Virtual_Apps_and_Desktops_7_2012.iso",
+    "embeddedProductVersion": "2012.0.0.28051"
+  }
+]

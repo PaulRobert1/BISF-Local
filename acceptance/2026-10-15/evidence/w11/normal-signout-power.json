@@ -1,0 +1,65 @@
+[
+  {
+    "utc": "2026-10-15T16:21:53.697266+00:00",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T16:21:58.720306+00:00",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T16:22:03.741460+00:00",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T16:22:08.767904+00:00",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T16:22:13.793983+00:00",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T16:22:18.819026+00:00",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T16:22:23.842319+00:00",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T16:22:28.882984+00:00",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "power": "poweredOn",
+    "tools": "guestToolsRunning"
+  },
+  {
+    "utc": "2026-10-15T16:22:33.905815+00:00",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "power": "poweredOff",
+    "tools": "guestToolsNotRunning"
+  }
+]

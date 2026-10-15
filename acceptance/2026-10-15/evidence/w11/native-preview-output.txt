@@ -1,0 +1,23 @@
+2026-10-15T15:42:14.8851637Z [Info] [Inventory] OS=Microsoft Windows 11 Pro; Build=26200; 
+Computer=BISF-W11-TEST; CcmExec=False; Mode=Validate
+2026-10-15T15:42:15.2271018Z [Info] [Platform] Family=Windows 11 workstation; Release=Windows 11 
+25H2; Build=26200; RecognizedBuild=True; ScriptEligible=True. Windows 11 single-session VDA is 
+supported where Citrix product/edition requirements are met. Multi-session Windows 11 requires 
+Citrix DaaS.
+2026-10-15T15:42:15.4010304Z [Info] [Disk] System drive=C:; FreeGB=40.76; TotalGB=63.01; 
+RequiredFreeGB=0
+2026-10-15T15:42:16.0852014Z [Info] [Validate] Validation completed. No image operations applied.
+BIS-F Local: Mode=Validate, ExitCode=0, Completed=0, Failed=0
+Native Validate exit=0
+2026-10-15T15:42:17.0305043Z [Info] [Inventory] OS=Microsoft Windows 11 Pro; Build=26200; 
+Computer=BISF-W11-TEST; CcmExec=False; Mode=Prepare
+2026-10-15T15:42:17.0668862Z [Info] [Platform] Family=Windows 11 workstation; Release=Windows 11 
+25H2; Build=26200; RecognizedBuild=True; ScriptEligible=True. Windows 11 single-session VDA is 
+supported where Citrix product/edition requirements are met. Multi-session Windows 11 requires 
+Citrix DaaS.
+2026-10-15T15:42:17.1538451Z [Info] [Disk] System drive=C:; FreeGB=40.76; TotalGB=63.01; 
+RequiredFreeGB=0
+BIS-F Local: Mode=Prepare, ExitCode=0, Completed=0, Failed=0
+Native Prepare -WhatIf exit=0
+Finalize -WhatIf missing config exit=0
+Original shipped config hash unchanged: True

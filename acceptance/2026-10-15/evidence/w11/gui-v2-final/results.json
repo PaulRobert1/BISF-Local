@@ -1,0 +1,44 @@
+{
+    "Computer":  "BISF-W11-TEST",
+    "HarnessSession":  2,
+    "Run":  "7a8a644fc1d84824be72d1d7ac918fda",
+    "Cases":  [
+                  {
+                      "Case":  "Save-False-False-custom-path",
+                      "Status":  "PASS"
+                  },
+                  {
+                      "Case":  "Save-False-True-custom-path",
+                      "Status":  "PASS"
+                  },
+                  {
+                      "Case":  "Save-True-False-custom-path",
+                      "Status":  "PASS"
+                  },
+                  {
+                      "Case":  "Save-True-True-custom-path",
+                      "Status":  "PASS"
+                  },
+                  {
+                      "Case":  "Cancel preserves bytes",
+                      "Status":  "PASS"
+                  },
+                  {
+                      "Case":  "Stale save preserves external edit",
+                      "Status":  "PASS"
+                  },
+                  {
+                      "Case":  "Locked save preserves bytes",
+                      "Status":  "PASS"
+                  },
+                  {
+                      "Case":  "Malformed XML rejects before editor opens",
+                      "Status":  "PASS"
+                  },
+                  {
+                      "Case":  "Legacy XML inserts optional section only",
+                      "Status":  "PASS"
+                  }
+              ],
+    "Note":  "Only spawned editor processes are closed. No BISF cleanup or shutdown invoked. Unreached cases are NOT TESTED."
+}

@@ -1,0 +1,16 @@
+{
+  "status": "evidence-complete",
+  "os": "server",
+  "case": "vendor-baseline-before-destructive-tests",
+  "allowRestore": true,
+  "noPendingOfflineEvidence": true,
+  "baselineSnapshot": "snapshot-10029",
+  "vendorVersions": {
+    "VDA": "2012.0.0.28051",
+    "WEM": "2005.2.0.1",
+    "FSLogix": "3.26.826.17182"
+  },
+  "sourcePin": "fac7b1def5787e0d9ab8bcbb0707880d7572edc2",
+  "evidence": "vendor-ready-baseline",
+  "createdUTC": "2026-10-15T17:42:19.445854+00:00"
+}

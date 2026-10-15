@@ -1,0 +1,15 @@
+Harness: native-negative-preflight.ps1
+Run on BISF-W11-TEST or BISF-S25-TEST in elevated x64 Windows PowerShell5.1 as normal administrative operator (RID>=1000):
+  & C:\BISF-Evidence\native-negative-preflight.ps1
+Optional pending reboot injection on quiescent disposable snapshot:
+  & C:\BISF-Evidence\native-negative-preflight.ps1 -InjectPendingReboot
+
+Uses installed C:\BISF module without source changes or mocks. Requires fixture profiles BISFDependency/BISFInactive from fixtures.ps1 for dependency case. Existing reserved task is never replaced; reports NOT RUN instead. Current operator dependency case does not sign out or remove profile. ACL fixture is restored; junction unlinked nonrecursively; only uniquely marked fixture task/registry key removed. Package hashes and actual Win32_UserProfile registrations compared before/after. JSON evidence includes exact refusal messages.
+
+Scope: tests native APIs and real private safety guards directly. It does not prove Invoke-BISF orchestration calls guards at the correct time, no-mutation through a complete Prepare, retained state refusal, Task Scheduler enumeration error, racing configuration changes, live SYSTEM finalization, destructive cleanup or clone behavior. Those remain separate acceptance cases. Task Scheduler fixture is disabled and triggerless with harmless cmd /c exit0 action. No target profile is deleted.
+
+Pending reboot injection now uses HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations (REG_MULTI_SZ), an actual indicator read by pinned Get-BISFInventory. It records prior existence, unexpanded data, and registry type; queues a unique nonexistent source/destination pair; verifies refusal; then restores exactly, including deleting only its newly introduced value. Existing pending work aborts setup. Concurrent changes abort restoration rather than overwrite system operations; restore disposable snapshot if that happens. No CBS ACL or key is changed. Do not reboot during injection.
+
+First Windows11 run: six cases PASS, CBS fixture setup failed with Requested registry access is not allowed. This was a harness fixture failure before invoking BISF pending-reboot guard, not a BISF product failure. Revised PendingFileRenameOperations case requires root rerun; no new pass claimed.
+
+Prepared and source-inspected on Linux with no local PowerShell parser/runtime available; root must parse and execute on disposable Windows. Do not report passed until JSON confirms; NOT RUN is explicitly incomplete. Parent/root controls live execution and all VM operations.

@@ -1,0 +1,6 @@
+Acceptance harness deliberately cancels queued servicing task to test error propagation. This is not a successful component cleanup.
+{
+    "State":  "Ready",
+    "LastRun":  "\/Date(1792080136000)\/",
+    "Result":  0
+}

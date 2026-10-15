@@ -1,0 +1,32 @@
+Read-only defect analysis — pinned fac7b1def5787e0d9ab8bcbb0707880d7572edc2
+No source changes, fixes, guest operations or new reproduction executed.
+
+Finding: servicing completion is inferred from an advanced LastRunTime plus task Ready plus LastTaskResult0. A queued invocation that is cancelled can satisfy exactly those fields, and the native W11 evidence shows BISF reporting success after that cancellation. This fails the acceptance requirement to establish the requested built-in servicing action actually started and finished successfully.
+
+Concrete code: source/Modules/Private/Maintenance.ps1, Invoke-BISFComponentCleanup.
+- Lines83–84 set $started=true solely because LastRunTime advanced and is recent. No observation/correlation of task action execution or completion is made.
+- Lines85–90 treat Ready and LastTaskResult0 as successful completion and return to subsequent image preparation.
+- Lines63–64 only reject Disabled/Running at entry; Queued is also accepted. This is an additional untested overlap concern, not needed to establish the observed cancellation path.
+
+Observed evidence (all local evidence/w11):
+1. servicing-before.json: LastRunTime historical1999 and LastTaskResult267011 (0x41303). Thus this is not simply an unchanged previous successful result being reused.
+2. servicing-native.txt: BISF requests StartComponentCleanup at16:02:15.542724UTC.
+3. servicing-inspect.txt: taskState Queued, LastRunTime1792080136000ms =16:02:16UTC, LastTaskResult0. The recent LastRunTime already satisfies lines83–84 while the sampled task remains Queued.
+4. stop-queued-servicing.ps1 (harness) queries the actual task, refuses to continue unless State is Queued, calls Stop-ScheduledTask, waits15seconds, then exports state/result. Its output stop-queued-servicing.txt records deliberate cancellation and then StateReady, SAME LastRunTime16:02:16, LastTaskResult0.
+5. servicing-native.txt logs 'Built-in component cleanup completed successfully.' at16:08:34.2505655UTC and overall PrepareExitCode0/Completed1/Failed0.
+
+Reproduction rationale: on an isolated Win11 build26200 disposable baseline, enable only servicing with a timeout long enough for the queued state; run Prepare; verify task remainsQueued with advancedLastRunTime/result0; stop ONLY that observed queued task using the guarded harness; observe next10second BISF poll. Current predicate acceptsReady/result0 and claims success. Preserve before/current/taskXML/harness/after evidence; no cleanup or capture should rely on that claim.
+
+What is established vs unknown:
+- Established: actual task was observedQueued before stop; actual guarded cancellation was issued; afterwardsReady/result0 persisted and BISF declared success. Current source explicitly accepts this metadata combination. The code lacks evidence that its requested servicing operation completed successfully.
+- Not established: TaskScheduler/servicing internal action never ran for any instant, or no component work happened. A small race exists between state query and Stop-ScheduledTask. Current evidence has no per-instance TaskScheduler Operational action-start/action-complete correlation or CBS/DISM completion trace. Do not claim proven zero servicing work or a Windows TaskScheduler defect.
+- Windows Ready means there are no queued/running instances, not that an instance completed successfully. LastTaskResult describes the registered task's last-run result; the observed platform exposes0 after this cancellation. OS metadata behavior is evidenced, but its internal reason is not proven.
+- This is enough to reject successful servicing acceptance: cancellation is not a positive action-completion certificate. Mark suspected/observed false-completion on cancelled queued invocation, with the above race limitation.
+
+Impact: Invoke-BISFComponentCleanup returns normally and allows later preparation/sealing steps to proceed despite no verified successful cleanup. A final Shutdown run could continue rather than block. This run itself had no proven later destructive/shutdown action; do not claim one happened.
+
+Further evidence before declaring a fully causal reproduction: retain TaskScheduler Operational event stream with instance/activity identity around request/queue/cancel, actual taskdefinition and CBS/DISM task-action completion events. Do not equate merely observing Running with successful completion: a running task can also be cancelled, and a10second poll can miss legitimate short runs. Any eventual fix needs an operation-correlated success signal, not another loose state heuristic. Fix explicitly out of this read-only task's scope.
+
+Official references:
+https://learn.microsoft.com/en-us/windows/win32/api/taskschd/ne-taskschd-task_state
+https://learn.microsoft.com/en-us/windows/win32/taskschd/registeredtask

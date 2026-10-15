@@ -1,0 +1,12 @@
+{
+    "Status":  0,
+    "StatusMessage":  "Signature verified.",
+    "Signer":  "CN=\"Citrix Systems, Inc.\", OU=XenApp(Server SHA256), O=\"Citrix Systems, Inc.\", L=Fort Lauderdale, S=Florida, C=US"
+}
+2012.0.0.28051
+{
+    "Product":  "CVAD VDA",
+    "Exit":  0,
+    "Version":  "7.28.0.30",
+    "TimeUtc":  "2026-10-15T18:10:15.1761093Z"
+}

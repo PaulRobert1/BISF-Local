@@ -1,0 +1,29 @@
+{
+    "Now":  "\/Date(1792080378492)\/",
+    "State":  "Queued",
+    "LastRun":  "\/Date(1792080136000)\/",
+    "Result":  0
+}
+{
+    "Id":  9024,
+    "CPU":  11.75,
+    "Responding":  true,
+    "StartTime":  "\/Date(1792080110473)\/"
+}
+[
+    {
+        "Name":  "BISF-Prepare-20261015-160211-2376c0ae15c944a484ee93f9c03ea52a.log",
+        "LastWriteTime":  "\/Date(1792080135771)\/",
+        "Length":  807
+    },
+    {
+        "Name":  "BISF-Prepare-20261015-160131-bae5c9d8dcba43c08d89c7cdc9f0bd74.log",
+        "LastWriteTime":  "\/Date(1792080094963)\/",
+        "Length":  2707
+    },
+    {
+        "Name":  "BISF-Prepare-20261015-154217-9a8935609f2c4cbfa8aa5d312d8587fe.log",
+        "LastWriteTime":  "\/Date(1792078937163)\/",
+        "Length":  551
+    }
+]

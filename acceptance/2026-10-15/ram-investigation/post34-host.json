@@ -1,0 +1,71 @@
+{
+  "time": "2026-10-15T15:26:10.416052+00:00",
+  "pool": {
+    "maxMiB": 57858.0,
+    "reservedMiB": 51721.0,
+    "unreservedMiB": 6137.0
+  },
+  "hostPhysicalUsedMB": 54796,
+  "vms": [
+    {
+      "name": "BISF-Test-S2025-20261015",
+      "id": "vm-10021",
+      "power": "poweredOff",
+      "memoryMB": 3072,
+      "reservationMB": 0,
+      "locked": false,
+      "hostMemoryMB": 0,
+      "balloonMB": 0,
+      "swapMB": 0,
+      "heartbeat": "gray"
+    },
+    {
+      "name": "Frigate_GTX1070",
+      "id": "vm-10007",
+      "power": "poweredOn",
+      "memoryMB": 16384,
+      "reservationMB": 16384,
+      "locked": true,
+      "hostMemoryMB": 16477,
+      "balloonMB": 0,
+      "swapMB": 0,
+      "heartbeat": "green"
+    },
+    {
+      "name": "BISF-Test-W11-20261015",
+      "id": "vm-10020",
+      "power": "poweredOn",
+      "memoryMB": 4096,
+      "reservationMB": 0,
+      "locked": false,
+      "hostMemoryMB": 0,
+      "balloonMB": 0,
+      "swapMB": 0,
+      "heartbeat": "gray"
+    },
+    {
+      "name": "Win11Personal",
+      "id": "vm-10017",
+      "power": "poweredOff",
+      "memoryMB": 24576,
+      "reservationMB": 24576,
+      "locked": true,
+      "hostMemoryMB": 0,
+      "balloonMB": 0,
+      "swapMB": 0,
+      "heartbeat": "gray"
+    },
+    {
+      "name": "OpenWebUI",
+      "id": "vm-10009",
+      "power": "poweredOn",
+      "memoryMB": 34816,
+      "reservationMB": 34816,
+      "locked": true,
+      "hostMemoryMB": 34985,
+      "balloonMB": 0,
+      "swapMB": 0,
+      "heartbeat": "green"
+    }
+  ]
+}
