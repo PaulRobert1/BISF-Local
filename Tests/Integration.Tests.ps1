@@ -256,6 +256,26 @@ Describe 'Citrix final shutdown boundary' {
         Mock Stop-Computer { $script:trace.Add('shutdown') }
         Mock Write-BISFLog { if ($script:trace -contains 'vda-stop') { $script:trace.Add('late-log') } }
     }
+    It 'warns on absent WEM cache in Validate without stopping a service or requesting shutdown' {
+        Mock Get-BISFCitrixReadiness {
+            [pscustomobject]@{
+                VDA=$null
+                WEM=[pscustomobject]@{
+                    Version='2507';CachePath="$TestDrive/cache";CacheExists=$false
+                    CacheStatus='DirectoryMissing';HostState='Running'
+                    LocalAgentCachePresent=$false;LocalAgentDatabasePresent=$false
+                }
+            }
+        }
+        $script:observedLogs=New-Object 'System.Collections.Generic.List[string]'
+        Mock Write-BISFLog { $script:observedLogs.Add("$Level|$Operation|$Message") }
+        $r=Invoke-BISFLocal $cfg $root Validate
+        $r.ExitCode | Should -Be 0
+        ($script:observedLogs -join [Environment]::NewLine) | Should -Match 'Warning\|CitrixWEM\|.*cacheStatus=DirectoryMissing'
+        $script:trace.Count | Should -Be 0
+        Should -Invoke Stop-BISFVDA -Times 0
+        Should -Invoke Stop-Computer -Times 0
+    }
     It 'does not stop or shut down in Validate or WhatIf' {
         (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0
         (Invoke-BISFLocal $cfg $root Prepare -WhatIf).ExitCode | Should -Be 0
