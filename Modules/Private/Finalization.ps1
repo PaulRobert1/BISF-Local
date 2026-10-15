@@ -174,11 +174,30 @@ function Test-BISFOperatorSealCandidate {
     if ($others.Count -gt 0) { return $false }
     $profiles=@(Get-CimInstance -ClassName Win32_UserProfile -Filter "SID='$($State.OperatorSid)'" -ErrorAction Stop)
     if ($profiles.Count -ne 1) { throw 'Operator profile missing or ambiguous.' }
-    $status=Get-BISFUserProfileDisposition $profiles[0] $root 'S-1-5-18' $Config.Cleanup.ExcludedProfileSIDs
-    if ($status.Status -eq 'Blocked') { return $false }
-    if ($status.Status -ne 'Remove' -or $status.LocalPath -ne $State.OperatorPath) {
-        throw "Operator profile no longer matches eligible staged profile: $($status.Reason)"
+    $p=$profiles[0]
+    if ([string]$p.SID -ne [string]$State.OperatorSid -or [string]$p.LocalPath -ne [string]$State.OperatorPath) {
+        throw 'Operator profile no longer matches the staged SID and local path.'
     }
+    if ($null -eq $p.PSObject.Properties['Loaded'] -or $null -eq $p.PSObject.Properties['Special'] -or
+        $null -eq $p.Loaded -or $null -eq $p.Special -or $p.Special) {
+        throw 'Operator profile flags are missing or special; refusing deletion.'
+    }
+    if ($State.OperatorSid -in $Config.Cleanup.ExcludedProfileSIDs) { throw 'Operator SID is excluded from cleanup.' }
+    if (-not (Test-BISFDirectProfilePath $p.LocalPath $root) -or -not (Test-Path -LiteralPath $p.LocalPath -PathType Container)) {
+        throw 'Operator profile directory is missing or outside the registered profile root.'
+    }
+    $leaf=[IO.Path]::GetFileName(([string]$p.LocalPath).TrimEnd([char[]]'\/'))
+    if ($leaf -match '^(Default|Default User|Public|All Users|defaultuser0|WDAGUtilityAccount)$') {
+        throw 'Operator profile points at a reserved Windows template directory.'
+    }
+    # A normal admin SID (RID >= 1000) is allowed to have an Administrator-named
+    # profile folder; the generic cleanup continues protecting such folders.
+    if ($State.OperatorSid -notmatch '^S-1-5-21-([0-9]+-){3}([0-9]+)$' -or [long]$Matches[2] -lt 1000) {
+        throw 'Operator SID is built-in or no longer eligible for deferred deletion.'
+    }
+    if ($p.Loaded -or ($null -ne $p.PSObject.Properties['RefCount'] -and
+        $null -ne $p.RefCount -and [long]$p.RefCount -gt 0)) { return $false }
+    Test-BISFNoReparsePath $p.LocalPath
     $true
 }
 function Invoke-BISFOperatorSealFinalizer {
