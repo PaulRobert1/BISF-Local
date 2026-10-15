@@ -14,6 +14,129 @@ The package has no executable payloads, installer, GPO configuration, downloads 
 external executable calls. Optional startup personalization launches only the built-in
 Windows PowerShell host. Existing policy and network/security settings are preserved.
 
+## Additional master-image maintenance and shutdown finalization
+
+These features are deliberately **off by default**, except the read-only
+`BlockOtherLoadedProfiles` readiness check in the *new* default configuration.
+Older XML lacking these elements remains compatible and gets non-destructive
+defaults. You must deploy the **entire updated package** (XSD, modules, entry
+script, XML) rather than copying a single module onto an older installation.
+
+| Configuration setting | Default | Effect if enabled |
+| --- | --- | --- |
+| `Cleanup.WindowsTemp` | false | Age-based files under `%windir%\Temp` |
+| `Cleanup.CurrentUserTemp` | false | Age-based files under operator profile's Temp |
+| `Cleanup.UserProfiles` | false | Unloaded, non-system user profiles via Windows profile provider |
+| `Cleanup.RecycleBin` | false | Empty **invoking user's** system-drive Recycle Bin through `Clear-RecycleBin` |
+| `Servicing.ComponentCleanup` | false | Run Windows' built-in `\Microsoft\Windows\Servicing\StartComponentCleanup` maintenance task and await success |
+| `Servicing.TimeoutMinutes` | 75 | Refuse further operations if servicing does not finish inside this bound |
+| `Preflight.MinimumSystemDriveFreeGB` | 0 | Fail preflight when system-drive free space is below this threshold |
+| `Preflight.BlockOtherLoadedProfiles` | false if omitted, true in new XML | Refuse preparation if non-system profiles other than the current operator remain loaded |
+| `Finalization.RemoveOperatorProfile` | false | Opt-in two-phase SYSTEM finalizer (normal sign-out, then delete operator profile and shut down) |
+| `Finalization.TimeoutMinutes` | 30 | Maximum period the SYSTEM task waits for a clean operator sign-out |
+
+### Safe Windows Update and disk cleanup
+
+Windows component-store maintenance is **not** the same as clearing
+`SoftwareDistribution` or deleting WinSxS directories. When enabled, BISF
+invokes the Microsoft-installed scheduled task
+`\Microsoft\Windows\Servicing\StartComponentCleanup`, verifies its
+completion/result, and refuses further image operations on failure or
+timeout. This task may honor an update retention period and is not
+guaranteed to reclaim all space. The script does not run DISM.exe, change
+Windows Update services, perform `/ResetBase`, delete rollback packages
+or remove update caches manually. It does not reset WSUS policy.
+
+With RecycleBin enabled, `Clear-RecycleBin` applies only to the operator's
+current system-drive Recycle Bin. Temporary-file cleanup is already
+bounded by `MinimumAgeDays`; deleting inactive Windows profiles uses
+the provider instead of recursively deleting `C:\Users`.
+
+### Two-phase deletion of the operator's own profile
+
+**DO NOT enable on a production master before validating it on a disposable
+copy and confirming the package/state directory ACLs.** This feature is
+more operationally risky than ordinary inactive-profile cleanup because
+the active operator must sign out before their own profile can be deleted.
+
+Configure:
+
+```xml
+<Cleanup>
+  <WindowsTemp>true</WindowsTemp>
+  <CurrentUserTemp>true</CurrentUserTemp>
+  <UserProfiles>true</UserProfiles>
+  <MinimumAgeDays>7</MinimumAgeDays>
+  <RecycleBin>false</RecycleBin>
+</Cleanup>
+<Servicing>
+  <ComponentCleanup>false</ComponentCleanup>
+  <TimeoutMinutes>75</TimeoutMinutes>
+</Servicing>
+<Preflight>
+  <BlockPendingReboot>true</BlockPendingReboot>
+  <MinimumSystemDriveFreeGB>10</MinimumSystemDriveFreeGB>
+  <BlockOtherLoadedProfiles>true</BlockOtherLoadedProfiles>
+</Preflight>
+<Finalization>
+  <RemoveOperatorProfile>true</RemoveOperatorProfile>
+  <TimeoutMinutes>30</TimeoutMinutes>
+</Finalization>
+<FinalAction>Shutdown</FinalAction>
+```
+
+The XML fragments above must be placed in the element order prescribed
+by `GlobalConfig.xsd`. Also set `Personalization.Enabled=false`,
+`ConfigurationManager.PrepareIdentityReset=false`,
+`ConfigurationManager.CloneTrustedRootKeyReset=false` and
+`Citrix.VDA.StopBeforeShutdown=false`.
+
+**Process:**
+1. Capture a VM checkpoint/backup while retaining a recovery route; complete
+   Windows Update servicing and reboots beforehand.
+2. Use a normal elevated **domain/local admin account with RID >=1000**
+   whose local profile is eligible for removal; the built-in RID-500
+   Administrator and system accounts are not automatically eligible.
+3. Place BISF-Local under an **administrators/SYSTEM-controlled directory**
+   outside the operator profile. The XML, modules, state and enabled log
+   path must not be writable by untrusted users and must not reside inside
+   the profile about to be deleted.
+4. Run `Invoke-BISF.ps1 -Mode Validate`, then
+   `Invoke-BISF.ps1 -Mode Prepare -WhatIf` to inspect all intended actions.
+5. Run `Invoke-BISF.ps1 -Mode Prepare` only after explicit operator review.
+   If preparation succeeds it writes a protected one-shot state file,
+   registers and **starts** a SYSTEM scheduled task named
+   `BISF-Local-OperatorSeal` with **no automatic trigger**, and prints
+   the instruction to sign out.
+6. **Sign out**, do not merely disconnect RDP. The task waits until no
+   nonsystem Windows user profiles are loaded. It validates it is running
+   as SYSTEM on the *same master*, checks the config SHA256 and target SID,
+   verifies the operator profile is now unloaded, and rechecks eligibility.
+7. It removes the operator profile through `Remove-CimInstance`, verifies
+   that it is no longer registered, unregisters its task, removes its
+   staging state, and only then asks Windows to shut down. If any step
+   fails or the timeout expires, **it will not request shutdown**.
+
+No task-triggered logoff, forced session termination, unguarded file-tree
+deletion, scheduled startup after imaging, or automatic deletion on MCS
+clones is performed. A timeout or failed stage may leave a protected
+`state\operator-seal.json` and/or scheduled task for an administrator to
+investigate. **Do not delete those files/tasks blindly.** Review the
+`Finalize` log under your configured logging path and restore the test
+snapshot when uncertain. A shutdown request can fail after profile
+deletion; that cannot be rolled back by this tool.
+
+This workflow is **not** validated yet on a real MCS master or Windows 11
+template. Mocked Pester tests cannot certify Task Scheduler lifetime,
+Win32_UserProfile unload timing, or machine image capture behavior.
+Always power off and snapshot through a supported Citrix MCS workflow.
+
+References:
+- [Microsoft: Clean Up the WinSxS Folder](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/clean-up-the-winsxs-folder)
+- [Microsoft: Clear-RecycleBin](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/clear-recyclebin?view=powershell-5.1)
+- [Microsoft: Register-ScheduledTask](https://learn.microsoft.com/en-us/powershell/module/scheduledtasks/register-scheduledtask)
+- [Microsoft: Delete a Windows user profile](https://learn.microsoft.com/en-us/troubleshoot/windows-server/user-profiles-and-logon/delete-user-profile)
+
 ## Windows 11 / Windows Server platform compatibility
 
 BISF-Local targets **Windows 11 single-session MCS templates** and
