@@ -1,7 +1,7 @@
 BeforeAll {
     Set-StrictMode -Version Latest
     $root=Split-Path $PSScriptRoot -Parent
-    foreach ($n in 'Configuration','Logging','Operations','Lifecycle','Profiles','Maintenance','Finalization') {
+    foreach ($n in 'Configuration','Logging','Operations','Lifecycle','Profiles','Maintenance','LogCleanup','Finalization') {
         . "$root/Modules/Private/$n.ps1"
     }
 }
@@ -158,11 +158,26 @@ Describe 'Finalization shutdown boundary' {
         Mock Enter-BISFLock { 'lock' }
         Mock Exit-BISFLock {}
         Mock Stop-Computer { $script:trace.Add('shutdown') }
+        Mock Invoke-BISFLogCleanup {}
     }
     It 'deletes the verified profile and cleans task/state BEFORE accepting shutdown' {
         $result=Invoke-BISFOperatorSealFinalizer $root $script:cfg
         $result | Should -Be 0
         ($script:trace -join ',') | Should -Be 'delete,unregister,state-delete,shutdown'
+    }
+    It 'performs explicitly enabled log cleanup after profile deletion and before shutdown' {
+        $script:trace.Clear()
+        Mock Invoke-BISFLogCleanup { $script:trace.Add('logs') }
+        $r=Invoke-BISFOperatorSealFinalizer $root $script:cfg
+        $r | Should -Be 0
+        ($script:trace -join ',') | Should -Be 'delete,unregister,state-delete,logs,shutdown'
+    }
+    It 'refuses shutdown if log cleanup fails after an operator profile was removed' {
+        Mock Invoke-BISFLogCleanup { throw 'Event Log cleanup denied' }
+        $r=Invoke-BISFOperatorSealFinalizer $root $script:cfg
+        $r | Should -Be 2
+        $script:trace | Should -Not -Contain 'shutdown'
+        $script:trace | Should -Contain 'delete'
     }
     It 'refuses shutdown when profile provider fails to delete' {
         Mock Remove-BISFCimUserProfile { throw 'Provider refused deletion' }
