@@ -171,6 +171,7 @@ function Test-BISFPreflight {
     }
     if ($Config.Finalization.RemoveOperatorProfile) {
         Test-BISFOperatorSealSettings $Config
+        $null=Get-Command Stop-Computer -CommandType Cmdlet -ErrorAction Stop
         if ($targetMode -eq 'Prepare') {
             foreach ($cmd in 'Get-ScheduledTask','Register-ScheduledTask','Start-ScheduledTask','Unregister-ScheduledTask',
                     'New-ScheduledTaskAction','New-ScheduledTaskPrincipal','New-ScheduledTaskSettingsSet') {
