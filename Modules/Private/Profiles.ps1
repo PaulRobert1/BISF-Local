@@ -16,6 +16,9 @@ function Get-BISFProfilesRoot {
         throw 'ProfilesDirectory must resolve to an absolute local directory.'
     }
     $root=[IO.Path]::GetFullPath($value).TrimEnd([char[]]'\/')
+    if ($root.Equals(([IO.Path]::GetPathRoot($root)).TrimEnd([char[]]'\/'),[StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Refusing a drive root as ProfilesDirectory.'
+    }
     if (-not (Test-Path -LiteralPath $root -PathType Container)) { throw "Windows profiles root does not exist: $root" }
     Test-BISFNoReparsePath $root
     $root
@@ -25,6 +28,7 @@ function Test-BISFDirectProfilePath {
     if ([string]::IsNullOrWhiteSpace($Path) -or [string]::IsNullOrWhiteSpace($Root)) { return $false }
     $pathValue=$Path.Trim()
     if (-not [IO.Path]::IsPathRooted($pathValue) -or $pathValue -match '(^\\\\|^//|[\x00-\x1f"*?])') { return $false }
+    if ($pathValue -match '(^|[\\/])\.{1,2}([\\/]|$)') { return $false }
     if ([IO.Path]::DirectorySeparatorChar -ne '/' -and $pathValue -notmatch '^[A-Za-z]:[\/\\]') { return $false }
     if ($pathValue.Contains(':') -and ($pathValue -notmatch '^[A-Za-z]:[\/\\]' -or $pathValue.Substring(2).Contains(':'))) { return $false }
     try {
@@ -95,6 +99,11 @@ function Get-BISFUserProfilePlan {
         Entries=$entries.ToArray()
     }
 }
+function Remove-BISFCimUserProfile {
+    param([Parameter(Mandatory=$true)]$Profile)
+    # Isolated for testability; real runs exclusively use the Windows profile provider.
+    Remove-CimInstance -InputObject $Profile -Confirm:$false -ErrorAction Stop
+}
 function Invoke-BISFUserProfileCleanup {
     param($Plan,$Logger)
     foreach ($target in @($Plan.Entries | Where-Object { $_.Status -eq 'Remove' })) {
@@ -107,7 +116,7 @@ function Invoke-BISFUserProfileCleanup {
         if ($now.Status -ne 'Remove' -or $now.LocalPath -ne $target.LocalPath) {
             throw "Profile changed since preview; not deleting SID $($target.SID): $($now.Reason)"
         }
-        Remove-CimInstance -InputObject $matches[0] -Confirm:$false -ErrorAction Stop
+        Remove-BISFCimUserProfile $matches[0]
         Write-BISFLog $Logger Info UserProfiles ("Removed profile SID={0}; path={1}" -f $target.SID,$target.LocalPath)
     }
 }
