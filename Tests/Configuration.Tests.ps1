@@ -49,7 +49,7 @@ Describe 'Configuration and logging contract' {
         Close-BISFLogger $l
         Close-BISFLogger $l2
         $l.LogFile | Should -Not -Be $l2.LogFile
-        Get-Content $l.LogFile -Raw | Should -Match '\[Info\].*Test.*Completed café'
+        Get-Content $l.LogFile -Raw -Encoding UTF8 | Should -Match '\[Info\].*Test.*Completed café'
     }
     It 'fails without fallback when the requested folder is a file' {
         'file' | Set-Content "$TestDrive/occupied"
