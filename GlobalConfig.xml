@@ -11,7 +11,14 @@
     <!-- Opt-in: delete unloaded non-system profiles from a quiescent MCS master. -->
     <UserProfiles>false</UserProfiles>
     <MinimumAgeDays>7</MinimumAgeDays>
+    <!-- Clears only the invoking user's Recycle Bin when explicitly enabled. -->
+    <RecycleBin>false</RecycleBin>
   </Cleanup>
+  <!-- Uses Microsoft's built-in Servicing StartComponentCleanup scheduled task. -->
+  <Servicing>
+    <ComponentCleanup>false</ComponentCleanup>
+    <TimeoutMinutes>75</TimeoutMinutes>
+  </Servicing>
   <ConfigurationManager>
     <PrepareIdentityReset>false</PrepareIdentityReset>
     <CloneTrustedRootKeyReset>false</CloneTrustedRootKeyReset>
@@ -33,7 +40,14 @@
   </Citrix>
   <Preflight>
     <BlockPendingReboot>true</BlockPendingReboot>
+    <MinimumSystemDriveFreeGB>0</MinimumSystemDriveFreeGB>
   </Preflight>
+  <!-- Requires UserProfiles=true, FinalAction=Shutdown, administrator logoff,
+       and a protected BIS-F local installation; disabled by default. -->
+  <Finalization>
+    <RemoveOperatorProfile>false</RemoveOperatorProfile>
+    <TimeoutMinutes>30</TimeoutMinutes>
+  </Finalization>
   <!-- None or Shutdown. Shutdown only follows successful Prepare. -->
   <FinalAction>None</FinalAction>
 </BISF>
