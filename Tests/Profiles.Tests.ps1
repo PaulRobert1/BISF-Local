@@ -149,4 +149,32 @@ Describe 'Citrix MCS user profile inventory and safe deletion' {
         $script:profiles=@([pscustomobject]@{SID=$script:userSid;LocalPath=$folder;Loaded=$null;Special=$false;RefCount=0})
         (Get-BISFUserProfilePlan).Entries[0].Status | Should -Be 'Blocked'
     }
+    It 'protects profiles containing package, configuration, state, log or WEM paths' {
+        $folder=Join-Path $script:profileRoot 'testuser'
+        New-Item -ItemType Directory -Path $folder | Out-Null
+        $script:profiles=@(New-TestProfile $script:userSid $folder)
+        foreach ($relative in @('BISF','settings.xml','state','logs','WEM/cache')) {
+            $plan=Get-BISFUserProfilePlan -ProtectedPaths @((Join-Path $folder $relative))
+            $plan.Entries[0].Status | Should -Be 'Protected'
+            Invoke-BISFUserProfileCleanup $plan $null
+        }
+        $script:deleted.Count | Should -Be 0
+    }
+    It 'refuses a different SID returned by the final filtered provider query' {
+        $folder=Join-Path $script:profileRoot 'testuser'
+        New-Item -ItemType Directory -Path $folder | Out-Null
+        $script:profiles=@(New-TestProfile $script:userSid $folder)
+        $plan=Get-BISFUserProfilePlan
+        Mock Get-CimInstance { New-TestProfile 'S-1-5-21-111-222-333-1010' $folder }
+        { Invoke-BISFUserProfileCleanup $plan $null } | Should -Throw '*changed since preview*'
+        $script:deleted.Count | Should -Be 0
+    }
+    It 'refuses duplicate profile paths shared by a protected current SID and another SID' {
+        $folder=Join-Path $script:profileRoot 'operator'
+        New-Item -ItemType Directory -Path $folder | Out-Null
+        $script:profiles=@((New-TestProfile $script:currentSid $folder),(New-TestProfile $script:userSid $folder))
+        { Get-BISFUserProfilePlan } | Should -Throw '*Duplicate*path*'
+        $script:deleted.Count | Should -Be 0
+    }
 }
+

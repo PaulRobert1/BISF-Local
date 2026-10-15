@@ -2,7 +2,7 @@ name: BISF-Local PowerShell 5.1 tests
 
 on:
   pull_request:
-    branches: [implementation]
+    branches: [implementation, fix/wem-cache-diagnostics-20261015]
   workflow_dispatch:
 
 permissions:

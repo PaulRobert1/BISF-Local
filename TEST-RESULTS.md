@@ -1,5 +1,33 @@
 # Verification record
 
+## Latest continuation verification — 2026-10-15
+
+Runtime commit `a26ca25a65596a33b428c02de466df35ee15bcec` passed the full
+`Tests/Invoke-Tests.ps1` suite on GitHub's Windows Server 2025 runner,
+Windows PowerShell 5.1 and Pester 5.7.1: **264 passed, 0 failed, 0 skipped**.
+Run: https://github.com/PaulRobert1/BISF-Local/actions/runs/38737851224
+
+The starting PR #2 head passed 232 tests. This continuation adds 32 cases,
+including profile dependency boundaries and ambiguous provider results, changed
+session state, staging trust/state prerequisites, new servicing-run detection,
+Finalize preview, safe checkbox XML saves, configuration approval races and
+Task Scheduler enumeration errors. Regression-only CI runs were observed failing
+before fixes; see [REVIEW-2026-10-15.md](REVIEW-2026-10-15.md) for exact evidence.
+
+XML/file operations use disposable Pester TestDrive data; the editor's locked-file
+and atomic-replacement behavior is exercised on the Windows runner. Profile
+removal, servicing, SYSTEM task execution, event clearing and shutdown remain
+mocked. The real GUI and native ACL enforcement have not been accepted.
+No operation was executed on SWCTXMASTER05. PR #1 is unchanged and PR #2 remains
+open, unmerged and draft. The shipped XML/XSD and destructive defaults are unchanged.
+
+All disposable Server 2025 and Windows 11 MCS acceptance rows in
+[ACCEPTANCE-TESTING.md](ACCEPTANCE-TESTING.md) remain **NOT RUN**. Passing CI is
+not production certification. Later documentation commits can advance the head;
+verify the current head's Actions result before continuing.
+
+## Earlier verification history
+
 2026-10-12, Linux x86_64 development host.
 
 - PowerShell 7.6.6, Pester 5.7.1: 130 tests passed, 0 failed.
@@ -99,3 +127,44 @@ Server 2025 GitHub runner. **No actual Windows 11 virtual machine or
 Citrix single-session VDA was tested** by these checks. Verify MCS
 provisioning, user-profile behavior, and Citrix support on an isolated
 Windows 11 template before production rollout.
+
+## Post-logoff operator sealing and maintenance (2026-10-15)
+
+Stacked draft PR #2 adds read-only system-volume, pending reboot and
+profile-management inventory; optional Microsoft Windows Servicing task
+cleanup, current-user Recycle Bin cleanup and protected one-shot SYSTEM
+operator-profile finalization after normal sign-out. All mutating
+operations remain opt-in.
+
+The tests are simulated with Pester mocks on the Windows Server 2025
+runner: no real profile deletion, scheduled SYSTEM worker execution,
+Windows component servicing, Recycle Bin deletion or shutdown is
+performed by CI. **Even a passing CI run does not certify production
+master-image safety.** A disposable MCS master and test catalog
+acceptance is mandatory before enabling operator finalization.
+
+Read-only `-Mode VerifyClone` was added to report OS build, VDA/MCS
+components, WEM/cache state, domain join, disk space and profile-manager
+services without mutating image state. Its output deliberately labels
+broker registration, ICA logon, WEM synchronization, activation and
+profile-container attachment as NotVerified until externally tested.
+GitHub CI invokes the verification with mocked service/CIM responses,
+not with a real Citrix session.
+
+## Log hygiene configuration checkboxes (2026-10-15)
+
+Added optional Windows Forms configuration editor Configure-BISF-LogCleanup.ps1,
+optional LogCleanup XML flags (both false by default), late-stage cleanup,
+and regression tests for preview isolation, fixed log scope, file matching,
+deferred finalization and fail-closed shutdown boundaries.
+
+Windows Server 2025 / Windows PowerShell 5.1 GitHub Actions Pester suite:
+232 passed, 0 failed, 0 skipped for commit
+81eef67be621a0d21ea267392b09c55d7dc07aac.
+Run: https://github.com/PaulRobert1/BISF-Local/actions/runs/38732870070
+
+The editor's source was syntax-checked, but the GUI has NOT been exercised
+interactively. Provider operations were mocked: no production logs were
+cleared, no administrator profile was removed, and no real SYSTEM
+sign-out/shutdown cycle was tested. Production readiness is NOT established.
+

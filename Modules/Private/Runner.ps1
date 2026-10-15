@@ -8,16 +8,27 @@ function Get-BISFPlan {
         if ($Config.ConfigurationManager.PrepareIdentityReset -or $Config.ConfigurationManager.CloneTrustedRootKeyReset) { $steps.Add([pscustomobject]@{Id='CMStart';Description='Start Configuration Manager client'}) }
         $steps.Add([pscustomobject]@{Id='Complete';Description='Record successful clone personalization'})
     } else {
+        if ($Config.Servicing.ComponentCleanup) {
+            $steps.Add([pscustomobject]@{Id='Servicing';Description='Run built-in Windows Servicing component cleanup (no ResetBase)'})
+        }
         foreach ($id in 'WindowsTemp','CurrentUserTemp') {
             if ($Config.Cleanup.$id) { $steps.Add([pscustomobject]@{Id=$id;Description="Remove old temporary files: $id"}) }
         }
+        if ($Config.Cleanup.RecycleBin) { $steps.Add([pscustomobject]@{Id='RecycleBin';Description='Empty the Windows system-drive Recycle Bin'}) }
         if ($Config.Cleanup.UserProfiles) { $steps.Add([pscustomobject]@{Id='UserProfiles';Description='Remove inactive non-system local Windows user profiles through CIM'}) }
         if ($Config.ConfigurationManager.PrepareIdentityReset) { $steps.Add([pscustomobject]@{Id='CMPrepare';Description='Stop CcmExec and remove SMS client identity'}) }
         if ($Config.Personalization.Enabled -or $Config.ConfigurationManager.PrepareIdentityReset -or $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
             $steps.Add([pscustomobject]@{Id='Lifecycle';Description='Record a preparation generation and optional startup task'})
         }
+        if ($Config.LogCleanup.WindowsEventLogs -or $Config.LogCleanup.BISFLogs) {
+            $steps.Add([pscustomobject]@{Id='LogCleanup';Description='Clear opted-in Windows Event Logs and/or BISF diagnostic logs at final shutdown'})
+        }
         if ($Config.Citrix.VDA.Enabled -and $Config.Citrix.VDA.StopBeforeShutdown) { $steps.Add([pscustomobject]@{Id='VDAStop';Description='Stop Citrix Desktop Service immediately before shutdown; preserve startup type'}) }
-        if ($Config.FinalAction -eq 'Shutdown') { $steps.Add([pscustomobject]@{Id='Shutdown';Description='Request computer shutdown'}) }
+        if ($Config.Finalization.RemoveOperatorProfile) {
+            $steps.Add([pscustomobject]@{Id='OperatorFinalize';Description='Stage SYSTEM profile cleanup, then require normal operator sign-out before shutdown'})
+        } elseif ($Config.FinalAction -eq 'Shutdown') {
+            $steps.Add([pscustomobject]@{Id='Shutdown';Description='Request computer shutdown'})
+        }
     }
     $steps.ToArray()
 }
@@ -36,17 +47,22 @@ function Invoke-BISFLocal {
     $logger=$null; $lock=$null; $state=$null; $previousCM=$null; $previousVDA=$null; $citrix=$null
     $exitCode=0; $errorMessage=$null; $applying=$false; $stateTouched=$false
     $completionTouched=$false; $journal=$null; $shutdownRequested=$false; $journalStatus=$null
-    $profilePlan=$null
+    $profilePlan=$null; $operatorTarget=$null
     $currentStep='Preflight'
     try {
         $ScriptRoot=[IO.Path]::GetFullPath($ScriptRoot)
         $ConfigPath=Resolve-BISFPath $ConfigPath $ScriptRoot
-        $config=Read-BISFConfig $ConfigPath $ScriptRoot
         $hash=(Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash
+        $config=Read-BISFConfig $ConfigPath $ScriptRoot
+        if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) {
+            throw 'Configuration changed while reading settings. Retry with a stable configuration.'
+        }
         $inventory=Get-BISFInventory
         $plan=@(Get-BISFPlan $config $Mode)
         Test-BISFPreflight $config $Mode $plan $ScriptRoot $ConfigPath $inventory
         $citrix=Get-BISFCitrixReadiness $config $Mode
+        $protected=@($ScriptRoot,$ConfigPath,(Join-Path $ScriptRoot 'state'),$config.Logging.Path)
+        if ($null -ne $citrix.WEM) { $protected+=@($citrix.WEM.CachePath) }
         $statePath=Join-Path $ScriptRoot 'state/lifecycle.json'
         if ($Mode -ne 'Validate' -and -not $WhatIfPreference) { $lock=Enter-BISFLock }
         if ($Mode -eq 'Personalize') {
@@ -92,9 +108,22 @@ function Invoke-BISFLocal {
             }
             Write-BISFLog $logger $level CitrixWEM ("WEM=$($citrix.WEM.Version); hostState=$hostState; cache=$($citrix.WEM.CachePath); cacheStatus=$cacheStatus; $cacheFiles. $guidance")
         }
+        if ($Mode -ne 'Personalize' -and $config.Finalization.RemoveOperatorProfile) {
+            $currentStep='OperatorFinalize'
+            $operatorTarget=Get-BISFOperatorSealTarget $config $ScriptRoot $ConfigPath -ProtectedPaths $protected
+            Write-BISFLog $logger Info OperatorFinalize ("Operator SID={0}; local profile={1}; planned SYSTEM deletion only after normal sign-out." -f $operatorTarget.SID,$operatorTarget.Path)
+            $currentStep='Preflight'
+        }
+        if ($null -ne $inventory.PSObject.Properties['ProductType'] -and $null -ne $inventory.PSObject.Properties['Version']) {
+            $vol=Get-BISFSystemDriveStatus
+            Write-BISFLog $logger Info Disk ("System drive={0}; FreeGB={1}; TotalGB={2}; RequiredFreeGB={3}" -f $vol.Drive,$vol.FreeGB,$vol.TotalGB,$config.Preflight.MinimumSystemDriveFreeGB)
+            foreach ($service in Get-BISFProfileManagementServices) {
+                Write-BISFLog $logger Info ProfileManager ("Name={0}; State={1}; StartMode={2}" -f $service.Name,$service.State,$service.StartMode)
+            }
+        }
         if ($Mode -ne 'Personalize' -and $config.Cleanup.UserProfiles) {
             $currentStep='UserProfiles'
-            $profilePlan=Get-BISFUserProfilePlan $config.Cleanup.ExcludedProfileSIDs
+            $profilePlan=Get-BISFUserProfilePlan $config.Cleanup.ExcludedProfileSIDs -ProtectedPaths $protected
             $targets=@($profilePlan.Entries | Where-Object { $_.Status -eq 'Remove' })
             $blocked=@($profilePlan.Entries | Where-Object { $_.Status -eq 'Blocked' })
             Write-BISFLog $logger Info UserProfiles ("Profile scan: eligible={0}; blocked={1}; total={2}; root={3}" -f $targets.Count,$blocked.Count,$profilePlan.Entries.Count,$profilePlan.Root)
@@ -133,9 +162,15 @@ function Invoke-BISFLocal {
                 $results.Add([pscustomobject]@{Id='Apply';Status='Skipped';Message='An operation was declined; no changes applied.'})
                 Write-BISFLog $logger Warning Apply 'Skipped: one or more operations were declined.'
             } else {
+                # Service-state and session checks may change between preview and
+                # apply: revalidate before every destructive operation.
+                if ($config.Preflight.BlockPendingReboot -and @(Get-BISFPendingRebootReasons).Count -gt 0) {
+                    throw 'A reboot is now pending. Preparation cancelled.'
+                }
                 if ($null -ne $profilePlan -and @($profilePlan.Entries | Where-Object { $_.Status -eq 'Blocked' }).Count -gt 0) {
                     throw 'Refusing profile cleanup while non-exempt profiles are loaded or their lifecycle status is unknown. Log off all other users and retry.'
                 }
+                if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
                 $applying=$true
                 if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during preflight.' }
                 $needsState=($Mode -eq 'Prepare' -and (@($plan | ForEach-Object { $_.Id }) -contains 'Lifecycle'))
@@ -150,13 +185,19 @@ function Invoke-BISFLocal {
                     $state.Status='Failed'; $state.Completion=$null; $stateTouched=$true
                     Write-BISFState $statePath $state
                 }
-                $protected=@($ScriptRoot,$ConfigPath,(Join-Path $ScriptRoot 'state'),$config.Logging.Path)
-                if ($null -ne $citrix.WEM) { $protected+=@($citrix.WEM.CachePath) }
                 foreach ($step in $plan) {
-                    if ($step.Id -in @('VDAStop','Shutdown')) { continue }
+                    if ($step.Id -in @('VDAStop','Shutdown','OperatorFinalize','LogCleanup')) { continue }
                     $currentStep=$step.Id
+                    if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
+                    if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during image operations.' }
                     Write-BISFLog $logger Info $step.Id ('Starting: '+$step.Description)
                     switch ($step.Id) {
+                        'Servicing' {
+                            Invoke-BISFComponentCleanup $config.Servicing.TimeoutMinutes $logger
+                        }
+                        'RecycleBin' {
+                            Invoke-BISFRecycleBinCleanup $logger
+                        }
                         'WindowsTemp' {
                             $roots=Get-BISFTempRoots
                             $files=@(Get-BISFCleanupCandidates $roots.WindowsTemp $config.Cleanup.MinimumAgeDays $protected)
@@ -193,6 +234,11 @@ function Invoke-BISFLocal {
                 }
                 if ($plan.Count -eq 0) { Write-BISFLog $logger Info Prepare 'No image operations enabled. Nothing was sealed or captured.' }
                 $currentStep='Finalize'
+                if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
+                if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed before final sealing.' }
+                if ($config.Preflight.BlockPendingReboot -and @(Get-BISFPendingRebootReasons).Count -gt 0) {
+                    throw 'Windows servicing now requires a reboot; refusing to finalize or shut down.'
+                }
                 if ($needsState) { $state.Status='Prepared'; Write-BISFState $statePath $state }
                 if ($Mode -eq 'Personalize') { Write-BISFState $statePath $state }
                 if (@($plan | ForEach-Object { $_.Id }) -contains 'Shutdown') {
@@ -205,6 +251,14 @@ function Invoke-BISFLocal {
                         Stop-BISFVDA
                         $results.Add([pscustomobject]@{Id='VDAStop';Status='Completed';Message='Desktop Service stopped; startup type unchanged.'})
                     }
+                    if ($config.LogCleanup.WindowsEventLogs -or $config.LogCleanup.BISFLogs) {
+                        $currentStep='LogCleanup'
+                        # This is deliberately the last logging/cleanup step before
+                        # requesting shutdown. Security and arbitrary vendor logs stay intact.
+                        Write-BISFLog $logger Info LogCleanup 'Final-stage log hygiene requested. Security audit log and Citrix/WEM logs are not touched.'
+                        Invoke-BISFLogCleanup $config
+                        $results.Add([pscustomobject]@{Id='LogCleanup';Status='Completed';Message='Selected master log cleanup completed.'})
+                    }
                     $currentStep='Shutdown'
                     Stop-Computer -Confirm:$false -ErrorAction Stop
                     $shutdownRequested=$true
@@ -214,6 +268,17 @@ function Invoke-BISFLocal {
                 # accepted and deletion fails, keep the clone blocked; do not try to
                 # restore services or write diagnostic files during shutdown.
                 if ($null -ne $journal) { Clear-BISFJournal $journal }
+                if ($config.Finalization.RemoveOperatorProfile) {
+                    $currentStep='OperatorFinalize'
+                    # Last fallible file log before the operator may sign out.
+                    Write-BISFLog $logger Info OperatorFinalize 'Starting one-shot protected SYSTEM task. Sign out normally. If the user profile stays loaded or cleanup fails, the image will NOT shut down.'
+                    Register-BISFOperatorSeal $ScriptRoot $ConfigPath $config $operatorTarget -ExpectedHash $hash
+                    $results.Add([pscustomobject]@{Id='OperatorFinalize';Status='Staged';Message='SYSTEM finalizer started. Sign out normally to permit profile deletion and shutdown.'})
+                    if ($config.LogCleanup.WindowsEventLogs -or $config.LogCleanup.BISFLogs) {
+                        $results.Add([pscustomobject]@{Id='LogCleanup';Status='Staged';Message='Log cleanup deferred to the SYSTEM finalizer after operator sign-out.'})
+                    }
+                    Write-Host 'BIS-F Local: SYSTEM finalizer staged. Sign out (do not disconnect) after reviewing the result. No automatic logoff will be performed.'
+                }
                 foreach ($step in $plan) {
                     if ($step.Id -in @('Lifecycle','Complete')) { $results.Add([pscustomobject]@{Id=$step.Id;Status='Completed';Message=$step.Description}) }
                 }
@@ -252,3 +317,4 @@ function Invoke-BISFLocal {
     Write-Host ("BIS-F Local: Mode={0}, ExitCode={1}, Completed={2}, Failed={3}" -f $Mode,$exitCode,@($results | Where-Object Status -eq 'Completed').Count,@($results | Where-Object Status -eq 'Failed').Count)
     [pscustomobject]@{ExitCode=$exitCode;Mode=$Mode;Results=$results.ToArray();Error=$errorMessage;Citrix=$citrix}
 }
+

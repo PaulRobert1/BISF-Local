@@ -1,7 +1,7 @@
 BeforeAll {
     Set-StrictMode -Version Latest
     $root = Split-Path $PSScriptRoot -Parent
-    foreach ($name in 'Configuration','Preflight','Runner') {
+    foreach ($name in 'Configuration','Operations','Lifecycle','Profiles','Maintenance','LogCleanup','Finalization','Preflight','Runner') {
         $p = "$root/Modules/Private/$name.ps1"
         if (Test-Path $p) { . $p }
     }
@@ -123,6 +123,23 @@ Describe 'Enabled integration dependencies' {
         Mock Test-BISFPlatform {}
         Mock Test-BISFProtectedLocation {}
         Mock Test-BISFTaskOwnership {}
+        Mock Get-BISFLoadedNonSystemProfiles { @() }
+        Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-1002' }
+    }
+    It 'blocks another interactive profile when the readiness option is enabled' {
+        $c.Preflight.BlockOtherLoadedProfiles=$true
+        Mock Get-BISFLoadedNonSystemProfiles { [pscustomobject]@{SID='S-1-5-21-111-222-333-1005';Loaded=$true} }
+        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Throw '*Other loaded local user profiles*'
+    }
+    It 'blocks preparation with insufficient system-drive space' {
+        $c.Preflight.MinimumSystemDriveFreeGB=15
+        Mock Get-BISFSystemDriveStatus { [pscustomobject]@{Drive='C:';FreeGB=9;TotalGB=100} }
+        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Throw '*Not enough free space*'
+    }
+    It 'allows sufficient disk space while keeping user-session checks independent' {
+        $c.Preflight.MinimumSystemDriveFreeGB=15
+        Mock Get-BISFSystemDriveStatus { [pscustomobject]@{Drive='C:';FreeGB=30;TotalGB=100} }
+        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Not -Throw
     }
     It 'does not require client or scheduler commands when their features are disabled' {
         Mock Get-Command { throw 'unneeded dependency query' }

@@ -43,7 +43,7 @@ function New-BISFProfileDecision {
     [pscustomobject]@{SID=$SID;LocalPath=$LocalPath;Status=$Status;Reason=$Reason}
 }
 function Get-BISFUserProfileDisposition {
-    param($Profile,[string]$Root,[string]$CurrentSid,[string[]]$ExcludedSIDs=@())
+    param($Profile,[string]$Root,[string]$CurrentSid,[string[]]$ExcludedSIDs=@(),[string[]]$ProtectedPaths=@())
     $sid=[string]$Profile.SID
     $path=[string]$Profile.LocalPath
     if ([string]::IsNullOrWhiteSpace($sid)) { return New-BISFProfileDecision $sid $path Protected 'No SID' }
@@ -65,6 +65,11 @@ function Get-BISFUserProfileDisposition {
     if (-not (Test-BISFDirectProfilePath $path $Root)) {
         return New-BISFProfileDecision $sid $path Protected 'Path is not a direct child of ProfilesDirectory'
     }
+    foreach ($dependency in $ProtectedPaths) {
+        if (Test-BISFPathWithin $dependency $path) {
+            return New-BISFProfileDecision $sid $path Protected 'Profile contains a protected runtime dependency'
+        }
+    }
     $leaf=[IO.Path]::GetFileName($path.TrimEnd([char[]]'\/'))
     if ($leaf -match '^(Default|Default User|Public|All Users|defaultuser0|WDAGUtilityAccount|Administrator(\..*)?)$') {
         return New-BISFProfileDecision $sid $path Protected 'Reserved or administrator profile directory'
@@ -81,21 +86,26 @@ function Get-BISFUserProfileDisposition {
     New-BISFProfileDecision $sid $path Remove 'Inactive, registered, non-special user profile'
 }
 function Get-BISFUserProfilePlan {
-    param([string[]]$ExcludedSIDs=@())
+    param([string[]]$ExcludedSIDs=@(),[string[]]$ProtectedPaths=@())
     $root=Get-BISFProfilesRoot
     $currentSid=Get-BISFCurrentUserSid
     $profiles=@(Get-CimInstance -ClassName Win32_UserProfile -ErrorAction Stop)
     $entries=New-Object 'System.Collections.Generic.List[object]'
     $seen=New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    $seenPaths=New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
     foreach ($profile in $profiles) {
-        $decision=Get-BISFUserProfileDisposition $profile $root $currentSid $ExcludedSIDs
+        $decision=Get-BISFUserProfileDisposition $profile $root $currentSid $ExcludedSIDs $ProtectedPaths
         if (-not [string]::IsNullOrWhiteSpace($decision.SID)) {
             if (-not $seen.Add($decision.SID)) { throw "Duplicate Windows profile SID returned by provider: $($decision.SID)" }
+        }
+        if (Test-BISFDirectProfilePath $decision.LocalPath $root) {
+            $canonical=[IO.Path]::GetFullPath($decision.LocalPath).TrimEnd([char[]]'\/')
+            if (-not $seenPaths.Add($canonical)) { throw "Duplicate Windows profile path returned by provider: $canonical" }
         }
         $entries.Add($decision)
     }
     [pscustomobject]@{
-        Root=$root;CurrentSid=$currentSid;ExcludedSIDs=[string[]]$ExcludedSIDs
+        Root=$root;CurrentSid=$currentSid;ExcludedSIDs=[string[]]$ExcludedSIDs;ProtectedPaths=[string[]]$ProtectedPaths
         Entries=$entries.ToArray()
     }
 }
@@ -112,11 +122,12 @@ function Invoke-BISFUserProfileCleanup {
         $query="SID='$($target.SID)'"
         $matches=@(Get-CimInstance -ClassName Win32_UserProfile -Filter $query -ErrorAction Stop)
         if ($matches.Count -ne 1) { throw "Profile disappeared or became ambiguous: $($target.SID)" }
-        $now=Get-BISFUserProfileDisposition $matches[0] $Plan.Root $Plan.CurrentSid $Plan.ExcludedSIDs
-        if ($now.Status -ne 'Remove' -or $now.LocalPath -ne $target.LocalPath) {
+        $now=Get-BISFUserProfileDisposition $matches[0] $Plan.Root $Plan.CurrentSid $Plan.ExcludedSIDs $Plan.ProtectedPaths
+        if ($now.SID -ne $target.SID -or $now.Status -ne 'Remove' -or $now.LocalPath -ne $target.LocalPath) {
             throw "Profile changed since preview; not deleting SID $($target.SID): $($now.Reason)"
         }
         Remove-BISFCimUserProfile $matches[0]
         Write-BISFLog $Logger Info UserProfiles ("Removed profile SID={0}; path={1}" -f $target.SID,$target.LocalPath)
     }
 }
+

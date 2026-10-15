@@ -12,6 +12,7 @@ Describe 'Exported module under production strict mode' {
             (Get-Content (Join-Path $package 'GlobalConfig.xml') -Raw).Replace('<Enabled>true</Enabled>','<Enabled>false</Enabled>') | Set-Content $config
             Mock Get-BISFInventory { [pscustomobject]@{Caption='Test';Build=26100;Identity=[pscustomobject]@{Name='MASTER'};CMInstalled=$false} }
             Mock Test-BISFPreflight {}
+            Mock Get-BISFPendingRebootReasons { @() }
             $r=Invoke-BISFLocal $config $package Prepare -Confirm:$false
             $r.ExitCode | Should -Be 0
             $r.Results.Count | Should -Be 0

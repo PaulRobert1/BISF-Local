@@ -1,7 +1,7 @@
 BeforeAll {
     Set-StrictMode -Version Latest
     $root=Split-Path $PSScriptRoot -Parent
-    foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Citrix','Profiles','Runner') { . "$root/Modules/Private/$n.ps1" }
+    foreach ($n in 'Configuration','Logging','Preflight','Operations','Lifecycle','Citrix','Profiles','Maintenance','LogCleanup','Finalization','Runner') { . "$root/Modules/Private/$n.ps1" }
     foreach ($n in 'Enter-BISFJournal','Clear-BISFJournal','Get-BISFJournalStatus') {
         if (-not (Get-Command $n -ErrorAction SilentlyContinue)) { Set-Item -Path ('Function:'+ $n) -Value {} }
     }
@@ -21,6 +21,9 @@ Describe 'Full workflow safety and results' {
         $clone=[pscustomobject]@{Name='CLONE';MachineGuid=$master.MachineGuid;SmbiosUuid='33333333-3333-3333-3333-333333333333'}
         Mock Get-BISFInventory { [pscustomobject]@{Caption='Test Windows';Build=26100;Identity=$master;CMInstalled=$true} }
         Mock Test-BISFPreflight {}
+        Mock Get-BISFPendingRebootReasons { @() }
+        Mock Get-BISFLoadedNonSystemProfiles { @() }
+        Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-1002' }
         Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=$null} }
         Mock Test-BISFProtectedLocation {}
         Mock Write-BISFState { $script:trace.Add('state:'+$State.Status) }
@@ -87,11 +90,185 @@ Describe 'Full workflow safety and results' {
         ($script:trace -join ',') | Should -Be 'profiles'
         Should -Invoke Invoke-BISFUserProfileCleanup -Times 1
     }
+    It 'stages SYS operator profile cleanup without immediate shutdown or forced logoff' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{
+            Root='C:\Users'
+            CurrentSid='S-1-5-21-111-222-333-1001'
+            ExcludedSIDs=@()
+            Entries=@([pscustomobject]@{SID='S-1-5-21-111-222-333-1001';LocalPath='C:\Users\Operator';Status='Protected';Reason='Current user'})
+        } }
+        Mock Invoke-BISFUserProfileCleanup { $script:trace.Add('other-profiles') }
+        Mock Register-BISFOperatorSeal { $script:trace.Add('stage') }
+        Mock Stop-Computer { throw 'Must not shut down before administrator signs out' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 0
+        ($script:trace -join ',') | Should -Be 'other-profiles,stage'
+        $r.Results.Status | Should -Contain 'Staged'
+        Should -Invoke Stop-Computer -Times 0
+    }
+    It 'keeps operator finalizer and servicing read-only in Validate/WhatIf' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.BISF.Servicing.ComponentCleanup='true'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';CurrentSid='S-1-5-21-111-222-333-1001';ExcludedSIDs=@();Entries=@()} }
+        Mock Invoke-BISFComponentCleanup { throw 'Must not run servicing in previews' }
+        Mock Register-BISFOperatorSeal { throw 'Must not stage SYSTEM worker in previews' }
+        (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0
+        (Invoke-BISFLocal $cfg $root Prepare -WhatIf).ExitCode | Should -Be 0
+        Should -Invoke Invoke-BISFComponentCleanup -Times 0
+        Should -Invoke Register-BISFOperatorSeal -Times 0
+        $script:trace.Count | Should -Be 0
+    }
+    It 'stops later profile deletion if Windows servicing fails' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Servicing.ComponentCleanup='true'
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.Save($cfg)
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';CurrentSid='S-1-5-21-111-222-333-1001';ExcludedSIDs=@();Entries=@()} }
+        Mock Invoke-BISFComponentCleanup { throw 'servicing failure' }
+        Mock Invoke-BISFUserProfileCleanup { throw 'Should not delete profiles after servicing fails' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        Should -Invoke Invoke-BISFUserProfileCleanup -Times 0
+    }
+    It 'previews log cleanup without deleting data in Validate and Prepare WhatIf' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.LogCleanup.WindowsEventLogs='true'
+        $xml.BISF.LogCleanup.BISFLogs='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Invoke-BISFLogCleanup { throw 'Log cleanup must never run in a preview' }
+        (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0
+        (Invoke-BISFLocal $cfg $root Prepare -WhatIf).ExitCode | Should -Be 0
+        Should -Invoke Invoke-BISFLogCleanup -Times 0
+        $script:trace.Count | Should -Be 0
+    }
+    It 'runs selected log cleanup immediately before normal master shutdown' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.LogCleanup.WindowsEventLogs='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Invoke-BISFLogCleanup { $script:trace.Add('log-clean') }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 0
+        ($script:trace -join ',') | Should -Be 'log-clean,shutdown'
+    }
+    It 'refuses shutdown if the final log cleanup operation fails' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.LogCleanup.WindowsEventLogs='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Invoke-BISFLogCleanup { throw 'Event Log provider failed' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $script:trace | Should -Not -Contain 'shutdown'
+    }
+    It 'defers the log purge to SYSTEM when operator profile finalization is enabled' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.LogCleanup.WindowsEventLogs='true'
+        $xml.BISF.LogCleanup.BISFLogs='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';CurrentSid='S-1-5-21-111-222-333-1001';ExcludedSIDs=@();Entries=@()} }
+        Mock Register-BISFOperatorSeal { $script:trace.Add('stage') }
+        Mock Invoke-BISFLogCleanup { throw 'Operator profile has not been removed yet' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 0
+        $script:trace | Should -Contain 'stage'
+        $r.Results.Status | Should -Contain 'Staged'
+        Should -Invoke Invoke-BISFLogCleanup -Times 0
+        Should -Invoke Stop-Computer -Times 0
+    }
     It 'preflight failure prevents every requested mutation' {
         Mock Test-BISFPreflight { throw 'missing prerequisite' }
         $r=Invoke-BISFLocal $cfg $root Prepare
         $r.ExitCode | Should -Be 1
         $script:trace.Count | Should -Be 0
+    }
+    It 'rejects a configuration replaced while its settings are being read' {
+        $script:realReadConfig=(Get-Command Read-BISFConfig).ScriptBlock
+        Mock Read-BISFConfig {
+            $parsed=& $script:realReadConfig $ConfigPath $ScriptRoot
+            Add-Content -LiteralPath $ConfigPath -Value '<!-- concurrent edit during load -->'
+            $parsed
+        }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 1
+        $r.Error | Should -Match 'Configuration changed'
+        $script:trace.Count | Should -Be 0
+    }
+    It 'refuses shutdown when configuration changes during servicing' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Servicing.ComponentCleanup='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Invoke-BISFComponentCleanup { Add-Content -LiteralPath $cfg -Value '<!-- changed during servicing -->' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $r.Error | Should -Match 'Configuration changed'
+        Should -Invoke Stop-Computer -Times 0
+    }
+    It 'never stages newly enabled log cleanup that was absent from the confirmed operator plan' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Servicing.ComponentCleanup='true'
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';Entries=@()} }
+        Mock Invoke-BISFUserProfileCleanup {}
+        Mock Register-BISFOperatorSeal {}
+        Mock Invoke-BISFComponentCleanup {
+            (Get-Content $cfg -Raw).Replace('<WindowsEventLogs>false','<WindowsEventLogs>true') | Set-Content $cfg
+        }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $r.Error | Should -Match 'Configuration changed'
+        Should -Invoke Register-BISFOperatorSeal -Times 0
+        Should -Invoke Stop-Computer -Times 0
+    }
+    It 'protects package, config, state, logging and WEM dependencies during profile planning' {
+        (Get-Content $cfg -Raw).Replace('<UserProfiles>false','<UserProfiles>true') | Set-Content $cfg
+        Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=[pscustomobject]@{Version='2507';CachePath="$TestDrive/WEM"}} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';Entries=@()} }
+        (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0
+        Should -Invoke Get-BISFUserProfilePlan -Times 1 -ParameterFilter {
+            $ProtectedPaths -contains $root -and $ProtectedPaths -contains $cfg -and
+            $ProtectedPaths -contains (Join-Path $root 'state') -and
+            $ProtectedPaths -contains (Join-Path $root 'logs') -and $ProtectedPaths -contains "$TestDrive/WEM"
+        }
+    }
+    It 'cancels if another profile became busy after preflight and before applying' {
+        (Get-Content $cfg -Raw).Replace('<FinalAction>None','<FinalAction>Shutdown') | Set-Content $cfg
+        Mock Get-BISFLoadedNonSystemProfiles { [pscustomobject]@{SID='S-1-5-21-111-222-333-1009'} }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Not -Be 0
+        $script:trace.Count | Should -Be 0
+    }
+    It 'blocks final shutdown when another user logs on during component cleanup' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Servicing.ComponentCleanup='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        $script:busy=$false
+        Mock Get-BISFLoadedNonSystemProfiles { if ($script:busy) { [pscustomobject]@{SID='S-1-5-21-111-222-333-1009'} } }
+        Mock Invoke-BISFComponentCleanup { $script:busy=$true; $script:trace.Add('servicing') }
+        (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2
+        ($script:trace -join ',') | Should -Be 'servicing'
     }
     It 'stops after failed preparation without successful state or shutdown' {
         (Get-Content $cfg -Raw).Replace('<PrepareIdentityReset>false','<PrepareIdentityReset>true').Replace('<FinalAction>None','<FinalAction>Shutdown') | Set-Content $cfg
@@ -291,6 +468,8 @@ Describe 'Citrix final shutdown boundary' {
         $script:trace=New-Object 'System.Collections.Generic.List[string]'
         Mock Get-BISFInventory { [pscustomobject]@{Caption='Test';Build=26100;Identity=[pscustomobject]@{Name='MASTER'};CMInstalled=$false} }
         Mock Test-BISFPreflight {}
+        Mock Get-BISFLoadedNonSystemProfiles { @() }
+        Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-1002' }
         Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=[pscustomobject]@{Version='2507';CachePath="$TestDrive/cache";CacheExists=$true}} }
         Mock Get-BISFVDARunningState { 'Running' }
         Mock Stop-BISFVDA { $script:trace.Add('vda-stop') }
@@ -375,3 +554,4 @@ Describe 'Citrix final shutdown boundary' {
         Should -Invoke Restore-BISFCMService -Times 0
     }
 }
+

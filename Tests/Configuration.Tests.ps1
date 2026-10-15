@@ -38,7 +38,7 @@ Describe 'Configuration and logging contract' {
     }
     It 'accepts explicit profile cleanup and protected SID list without affecting temp file age' {
         $body=(Get-Content $cfgPath -Raw).Replace('<UserProfiles>false</UserProfiles>','<UserProfiles>true</UserProfiles>')
-        $body=$body.Replace('</MinimumAgeDays>','</MinimumAgeDays><ExcludedProfileSIDs><SID>S-1-5-21-111-222-333-1001</SID></ExcludedProfileSIDs>')
+        $body=$body.Replace('<RecycleBin>false</RecycleBin>','<RecycleBin>false</RecycleBin><ExcludedProfileSIDs><SID>S-1-5-21-111-222-333-1001</SID></ExcludedProfileSIDs>')
         $body | Set-Content $cfgPath
         $config=Read-BISFConfig $cfgPath $root
         $config.Cleanup.UserProfiles | Should -BeTrue
@@ -47,8 +47,50 @@ Describe 'Configuration and logging contract' {
         $config.Cleanup.MinimumAgeDays | Should -Be 7
     }
     It 'rejects malformed SID exclusions in strict XML' {
-        (Get-Content $cfgPath -Raw).Replace('</MinimumAgeDays>','</MinimumAgeDays><ExcludedProfileSIDs><SID>NOT-A-SID</SID></ExcludedProfileSIDs>') | Set-Content $cfgPath
+        (Get-Content $cfgPath -Raw).Replace('<RecycleBin>false</RecycleBin>','<RecycleBin>false</RecycleBin><ExcludedProfileSIDs><SID>NOT-A-SID</SID></ExcludedProfileSIDs>') | Set-Content $cfgPath
         { Read-BISFConfig $cfgPath $root } | Should -Throw '*Invalid ExcludedProfileSIDs*'
+    }
+    It 'parses safe maintenance defaults without changing older XML compatibility' {
+        $c=Read-BISFConfig $cfgPath $root
+        $c.Cleanup.RecycleBin | Should -BeFalse
+        $c.Servicing.ComponentCleanup | Should -BeFalse
+        $c.Servicing.TimeoutMinutes | Should -Be 75
+        $c.Finalization.RemoveOperatorProfile | Should -BeFalse
+        $c.Finalization.TimeoutMinutes | Should -Be 30
+        $c.Preflight.BlockOtherLoadedProfiles | Should -BeTrue
+    }
+    It 'accepts legacy XML with optional maintenance sections absent and defaults to non-destructive' {
+        $xml=Get-Content $cfgPath -Raw
+        $xml=[regex]::Replace($xml,'(?s)\s*<Servicing>.*?</Servicing>','')
+        $xml=[regex]::Replace($xml,'(?s)\s*<Finalization>.*?</Finalization>','')
+        $xml=$xml.Replace('    <RecycleBin>false</RecycleBin>','')
+        $xml=$xml.Replace('    <BlockOtherLoadedProfiles>true</BlockOtherLoadedProfiles>','')
+        $xml=$xml.Replace('    <MinimumSystemDriveFreeGB>0</MinimumSystemDriveFreeGB>','')
+        $xml | Set-Content $cfgPath
+        $c=Read-BISFConfig $cfgPath $root
+        $c.Servicing.ComponentCleanup | Should -BeFalse
+        $c.Cleanup.RecycleBin | Should -BeFalse
+        $c.Finalization.RemoveOperatorProfile | Should -BeFalse
+        $c.Preflight.BlockOtherLoadedProfiles | Should -BeFalse
+    }
+    It 'defaults log cleanup switches to false and accepts existing XML without LogCleanup' {
+        $c=Read-BISFConfig $cfgPath $root
+        $c.LogCleanup.WindowsEventLogs | Should -BeFalse
+        $c.LogCleanup.BISFLogs | Should -BeFalse
+        $source=Get-Content $cfgPath -Raw
+        $source=[regex]::Replace($source,'(?s)\s*<LogCleanup>.*?</LogCleanup>','')
+        $source | Set-Content $cfgPath
+        $legacy=Read-BISFConfig $cfgPath $root
+        $legacy.LogCleanup.WindowsEventLogs | Should -BeFalse
+        $legacy.LogCleanup.BISFLogs | Should -BeFalse
+    }
+    It 'accepts explicit Windows log and BISF-only log deletion switches' {
+        $source=(Get-Content $cfgPath -Raw).Replace('<WindowsEventLogs>false</WindowsEventLogs>','<WindowsEventLogs>true</WindowsEventLogs>')
+        $source=$source.Replace('<BISFLogs>false</BISFLogs>','<BISFLogs>true</BISFLogs>')
+        $source | Set-Content $cfgPath
+        $c=Read-BISFConfig $cfgPath $root
+        $c.LogCleanup.WindowsEventLogs | Should -BeTrue
+        $c.LogCleanup.BISFLogs | Should -BeTrue
     }
     It 'rejects DTD entities' {
         '<!DOCTYPE BISF [<!ENTITY x "test">]><BISF SchemaVersion="1">&x;</BISF>' | Set-Content $cfgPath
