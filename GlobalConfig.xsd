@@ -8,7 +8,12 @@
     </xs:sequence></xs:complexType></xs:element>
     <xs:element name="Cleanup"><xs:complexType><xs:sequence>
       <xs:element name="WindowsTemp" type="xs:boolean"/><xs:element name="CurrentUserTemp" type="xs:boolean"/>
+      <!-- Optional for compatibility with deployed XML. Explicit opt-in to irreversible profile deletion. -->
+      <xs:element name="UserProfiles" type="xs:boolean" minOccurs="0"/>
       <xs:element name="MinimumAgeDays"><xs:simpleType><xs:restriction base="xs:positiveInteger"><xs:maxInclusive value="3650"/></xs:restriction></xs:simpleType></xs:element>
+      <xs:element name="ExcludedProfileSIDs" minOccurs="0"><xs:complexType><xs:sequence>
+        <xs:element name="SID" type="NonBlank" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence></xs:complexType></xs:element>
     </xs:sequence></xs:complexType></xs:element>
     <xs:element name="ConfigurationManager"><xs:complexType><xs:sequence>
       <xs:element name="PrepareIdentityReset" type="xs:boolean"/><xs:element name="CloneTrustedRootKeyReset" type="xs:boolean"/>
