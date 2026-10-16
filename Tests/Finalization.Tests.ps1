@@ -211,7 +211,7 @@ Describe 'Finalization shutdown boundary' {
         Mock Get-CimInstance {
             if ($script:profilesRemaining) { $script:boundaryProfile }
         }
-        Mock Remove-BISFCimUserProfile { $script:trace.Add('delete'); $script:profilesRemaining=$false }
+        Mock Remove-BISFCimUserProfile { $script:trace.Add('delete'); $script:profilesRemaining=$false; [IO.Directory]::Delete($script:boundaryPath,$true) }
         Mock Unregister-ScheduledTask { $script:trace.Add('unregister') }
         Mock Test-BISFProtectedLocation {}
         Mock Remove-Item { $script:trace.Add('state-delete') }
@@ -225,6 +225,15 @@ Describe 'Finalization shutdown boundary' {
         $result=Invoke-BISFOperatorSealFinalizer $root $script:cfg
         $result | Should -Be 0
         ($script:trace -join ',') | Should -Be 'delete,unregister,state-delete,shutdown'
+    }
+    It 'refuses shutdown when provider registration disappears but profile files remain' {
+        $marker=Join-Path $script:boundaryPath 'locked-file.txt'
+        [IO.File]::WriteAllText($marker,'must remain for investigation')
+        Mock Remove-BISFCimUserProfile { $script:trace.Add('delete'); $script:profilesRemaining=$false }
+        (Invoke-BISFOperatorSealFinalizer $root $script:cfg) | Should -Be 2
+        ($script:trace -join ',') | Should -Be 'delete'
+        [IO.File]::ReadAllText($marker) | Should -Be 'must remain for investigation'
+        Should -Invoke Invoke-BISFLogCleanup -Times 0
     }
     It 'previews Finalize without reading staged state or applying any mutation' {
         (Invoke-BISFOperatorSealFinalizer $root $script:cfg -WhatIf) | Should -Be 0

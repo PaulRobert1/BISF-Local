@@ -43,7 +43,11 @@ Never force logoff or poweroff to turn a failed seal into a capture candidate.
 Preserve task results, pending state, logs, profile inventory and hypervisor
 state outside the image. Profile/log removal is not transactional. After a
 partial failure, investigate and restore the backed-up disposable/master image;
-do not retry the finalizer or delete its state to suppress the failure. Never
+do not retry the finalizer or delete its state to suppress the failure. Windows
+can remove profile registration while leaving locked files behind; BISF requires
+both registration and the original profile directory to be absent. A leftover
+directory blocks further cleanup and shutdown; never remove it as a fallback
+to make the failed seal appear successful. Never
 run finalization on an MCS clone as a repair step.
 
 ## Release and pilot

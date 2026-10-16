@@ -257,11 +257,9 @@ function Invoke-BISFOperatorSealFinalizer {
         $target=Get-BISFOperatorSealProfile $state $config
         if (-not $target.Ready) { throw 'Operator profile became busy before final deletion; shutdown refused.' }
         Remove-BISFCimUserProfile $target.Profile
-        if (@(Get-CimInstance -ClassName Win32_UserProfile -Filter "SID='$($state.OperatorSid)'" -ErrorAction Stop).Count -gt 0) {
-            throw 'Windows still reports the operator profile after deletion.'
-        }
+        Assert-BISFUserProfileRemoved -SID $state.OperatorSid -LocalPath $state.OperatorPath
         Write-BISFLog $logger Info Finalize ("Operator profile removed: SID={0}; local path={1}" -f $state.OperatorSid,$state.OperatorPath)
-        # No restart/shutdown unless registration is cleaned and the pending state
+        # No restart/shutdown unless profile files/registration are absent and pending state
         # is consumed. If cleanup fails, manual recovery is required.
         Unregister-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -Confirm:$false -ErrorAction Stop
         $statePath=Get-BISFOperatorSealStatePath $ScriptRoot

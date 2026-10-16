@@ -114,6 +114,30 @@ function Remove-BISFCimUserProfile {
     # Isolated for testability; real runs exclusively use the Windows profile provider.
     Remove-CimInstance -InputObject $Profile -Confirm:$false -ErrorAction Stop
 }
+function Assert-BISFUserProfileRemoved {
+    param([Parameter(Mandatory=$true)][string]$SID,[Parameter(Mandatory=$true)][string]$LocalPath)
+    if (@(Get-CimInstance -ClassName Win32_UserProfile -Filter "SID='$SID'" -ErrorAction Stop).Count -gt 0) {
+        throw "Windows still reports the profile after provider deletion: $SID"
+    }
+    foreach ($suffix in @('', '.bak')) {
+        $key='HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\'+$SID+$suffix
+        try {
+            $null=Get-Item -LiteralPath $key -ErrorAction Stop
+            throw "Windows profile registration remains after provider deletion: $SID$suffix"
+        } catch [System.Management.Automation.ItemNotFoundException] {
+            # Missing is expected; access and other provider errors must propagate.
+        }
+    }
+    # A successful provider call can remove registration while retaining locked files.
+    # Enumerate the parent so an unreadable child cannot be mistaken for absence.
+    $path=$LocalPath.TrimEnd([char[]]'\/')
+    $parent=[IO.Path]::GetDirectoryName($path)
+    $leaf=[IO.Path]::GetFileName($path)
+    $remaining=@(Get-ChildItem -LiteralPath $parent -Force -ErrorAction Stop | Where-Object { $_.Name -ieq $leaf })
+    if ($remaining.Count -gt 0) {
+        throw "Windows profile directory remains after provider deletion: $LocalPath. Restore the image; no raw folder deletion or shutdown is permitted."
+    }
+}
 function Invoke-BISFUserProfileCleanup {
     param($Plan,$Logger)
     foreach ($target in @($Plan.Entries | Where-Object { $_.Status -eq 'Remove' })) {
@@ -127,6 +151,7 @@ function Invoke-BISFUserProfileCleanup {
             throw "Profile changed since preview; not deleting SID $($target.SID): $($now.Reason)"
         }
         Remove-BISFCimUserProfile $matches[0]
+        Assert-BISFUserProfileRemoved -SID $target.SID -LocalPath $target.LocalPath
         Write-BISFLog $Logger Info UserProfiles ("Removed profile SID={0}; path={1}" -f $target.SID,$target.LocalPath)
     }
 }
