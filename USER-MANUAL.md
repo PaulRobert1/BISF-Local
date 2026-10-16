@@ -57,6 +57,8 @@ Run these commands one at a time. Resolve errors and review the preview before a
 .\Invoke-BISF.ps1 -Mode Prepare
 ```
 
+For immediate shutdown without operator-profile removal, keep the operator session unlocked until completion. A locked session can cause Windows to refuse shutdown; BISF reports failure rather than forcing it.
+
 `Validate` and `-WhatIf` do not apply image changes; enabled diagnostic logging can write logs. Review every profile and cleanup path shown. To use another local configuration, add `-ConfigPath 'C:\ProtectedFolder\MyConfig.xml'` to each command.
 
 ## 4. Remove the operator profile if required
