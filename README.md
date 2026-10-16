@@ -1,5 +1,7 @@
 # BIS-F Local PowerShell edition
 
+For setup and everyday operation, see the [user manual](USER-MANUAL.md).
+
 Unofficial, reduced-scope derivative based on the public EUCweb/BIS-F 7.1912.7
 source. It prepares selected parts of a local master image using Windows PowerShell
 cmdlets and .NET APIs. It does not capture, generalize, or provision an image and
