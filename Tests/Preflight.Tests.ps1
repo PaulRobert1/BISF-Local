@@ -139,6 +139,17 @@ Describe 'Enabled integration dependencies' {
         Mock Get-BISFLoadedNonSystemProfiles { @() }
         Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-1002' }
     }
+    It 'refuses retained operator seal state even when deferred cleanup is disabled: <Mode>' -ForEach @(@{Mode='Prepare'},@{Mode='Validate'}) {
+        $isolated=Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $stateDir=Join-Path $isolated 'state'
+        $null=New-Item -ItemType Directory -Path $stateDir -Force
+        $statePath=Join-Path $stateDir 'operator-seal.json'
+        $original='{"Status":"Pending","AcceptanceFixture":true}'
+        [IO.File]::WriteAllText($statePath,$original)
+        $c.Finalization.RemoveOperatorProfile=$false
+        { Test-BISFPreflight $c $Mode @() $isolated "$root/GlobalConfig.xml" $null } | Should -Throw '*operator-seal state*'
+        [IO.File]::ReadAllText($statePath) | Should -BeExactly $original
+    }
     It 'blocks another interactive profile when the readiness option is enabled' {
         $c.Preflight.BlockOtherLoadedProfiles=$true
         Mock Get-BISFLoadedNonSystemProfiles { [pscustomobject]@{SID='S-1-5-21-111-222-333-1005';Loaded=$true} }

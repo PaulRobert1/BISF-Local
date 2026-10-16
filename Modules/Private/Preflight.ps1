@@ -110,6 +110,11 @@ function Test-BISFPreflight {
     $targetMode = $Mode
     if ($Mode -eq 'Validate') { $targetMode = 'Prepare' }
     Test-BISFPlatform $Inventory $Config $targetMode
+    # A previous seal remains unfinished even if the operator disables deferred
+    # cleanup in a new configuration. Never let that change bypass recovery.
+    if ($targetMode -eq 'Prepare' -and (Test-Path -LiteralPath (Get-BISFOperatorSealStatePath $ScriptRoot) -ErrorAction Stop)) {
+        throw 'Existing operator-seal state detected. Resolve the earlier sealing attempt before preparing again.'
+    }
     $ids = @($Plan | ForEach-Object { $_.Id })
     if ($Config.ConfigurationManager.PrepareIdentityReset -or $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
         $svc = Get-Service -Name CcmExec -ErrorAction Stop

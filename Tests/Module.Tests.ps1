@@ -13,6 +13,9 @@ Describe 'Exported module under production strict mode' {
             Mock Get-BISFInventory { [pscustomobject]@{Caption='Test';Build=26100;Identity=[pscustomobject]@{Name='MASTER'};CMInstalled=$false} }
             Mock Test-BISFPreflight {}
             Mock Get-BISFPendingRebootReasons { @() }
+            # This is an empty-workflow unit test, independent of real sessions
+            # left open by native acceptance runs on the same Windows host.
+            Mock Get-BISFLoadedNonSystemProfiles { @() }
             $r=Invoke-BISFLocal $config $package Prepare -Confirm:$false
             $r.ExitCode | Should -Be 0
             $r.Results.Count | Should -Be 0
