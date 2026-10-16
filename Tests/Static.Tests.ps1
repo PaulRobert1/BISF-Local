@@ -9,7 +9,14 @@ Describe 'Source-only runtime audit' {
         @{Source='Invoke-Expression $command'},@{Source='& $command'},
         @{Source='[Diagnostics.Process]::Start("tool")'},
         @{Source='Set-ItemProperty HKLM:\Software\Policies\BISF -Name X -Value 1'},
-        @{Source='netsh int tcp set global rss=disable'}
+        @{Source='netsh int tcp set global rss=disable'},
+        @{Source='Invoke-WebRequest https://example.invalid'},
+        @{Source='Invoke-RestMethod https://example.invalid'},
+        @{Source='Install-Module Pester'},@{Source='Find-Module Pester'},
+        @{Source='New-Object System.Net.WebClient'},
+        @{Source='[System.Net.Http.HttpClient]::new()'},
+        @{Source='Start-BitsTransfer https://example.invalid/file C:\file'},
+        @{Source='Test-NetConnection example.invalid'}
     ) {
         @(Get-BISFSourceViolations -Source $Source).Count | Should -BeGreaterThan 0
     }

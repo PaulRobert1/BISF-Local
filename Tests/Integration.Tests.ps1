@@ -36,10 +36,14 @@ Describe 'Full workflow safety and results' {
         Mock Stop-Computer { $script:trace.Add('shutdown') }
     }
     It 'validates without image mutations or log creation when disabled' {
+        $logPath=Join-Path $TestDrive ('disabled-logs-'+[guid]::NewGuid().ToString('N'))
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Logging.Path=[string]$logPath
+        $xml.Save($cfg)
         $r=Invoke-BISFLocal -ConfigPath $cfg -ScriptRoot $root
         $r.ExitCode | Should -Be 0
         $script:trace.Count | Should -Be 0
-        Test-Path (Join-Path $root 'logs') | Should -BeFalse
+        Test-Path $logPath | Should -BeFalse
     }
     It 'previews selected operations without mutations' {
         (Get-Content $cfg -Raw).Replace('<PrepareIdentityReset>false','<PrepareIdentityReset>true').Replace('<FinalAction>None','<FinalAction>Shutdown') | Set-Content $cfg

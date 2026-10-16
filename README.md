@@ -5,8 +5,8 @@ source. It prepares selected parts of a local master image using Windows PowerSh
 cmdlets and .NET APIs. It does not capture, generalize, or provision an image and
 is not a drop-in replacement for all upstream BIS-F integrations.
 
-Target: elevated **64-bit Windows PowerShell 5.1**, Windows Server 2025 build 26100
-or Windows 11 workstation build 22000 or later. The version gate is an eligibility
+Target: elevated **64-bit Windows PowerShell 5.1**, Windows Server 2025 or newer
+or Windows 11 workstation or newer. The version gate is an eligibility
 check, not certification of every Windows/agent combination. PowerShell 7 is for
 portable development tests only; the runtime rejects it.
 
@@ -36,7 +36,7 @@ script, XML) rather than copying a single module onto an older installation.
 | `Cleanup.CurrentUserTemp` | false | Age-based files under operator profile's Temp |
 | `Cleanup.UserProfiles` | false | Unloaded, non-system user profiles via Windows profile provider |
 | `Cleanup.RecycleBin` | false | Empty **invoking user's** system-drive Recycle Bin through `Clear-RecycleBin` |
-| `Servicing.ComponentCleanup` | false | Run Windows' built-in `\Microsoft\Windows\Servicing\StartComponentCleanup` maintenance task and await success |
+| `Servicing.ComponentCleanup` | false | Run Windows' built-in `\Microsoft\Windows\Servicing\StartComponentCleanup` maintenance task; fail closed when completion cannot be verified |
 | `Servicing.TimeoutMinutes` | 75 | Refuse further operations if servicing does not finish inside this bound |
 | `Preflight.MinimumSystemDriveFreeGB` | 0 | Fail preflight when system-drive free space is below this threshold |
 | `Preflight.BlockOtherLoadedProfiles` | false if omitted, true in new XML | Refuse preparation if other non-system profiles remain loaded or referenced; repeat checks during preparation and before final sealing |
@@ -48,11 +48,12 @@ script, XML) rather than copying a single module onto an older installation.
 Windows component-store maintenance is **not** the same as clearing
 `SoftwareDistribution` or deleting WinSxS directories. When enabled, BISF
 invokes the Microsoft-installed scheduled task
-`\Microsoft\Windows\Servicing\StartComponentCleanup`, verifies its
-completion/result, and refuses further image operations on failure or
-timeout. Completion requires a new LastRunTime relative to the pre-start
-baseline, Ready state and result zero; a recent prior success or Queued
-state is insufficient. This task may honor an update retention period and is not
+`\Microsoft\Windows\Servicing\StartComponentCleanup`. A new LastRunTime,
+Ready state and result zero cannot distinguish successful completion from a
+cancelled COM-handler run. BISF therefore refuses further image operations when
+completion is unverifiable, as well as on failure or timeout. See the servicing
+limitation below; there is currently no verified automatic success path.
+This task may honor an update retention period and is not
 guaranteed to reclaim all space. The script does not run DISM.exe, change
 Windows Update services, perform `/ResetBase`, delete rollback packages
 or remove update caches manually. It does not reset WSUS policy.
@@ -239,7 +240,8 @@ member server (3). Domain controllers (2) remain blocked.
 | Windows 11 26H1 | 28000 | Recognized specialized new-hardware release; Citrix compatibility not assumed |
 | Other future Windows 11-family 10.0 workstation builds >=22000 | Other | Accepted by existing script-level build gate; **explicit compatibility warning** |
 | Windows Server 2025 | 26100, ProductType 3 | Recognized server |
-| Later Windows Server builds | Other | Blocked until tested and added |
+| Later Windows Server builds | >26100 | Eligible with compatibility-review diagnostics; required APIs and safety checks still apply |
+| Future Windows kernel families (workstation/member server) | Newer than 10.0 | Eligible with compatibility-review diagnostics; no inferred vendor certification |
 | Windows 10, Windows Server 2022/2019 and domain controllers | Older/any DC | Outside this specialized package's preparation scope |
 
 **Citrix version support is separate from script eligibility.**
@@ -438,7 +440,7 @@ does not install agents, configure delivery controllers/WEM endpoints, change de
 mode, or enable optimizations. Existing settings remain in effect.
 
 Citrix versions are informational: **older and newer releases are accepted**. The
-platform gate remains Windows Server 2025 build 26100 or Windows 11 workstation.
+platform gate accepts Windows Server 2025 / Windows 11 and newer releases, while retaining administrator, architecture, PowerShell, domain-controller and operation-specific safety checks.
 Required installed components and service configuration are still checked. Legacy
 ExpectedRelease XML elements are accepted but ignored; the supplied config omits them.
 
@@ -633,3 +635,27 @@ Windows image. Before production, use a disposable clone and record:
 
 License: GNU GPLv3; no warranty. See LICENSE and UPSTREAM.md.
 
+
+## Offline execution and newer releases
+
+Copy the complete package to a protected local directory before execution. Runtime
+uses Windows PowerShell 5.1, local Windows APIs and the locally installed agents.
+It does not download modules, query release catalogs, send telemetry or require
+Internet access. Pester is a separately supplied development dependency, not a
+runtime requirement. Local preparation can run with the VM network disconnected.
+External broker registration, WEM synchronization and FSLogix/UPM network profile
+attachment are deployment checks, not evidence produced by local preparation.
+
+Newer Windows releases are eligible without an upper build/version ceiling;
+unknown releases retain explicit compatibility-review diagnostics. Citrix/WEM
+versions are informational and FSLogix is inventoried locally. Required service,
+path, privilege, profile, pending-reboot and shutdown guards still apply. This
+policy does not guarantee that every future agent layout or OS API will work.
+
+**Servicing limitation:** `ComponentCleanup` remains opt-in and uses the built-in
+Microsoft task. BISF now refuses to continue after a success-looking aggregate
+result because cancelled runs can also report Ready/result 0. Even a genuinely
+successful run currently requires manual review; no verified automatic success
+path is claimed. Run servicing separately, review its result, then leave
+`ComponentCleanup=false` for preparation. BISF does not switch to DISM, use
+ResetBase, cancel tasks automatically or erase failure state to continue sealing.

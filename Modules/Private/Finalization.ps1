@@ -89,7 +89,7 @@ function Test-BISFOperatorSealTaskOwnership {
 function New-BISFOperatorSealState {
     param($Config,$Target,[string]$ConfigPath,[string]$ExpectedHash)
     if ($ExpectedHash -notmatch '^[A-Fa-f0-9]{64}$' -or
-        (Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $ExpectedHash) {
+        (Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $ExpectedHash) {
         throw 'Configuration changed before operator staging or no confirmed hash was supplied.'
     }
     [pscustomobject]@{
@@ -178,7 +178,7 @@ function Test-BISFOperatorSealCandidate {
     if (-not $Config.Finalization.RemoveOperatorProfile -or $Config.FinalAction -ne 'Shutdown') {
         throw 'Operator seal was disabled or shutdown no longer approved.'
     }
-    if ($State.ConfigHash -ne (Get-FileHash -LiteralPath $Config.Path -Algorithm SHA256 -ErrorAction Stop).Hash) {
+    if ($State.ConfigHash -ne (Get-BISFFileHash -LiteralPath $Config.Path).Hash) {
         throw 'Configuration changed since staging operator seal.'
     }
     $identity=Get-BISFIdentity

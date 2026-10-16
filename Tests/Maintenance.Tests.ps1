@@ -72,6 +72,11 @@ Describe 'Windows component store cleanup through Microsoft Servicing task' {
         $script:task.State='Running'
         { Get-BISFComponentCleanupTask } | Should -Throw '*not ready*'
     }
+    It 'rejects queued and unknown tasks before requesting another run: <State>' -ForEach @(@{State='Queued'},@{State='Unknown'}) {
+        $script:task.State=$State
+        { Invoke-BISFComponentCleanup 0 $null } | Should -Throw '*not ready*'
+        Should -Invoke Start-ScheduledTask -Times 0
+    }
     It 'fails closed if the task name or task location was changed' {
         $script:task.TaskName='OtherTask'
         { Get-BISFComponentCleanupTask } | Should -Throw '*Expected one*'
@@ -79,16 +84,17 @@ Describe 'Windows component store cleanup through Microsoft Servicing task' {
         $script:task.TaskPath='\Other\'
         { Get-BISFComponentCleanupTask } | Should -Throw '*Expected one*'
     }
-    It 'successfully starts and awaits a completed servicing maintenance task' {
+    It 'rejects a cancelled or unverifiable new run even when Ready reports zero' {
         $script:infoReads=0
         Mock Get-ScheduledTaskInfo {
             $script:infoReads++
             $last=if ($script:infoReads -eq 1) { [datetime]::Now.AddMinutes(-1) } else { [datetime]::Now }
             [pscustomobject]@{LastRunTime=$last;LastTaskResult=0}
         }
-        Invoke-BISFComponentCleanup 2 $null
+        { Invoke-BISFComponentCleanup 2 $null } | Should -Throw '*completion cannot be verified*'
         Should -Invoke Start-ScheduledTask -Times 1
         Should -Invoke Get-ScheduledTaskInfo -Times 2
+        Should -Invoke Write-BISFLog -Times 0 -ParameterFilter { $Message -like '*completed successfully*' }
     }
     It 'surfaces an error result and refuses a successful seal' {
         $script:infoReads=0
@@ -112,7 +118,7 @@ Describe 'Windows component store cleanup through Microsoft Servicing task' {
             $last=if ($script:infoReads -le 2) { $script:recent } else { $script:newRun }
             [pscustomobject]@{LastRunTime=$last;LastTaskResult=0}
         }
-        Invoke-BISFComponentCleanup 2 $null
+        { Invoke-BISFComponentCleanup 2 $null } | Should -Throw '*completion cannot be verified*'
         $script:infoReads | Should -Be 4
         Should -Invoke Start-Sleep -Times 2
     }

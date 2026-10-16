@@ -11,6 +11,16 @@ Describe 'Configuration and logging contract' {
         $cfgPath = Join-Path $TestDrive 'GlobalConfig.xml'
         if (Test-Path "$root/GlobalConfig.xml") { Copy-Item "$root/GlobalConfig.xml" $cfgPath }
     }
+    It 'reads a real configuration hash under WhatIf without changing caller preference or bytes' {
+        $expected=(Get-FileHash -LiteralPath $cfgPath -Algorithm SHA256).Hash
+        $prior=$WhatIfPreference
+        try {
+            $WhatIfPreference=$true
+            (Get-BISFFileHash -LiteralPath $cfgPath).Hash | Should -Be $expected
+            $WhatIfPreference | Should -BeTrue
+        } finally { $WhatIfPreference=$prior }
+        (Get-FileHash -LiteralPath $cfgPath -Algorithm SHA256).Hash | Should -Be $expected
+    }
     It 'loads real booleans and resolves logs against the script root' {
         Push-Location $TestDrive
         try { $c = Read-BISFConfig $cfgPath $root } finally { Pop-Location }

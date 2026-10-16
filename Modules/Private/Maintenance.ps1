@@ -60,7 +60,7 @@ function Get-BISFComponentCleanupTask {
         $task[0].TaskPath -ne '\Microsoft\Windows\Servicing\') {
         throw 'Expected one Microsoft Windows Servicing StartComponentCleanup task.'
     }
-    if ($task[0].State -in @('Disabled','Running')) {
+    if ([string]$task[0].State -ne 'Ready') {
         throw "Servicing StartComponentCleanup task not ready: $($task[0].State)"
     }
     $task[0]
@@ -86,8 +86,11 @@ function Invoke-BISFComponentCleanup {
             if ([int]$info.LastTaskResult -ne 0) {
                 throw "Servicing component cleanup returned Task Scheduler result $($info.LastTaskResult)."
             }
-            Write-BISFLog $Logger Info Servicing 'Built-in component cleanup completed successfully.'
-            return
+            # LastRunTime/Ready/result 0 is also observed after cancellation of
+            # a queued COM-handler run. It is not per-instance completion proof.
+            # Until a durable instance-specific completion contract is qualified,
+            # keep this opt-in operation fail-closed, even after observing Running.
+            throw 'Servicing component cleanup completion cannot be verified from Task Scheduler summary state; refusing further image preparation. Review the servicing result manually. No automatic retry or cancellation was performed.'
         }
         Start-Sleep -Seconds 10
     }

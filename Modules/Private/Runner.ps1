@@ -52,9 +52,9 @@ function Invoke-BISFLocal {
     try {
         $ScriptRoot=[IO.Path]::GetFullPath($ScriptRoot)
         $ConfigPath=Resolve-BISFPath $ConfigPath $ScriptRoot
-        $hash=(Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash
+        $hash=(Get-BISFFileHash -LiteralPath $ConfigPath).Hash
         $config=Read-BISFConfig $ConfigPath $ScriptRoot
-        if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) {
+        if ((Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $hash) {
             throw 'Configuration changed while reading settings. Retry with a stable configuration.'
         }
         $inventory=Get-BISFInventory
@@ -172,7 +172,7 @@ function Invoke-BISFLocal {
                 }
                 if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
                 $applying=$true
-                if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during preflight.' }
+                if ((Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $hash) { throw 'Configuration changed during preflight.' }
                 $needsState=($Mode -eq 'Prepare' -and (@($plan | ForEach-Object { $_.Id }) -contains 'Lifecycle'))
                 if ($needsState -or $Mode -eq 'Personalize' -or (Test-Path -LiteralPath $statePath)) { $journal=Enter-BISFJournal $ScriptRoot $Mode }
                 if ($needsState) {
@@ -189,7 +189,7 @@ function Invoke-BISFLocal {
                     if ($step.Id -in @('VDAStop','Shutdown','OperatorFinalize','LogCleanup')) { continue }
                     $currentStep=$step.Id
                     if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
-                    if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during image operations.' }
+                    if ((Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $hash) { throw 'Configuration changed during image operations.' }
                     Write-BISFLog $logger Info $step.Id ('Starting: '+$step.Description)
                     switch ($step.Id) {
                         'Servicing' {
@@ -235,7 +235,7 @@ function Invoke-BISFLocal {
                 if ($plan.Count -eq 0) { Write-BISFLog $logger Info Prepare 'No image operations enabled. Nothing was sealed or captured.' }
                 $currentStep='Finalize'
                 if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
-                if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed before final sealing.' }
+                if ((Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $hash) { throw 'Configuration changed before final sealing.' }
                 if ($config.Preflight.BlockPendingReboot -and @(Get-BISFPendingRebootReasons).Count -gt 0) {
                     throw 'Windows servicing now requires a reboot; refusing to finalize or shut down.'
                 }

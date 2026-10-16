@@ -53,13 +53,26 @@ Describe 'Platform and plan validation' {
         $platform.RequiresCompatibilityReview | Should -BeTrue
         $platform.Guidance | Should -Match 'Unknown client build'
     }
-    It 'rejects later Windows Server builds until explicitly validated' {
+    It 'accepts later Windows Server builds with explicit compatibility-review diagnostics' {
         $i.Build=27500
         $i.Version='10.0.27500'
         $platform=Get-BISFWindowsRelease $i
-        $platform.Eligible | Should -BeFalse
+        $platform.Eligible | Should -BeTrue
+        $platform.RecognizedBuild | Should -BeFalse
         $platform.RequiresCompatibilityReview | Should -BeTrue
-        { Test-BISFPlatform $i $c Prepare } | Should -Throw '*Windows Server*'
+        { Test-BISFPlatform $i $c Prepare } | Should -Not -Throw
+    }
+    It 'accepts future Windows kernel families without claiming a recognized release: <ProductType>' -ForEach @(@{ProductType=1},@{ProductType=3}) {
+        $i.ProductType=$ProductType; $i.Version='11.0.1000'; $i.Build=1000
+        $platform=Get-BISFWindowsRelease $i
+        $platform.Eligible | Should -BeTrue
+        $platform.RecognizedBuild | Should -BeFalse
+        $platform.RequiresCompatibilityReview | Should -BeTrue
+        { Test-BISFPlatform $i $c Prepare } | Should -Not -Throw
+        $i.PendingReboot=$true
+        { Test-BISFPlatform $i $c Prepare } | Should -Throw '*reboot*'
+        $i.ProductType=2
+        { Test-BISFPlatform $i $c Prepare } | Should -Throw '*Domain controllers*'
     }
     It 'flags Windows 11 26H1 and 26H2 for VDA compatibility review' {
         $i.ProductType=1
@@ -74,7 +87,7 @@ Describe 'Platform and plan validation' {
         @{Field='ProductType';Value=2},@{Field='Build';Value=20348},
         @{Field='Edition';Value='Core'},@{Field='PSVersion';Value='7.6'},
         @{Field='Is64Bit';Value=$false},@{Field='IsAdmin';Value=$false},
-        @{Field='Version';Value='11.0.0'}
+        @{Field='Version';Value='6.3.9600'},@{Field='Version';Value='invalid'}
     ) {
         $i.$Field=$Value
         { Test-BISFPlatform $i $c Prepare } | Should -Throw

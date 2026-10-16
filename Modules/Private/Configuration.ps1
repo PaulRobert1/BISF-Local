@@ -1,4 +1,19 @@
 # BIS-F Local, unofficial derivative. Modified 2026-10-12. GPL-3.0; see LICENSE.
+function Get-BISFFileHash {
+    param([Parameter(Mandatory=$true)][string]$LiteralPath)
+    # Hash the local bytes directly: Windows PowerShell Get-FileHash delegates
+    # to provider reads whose module-scoped WhatIf can suppress the result.
+    $stream=$null;$algorithm=$null
+    try {
+        $stream=[IO.File]::OpenRead($LiteralPath)
+        $algorithm=[Security.Cryptography.SHA256]::Create()
+        $hash=[BitConverter]::ToString($algorithm.ComputeHash($stream)).Replace('-','')
+        [pscustomobject]@{Algorithm='SHA256';Hash=$hash;Path=[IO.Path]::GetFullPath($LiteralPath)}
+    } finally {
+        if ($null -ne $stream) { $stream.Dispose() }
+        if ($null -ne $algorithm) { $algorithm.Dispose() }
+    }
+}
 function Resolve-BISFPath {
     param([string]$Path, [string]$ScriptRoot)
     if ([string]::IsNullOrWhiteSpace($Path)) { throw 'Path must not be blank.' }
@@ -119,7 +134,7 @@ function Set-BISFLogCleanupOptions {
     Test-BISFNoReparsePath $ConfigPath
     Test-BISFProtectedLocation $ConfigPath
     Test-BISFProtectedLocation $schema
-    if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $ExpectedHash) {
+    if ((Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $ExpectedHash) {
         throw 'Configuration changed while the editor was open. Reopen the editor before saving.'
     }
     $config=Read-BISFConfig $ConfigPath $ScriptRoot
@@ -155,7 +170,7 @@ function Set-BISFLogCleanupOptions {
         # still require exclusive operational control during a seal.
         Test-BISFNoReparsePath $ConfigPath
         Test-BISFProtectedLocation $ConfigPath
-        if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $ExpectedHash) {
+        if ((Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $ExpectedHash) {
             throw 'Configuration changed before saving. Reopen the editor.'
         }
         [IO.File]::Replace($tmp,$ConfigPath,[NullString]::Value)
