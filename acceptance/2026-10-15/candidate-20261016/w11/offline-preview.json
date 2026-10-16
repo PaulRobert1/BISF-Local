@@ -1,0 +1,26 @@
+{
+    "UTC":  "2026-10-16T07:04:02.1348767Z",
+    "Computer":  "BISF-W11-TEST",
+    "Results":  [
+                    {
+                        "Case":  "Validate",
+                        "ExitCode":  0
+                    },
+                    {
+                        "Case":  "Preview",
+                        "ExitCode":  0
+                    }
+                ],
+    "ProfilesUnchanged":  true,
+    "Adapters":  [
+                     {
+                         "Name":  "Ethernet0",
+                         "Status":  "Disconnected",
+                         "MacAddress":  "00-50-56-A7-18-0E"
+                     }
+                 ],
+    "OS":  {
+               "Caption":  "Microsoft Windows 11 Pro",
+               "BuildNumber":  "26200"
+           }
+}

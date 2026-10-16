@@ -1,0 +1,26 @@
+{
+    "UTC":  "2026-10-16T06:09:48.3592797Z",
+    "Computer":  "BISF-S25-TEST",
+    "Results":  [
+                    {
+                        "Case":  "Validate",
+                        "ExitCode":  0
+                    },
+                    {
+                        "Case":  "Preview",
+                        "ExitCode":  0
+                    }
+                ],
+    "ProfilesUnchanged":  true,
+    "Adapters":  [
+                     {
+                         "Name":  "Ethernet0",
+                         "Status":  "Disconnected",
+                         "MacAddress":  "00-50-56-A7-E0-4B"
+                     }
+                 ],
+    "OS":  {
+               "Caption":  "Microsoft Windows Server 2025 Standard Evaluation",
+               "BuildNumber":  "26100"
+           }
+}

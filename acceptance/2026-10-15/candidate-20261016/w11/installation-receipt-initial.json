@@ -1,0 +1,26 @@
+{
+  "status": "failed-needs-review",
+  "os": "w11",
+  "startedUTC": "2026-10-16T06:41:56.605135+00:00",
+  "rounds": [
+    {
+      "Product": "CVAD VDA",
+      "Exit": 3,
+      "Version": "7.45.2100.23",
+      "TimeUtc": "2026-10-16T06:48:01.8715571Z"
+    },
+    {
+      "Product": "CVAD VDA",
+      "Exit": 3,
+      "Version": "7.45.2100.23",
+      "TimeUtc": "2026-10-16T06:57:13.7374788Z"
+    },
+    {
+      "Product": "CVAD VDA",
+      "Exit": 0,
+      "Version": "7.45.2100.23",
+      "TimeUtc": "2026-10-16T07:00:55.1151012Z"
+    }
+  ],
+  "error": "AssertionError: "
+}

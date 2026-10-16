@@ -1,0 +1,11 @@
+{
+    "Task":  "BISF-Matrix-b04033c158a341718f63b530821d5397",
+    "ExitCode":  0,
+    "ChildPid":  8328,
+    "ChildExitCode":  0,
+    "Sessions":  " USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME\r\n\u003ebisfoperator                              2  Disc            .  10/16/2026 6:26 AM\r\n",
+    "Stdout":  "C:\\BISF-Evidence\\matrix-b04033c158a341718f63b530821d5397-stdout.txt",
+    "Stderr":  "C:\\BISF-Evidence\\matrix-b04033c158a341718f63b530821d5397-stderr.txt",
+    "Error":  null,
+    "Utc":  "2026-10-16T06:27:22.1183025Z"
+}

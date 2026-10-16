@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Relative paths resolve against Invoke-BISF.ps1, not the current directory. -->
+<BISF SchemaVersion="1">
+  <Logging>
+    <Enabled>true</Enabled>
+    <Path>.\logs</Path>
+  </Logging>
+  <Cleanup>
+    <WindowsTemp>false</WindowsTemp>
+    <CurrentUserTemp>false</CurrentUserTemp>
+    <!-- Opt-in: delete unloaded non-system profiles from a quiescent MCS master. -->
+    <UserProfiles>true</UserProfiles>
+    <MinimumAgeDays>7</MinimumAgeDays>
+    <!-- Clears only the invoking user's Recycle Bin when explicitly enabled. -->
+    <RecycleBin>false</RecycleBin>
+    <ExcludedProfileSIDs>
+      <SID>S-1-5-21-2179150373-3800760875-3562492511-1006</SID>
+      <SID>S-1-5-21-2179150373-3800760875-3562492511-1007</SID>
+    </ExcludedProfileSIDs>
+  </Cleanup>
+  <!-- Uses Microsoft's built-in Servicing StartComponentCleanup scheduled task. -->
+  <Servicing>
+    <ComponentCleanup>false</ComponentCleanup>
+    <TimeoutMinutes>75</TimeoutMinutes>
+  </Servicing>
+  <!-- Optional final seal cleanup: Windows Event Logs (Application/System/Setup)
+       and BISF-generated diagnostic logs. Security audit and Citrix logs preserved. -->
+  <LogCleanup>
+    <WindowsEventLogs>false</WindowsEventLogs>
+    <BISFLogs>true</BISFLogs>
+  </LogCleanup>
+  <ConfigurationManager>
+    <PrepareIdentityReset>false</PrepareIdentityReset>
+    <CloneTrustedRootKeyReset>false</CloneTrustedRootKeyReset>
+  </ConfigurationManager>
+  <!-- Requires an administrator-controlled local package and configuration. -->
+  <Personalization>
+    <Enabled>false</Enabled>
+  </Personalization>
+  <!-- Installed agents only. MCS owns machine identity and WEM owns cache refresh. -->
+  <Citrix>
+    <VDA>
+      <Enabled>true</Enabled>
+      <!-- Requires FinalAction=Shutdown. Startup type is never changed. -->
+      <StopBeforeShutdown>false</StopBeforeShutdown>
+    </VDA>
+    <WEM>
+      <Enabled>true</Enabled>
+    </WEM>
+  </Citrix>
+  <Preflight>
+    <BlockPendingReboot>true</BlockPendingReboot>
+    <MinimumSystemDriveFreeGB>0</MinimumSystemDriveFreeGB>
+    <BlockOtherLoadedProfiles>true</BlockOtherLoadedProfiles>
+  </Preflight>
+  <!-- Requires UserProfiles=true, FinalAction=Shutdown, administrator logoff,
+       and a protected BIS-F local installation; disabled by default. -->
+  <Finalization>
+    <RemoveOperatorProfile>false</RemoveOperatorProfile>
+    <TimeoutMinutes>10</TimeoutMinutes>
+  </Finalization>
+  <!-- None or Shutdown. Shutdown only follows successful Prepare. -->
+  <FinalAction>Shutdown</FinalAction>
+</BISF>

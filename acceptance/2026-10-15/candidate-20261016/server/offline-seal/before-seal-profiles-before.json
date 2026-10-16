@@ -1,0 +1,50 @@
+[
+    {
+        "SID":  "S-1-5-21-2179150373-3800760875-3562492511-500",
+        "LocalPath":  "C:\\Users\\Administrator",
+        "Loaded":  false,
+        "Special":  false
+    },
+    {
+        "SID":  "S-1-5-21-2179150373-3800760875-3562492511-1007",
+        "LocalPath":  "C:\\Users\\BISFDependency",
+        "Loaded":  false,
+        "Special":  false
+    },
+    {
+        "SID":  "S-1-5-21-2179150373-3800760875-3562492511-1006",
+        "LocalPath":  "C:\\Users\\BISFExcluded",
+        "Loaded":  false,
+        "Special":  false
+    },
+    {
+        "SID":  "S-1-5-21-2179150373-3800760875-3562492511-1005",
+        "LocalPath":  "C:\\Users\\BISFInactive",
+        "Loaded":  false,
+        "Special":  false
+    },
+    {
+        "SID":  "S-1-5-21-2179150373-3800760875-3562492511-1000",
+        "LocalPath":  "C:\\Users\\BISFOperator",
+        "Loaded":  true,
+        "Special":  false
+    },
+    {
+        "SID":  "S-1-5-20",
+        "LocalPath":  "C:\\WINDOWS\\ServiceProfiles\\NetworkService",
+        "Loaded":  true,
+        "Special":  true
+    },
+    {
+        "SID":  "S-1-5-19",
+        "LocalPath":  "C:\\WINDOWS\\ServiceProfiles\\LocalService",
+        "Loaded":  true,
+        "Special":  true
+    },
+    {
+        "SID":  "S-1-5-18",
+        "LocalPath":  "C:\\WINDOWS\\system32\\config\\systemprofile",
+        "Loaded":  true,
+        "Special":  true
+    }
+]

@@ -1,0 +1,104 @@
+{
+  "status": "installation-complete",
+  "os": "w11",
+  "startedUTC": "2026-10-16T06:41:56.605135+00:00",
+  "rounds": [
+    {
+      "Product": "CVAD VDA",
+      "Exit": 3,
+      "Version": "7.45.2100.23",
+      "TimeUtc": "2026-10-16T06:48:01.8715571Z"
+    },
+    {
+      "Product": "CVAD VDA",
+      "Exit": 3,
+      "Version": "7.45.2100.23",
+      "TimeUtc": "2026-10-16T06:57:13.7374788Z"
+    },
+    {
+      "Product": "CVAD VDA",
+      "Exit": 0,
+      "Version": "7.45.2100.23",
+      "TimeUtc": "2026-10-16T07:00:55.1151012Z"
+    }
+  ],
+  "finishedUTC": "2026-10-16T07:01:51.138588+00:00",
+  "inventory": {
+    "Computer": "BISF-W11-TEST",
+    "UTC": "2026-10-16T07:01:49.9515764Z",
+    "BootTime": "2026-10-16T06:58:21.5000000Z",
+    "Products": [
+      {
+        "DisplayName": "Citrix Virtual Apps and Desktops 7 2507 LTSR CU2 - Virtual Delivery Agent",
+        "DisplayVersion": "2507.0.2100.2123"
+      },
+      {
+        "DisplayName": "Citrix Profile management",
+        "DisplayVersion": "25.7.2100.46"
+      },
+      {
+        "DisplayName": "Citrix Virtual Desktop Agent - x64",
+        "DisplayVersion": "7.45.2100.27"
+      },
+      {
+        "DisplayName": "Microsoft FSLogix Apps",
+        "DisplayVersion": "3.26.826.17182"
+      },
+      {
+        "DisplayName": "Microsoft FSLogix Apps",
+        "DisplayVersion": "3.26.826.17182"
+      },
+      {
+        "DisplayName": "Citrix Workspace Environment Management Agent",
+        "DisplayVersion": "25.71.0"
+      },
+      {
+        "DisplayName": "Citrix Workspace Environment Management Agent",
+        "DisplayVersion": "2507.1.110.1"
+      },
+      {
+        "DisplayName": "Microsoft FSLogix Apps",
+        "DisplayVersion": "3.26.826.17182"
+      }
+    ],
+    "Services": [
+      {
+        "Name": "BrokerAgent",
+        "State": "Running",
+        "StartMode": "Auto"
+      },
+      {
+        "Name": "ctxProfile",
+        "State": "Running",
+        "StartMode": "Auto"
+      },
+      {
+        "Name": "frxsvc",
+        "State": "Running",
+        "StartMode": "Auto"
+      },
+      {
+        "Name": "PvsVmAgent",
+        "State": "Running",
+        "StartMode": "Auto"
+      },
+      {
+        "Name": "WemAgentSvc",
+        "State": "Running",
+        "StartMode": "Auto"
+      },
+      {
+        "Name": "WemLogonSvc",
+        "State": "Running",
+        "StartMode": "Auto"
+      }
+    ],
+    "PendingCBS": false,
+    "PendingWU": false,
+    "PendingRename": [
+      null
+    ]
+  },
+  "readinessReview": "Initial observation caught BrokerAgent Start Pending. Bounded read-only wait reached Running; no service start/restart/configuration change.",
+  "initialReadinessError": "AssertionError: "
+}

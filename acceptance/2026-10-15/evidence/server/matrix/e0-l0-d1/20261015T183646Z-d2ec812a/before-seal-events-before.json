@@ -1,0 +1,30 @@
+[
+    {
+        "BaselineSelection":  "Oldest existing record",
+        "Log":  "Application",
+        "Count":  6750,
+        "OldestRecordId":  1,
+        "OldestTime":  "2026-10-15T23:31:50.5140663Z"
+    },
+    {
+        "BaselineSelection":  "Oldest existing record",
+        "Log":  "System",
+        "Count":  2912,
+        "OldestRecordId":  1,
+        "OldestTime":  "2026-10-15T23:32:06.0388484Z"
+    },
+    {
+        "BaselineSelection":  "Oldest existing record",
+        "Log":  "Setup",
+        "Count":  44,
+        "OldestRecordId":  1,
+        "OldestTime":  "2026-10-15T16:54:35.7359805Z"
+    },
+    {
+        "BaselineSelection":  "Newest existing preservation marker; legacy Oldest fields below",
+        "Log":  "Security",
+        "Count":  29203,
+        "OldestRecordId":  40145,
+        "OldestTime":  "2026-10-15T18:39:14.3191514Z"
+    }
+]

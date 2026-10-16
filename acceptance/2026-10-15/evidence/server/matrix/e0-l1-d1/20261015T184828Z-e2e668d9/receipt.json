@@ -1,0 +1,306 @@
+{
+  "status": "evidence-complete",
+  "os": "server",
+  "case": "e0-l1-d1",
+  "flags": {
+    "events": false,
+    "logs": true,
+    "deferred": true
+  },
+  "baseline": {
+    "name": "Ready-For-Seal-No-Autologon",
+    "ref": "snapshot-10029",
+    "vm": "vm-10021",
+    "uuid": "42278f25-213b-1b16-d672-3d986a65c65c",
+    "createdUtc": "2026-10-15T17:42:01.888537+00:00"
+  },
+  "allowRestore": true,
+  "noPendingOfflineEvidence": true,
+  "startedUTC": "2026-10-15T18:48:28.428071+00:00",
+  "baselineProfile": "cvad2012-wem2005-fslogix",
+  "vendorInventory": {
+    "Services": [
+      {
+        "Name": "BrokerAgent",
+        "DisplayName": "Citrix Desktop Service",
+        "State": "Running",
+        "Path": "C:\\Program Files\\Citrix\\Virtual Desktop Agent\\BrokerAgent.exe",
+        "FileVersion": "7.28.0.6",
+        "ProductVersion": "7.28.0.6"
+      },
+      {
+        "Name": "frxsvc",
+        "DisplayName": "FSLogix Apps Services",
+        "State": "Running",
+        "Path": "C:\\Program Files\\FSLogix\\Apps\\frxsvc.exe",
+        "FileVersion": "3.26.826.17182",
+        "ProductVersion": "3.26"
+      },
+      {
+        "Name": "WemAgentSvc",
+        "DisplayName": "Citrix WEM Agent Host Service",
+        "State": "Running",
+        "Path": "C:\\Program Files (x86)\\Citrix\\Workspace Environment Management Agent\\Citrix.Wem.Agent.Service.exe",
+        "FileVersion": "2005.2.0.1",
+        "ProductVersion": "2005.2.0.1"
+      },
+      {
+        "Name": "WemLogonSvc",
+        "DisplayName": "Citrix WEM User Logon Service",
+        "State": "Running",
+        "Path": "C:\\Program Files (x86)\\Citrix\\Workspace Environment Management Agent\\Citrix.Wem.Agent.LogonService.exe",
+        "FileVersion": "2005.2.0.1",
+        "ProductVersion": "2005.2.0.1"
+      }
+    ],
+    "Products": [
+      {
+        "DisplayName": "Citrix Virtual Apps and Desktops 7 2012 - Virtual Delivery Agent",
+        "DisplayVersion": "2012.0.0.28051"
+      },
+      {
+        "DisplayName": "Microsoft FSLogix Apps",
+        "DisplayVersion": "3.26.826.17182"
+      },
+      {
+        "DisplayName": "Microsoft FSLogix Apps",
+        "DisplayVersion": "3.26.826.17182"
+      },
+      {
+        "DisplayName": "Citrix Workspace Environment Management Agent",
+        "DisplayVersion": "2005.2.0.1"
+      },
+      {
+        "DisplayName": "Citrix Workspace Environment Management Agent",
+        "DisplayVersion": "2005.2.0.1"
+      },
+      {
+        "DisplayName": "Microsoft FSLogix Apps",
+        "DisplayVersion": "3.26.826.17182"
+      }
+    ]
+  },
+  "applyExitObservation": {
+    "Task": "BISF-Matrix-98c0589a6fee45acbb869eeafce334a3",
+    "ExitCode": 0,
+    "ChildPid": 4560,
+    "ChildExitCode": 0,
+    "Sessions": " USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME\r\n>bisfoperator          rdp-tcp#0           2  Active          1  10/15/2026 6:50 PM\r\n",
+    "Stdout": "C:\\BISF-Evidence\\matrix-98c0589a6fee45acbb869eeafce334a3-stdout.txt",
+    "Stderr": "C:\\BISF-Evidence\\matrix-98c0589a6fee45acbb869eeafce334a3-stderr.txt",
+    "Error": null,
+    "Utc": "2026-10-15T18:52:05.7021685Z"
+  },
+  "scope": "Postboot inspection with retained powered-off snapshot; no offline/MCS certification",
+  "finishedUTC": "2026-10-15T18:54:48.093156+00:00",
+  "files": [
+    {
+      "path": "baseline-1.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "baseline-1-process.json",
+      "sha256": "167f5cc3e4d150b5f2b43ee8af118c7f8c8a5875e05ca731c8bf76649ed874be"
+    },
+    {
+      "path": "vendor-inventory-2.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vendor-inventory-2-process.json",
+      "sha256": "dd63e431f401a56d848641d7540f70e002c247510a34e0fb9a49026494912e8c"
+    },
+    {
+      "path": "vendor-inventory.json",
+      "sha256": "7a614d254b34aef961dcb925c68ff4b39b866341857b1d676ffc3a669ebe3b78"
+    },
+    {
+      "path": "case-config-3.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "case-config-3-process.json",
+      "sha256": "595ec186bd04f28128144ebd71f4fc7502dfdbff7ddbe990de3f56cc24bceb51"
+    },
+    {
+      "path": "rdp-helper.txt",
+      "sha256": "64f05a523dba92c218d5a11ccb00d3cd5f87c2682871463551bb5f8c4f121276"
+    },
+    {
+      "path": "operator-ready-4.txt",
+      "sha256": "ca4a016eae14ab0c7ebb935a6e24ae8b512958f25c788f11eb99566d066b7957"
+    },
+    {
+      "path": "operator-ready-4-process.json",
+      "sha256": "7150119856e400b8f1cbf7b7771d0f961a95e5c853b166acd36118a0cc153fdb"
+    },
+    {
+      "path": "quiescence-5.txt",
+      "sha256": "8c3c003b9ea77a33228c77b95c54e9eb0b63d60c298004c0fec2665e397b3108"
+    },
+    {
+      "path": "quiescence-5-process.json",
+      "sha256": "ba640a252e03a0d1d0ee26175e4431501e6a4112c6ce96cd527db4a257eb76f7"
+    },
+    {
+      "path": "start-fixtures-6.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "start-fixtures-6-process.json",
+      "sha256": "d77c815788cbd36632882e4188f7d75614d2585c36650d739b91a738b9e80266"
+    },
+    {
+      "path": "fixtures-task.json",
+      "sha256": "63886a07de45b0d8bee17c57b37079bc61ed715b161a2752b4a44a40babddbec"
+    },
+    {
+      "path": "fixtures-result.json",
+      "sha256": "745625f03f2cc2f800035b74ee3f943720358e97f68eca71e2b100471481fbb8"
+    },
+    {
+      "path": "fixtures-stdout.txt",
+      "sha256": "2eeb4b6af211826702d4d550af3c22027b6262a47dc5881577bf0a25aa4a8be4"
+    },
+    {
+      "path": "fixtures-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "before-seal-case.json",
+      "sha256": "825ce0817b52c4eb71ef5159ee24dc389dba3348c3efe2787a2045d8f17b6f63"
+    },
+    {
+      "path": "before-seal-events-before.json",
+      "sha256": "151fe8c31d8765e476a21ed2ff47a3249cd02e6bccbb41e2cf9b52a3cc8577ad"
+    },
+    {
+      "path": "before-seal-profiles-before.json",
+      "sha256": "a3b14f59f1ab4692198930e11005373b084218e14ef171168eefe739961b131d"
+    },
+    {
+      "path": "before-seal-config-hash.json",
+      "sha256": "8baf227b0da4d3f0cf46fe661516f69385ee3b6a3d496ed2db11e13fa634fc51"
+    },
+    {
+      "path": "before-fixture-profiles.json",
+      "sha256": "8c59d431911dd3b74fc8b052de60b55ca5d1cbcd54099e92d5588bc03c367a7c"
+    },
+    {
+      "path": "before-stage-fixtures.txt",
+      "sha256": "3d429f6010f2620c475e77635c3894a46aa54c8302f99963fed2b9c70ed4d7f4"
+    },
+    {
+      "path": "before-seal.xml",
+      "sha256": "48c9aef84c2cd3fdd38c0138d3c18454e535febe49fe2db946fd8a7f74a339c2"
+    },
+    {
+      "path": "start-apply-7.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "start-apply-7-process.json",
+      "sha256": "90f2e27370c8ff95df269a1387f3c55d0e4ad4f5d0c79cd6bfd09618e2b89026"
+    },
+    {
+      "path": "apply-task.json",
+      "sha256": "d1274c3ab494006e9e401b0d9d36979dbbea4fb39f4751d961d52eb778127eb6"
+    },
+    {
+      "path": "apply-result.json",
+      "sha256": "a5288ab8e800d8b7745b92cfff364dd99285928cdd6c47c8d5c1a1be294c2bf6"
+    },
+    {
+      "path": "apply-stdout.txt",
+      "sha256": "ca1fe64ad7b2ca250a1606deb3b5d515958b9cd6c66361cb5ae85702986abbab"
+    },
+    {
+      "path": "apply-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "staged-stage-apply.txt",
+      "sha256": "d000d4039c0f8fa746eebbfd86e51411f60d0193a954f7699c067552a573d590"
+    },
+    {
+      "path": "staged-seal-task.xml",
+      "sha256": "b28faa7357d500f7abeec70a0b55294fbe50b469e090076905b34c6eec37790f"
+    },
+    {
+      "path": "staged-seal-task-info.json",
+      "sha256": "bd620099340c1a75e04fd6559c2a1dea0eb45bea2fc8a4a3f8cb14de298e905d"
+    },
+    {
+      "path": "staged-seal-state-acl.json",
+      "sha256": "f28ca5b4a15feb32b632ed82f2343e3c6fc289edd48cc1b01b53a2cb58bbe943"
+    },
+    {
+      "path": "staged-state.json",
+      "sha256": "9fef2a85ffa96a5c52e8dae05b5ee0becbbac6c04a58c5813afb320d2c06e5d8"
+    },
+    {
+      "path": "normal-signout-8.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "normal-signout-8-process.json",
+      "sha256": "4cc1c37876c71de995969e85fb653683e1c81df6adbe27a84cbb9ce0d4cca959"
+    },
+    {
+      "path": "power-timeline.json",
+      "sha256": "b6ca7c1938e4272d1487478e6da29e69aae232ddf9535d0145ed879400cd37e5"
+    },
+    {
+      "path": "sealed-snapshot.json",
+      "sha256": "2010f5ff306137fdf3e673d886cfccbb96678a82a38203bc742517d5042a9b10"
+    },
+    {
+      "path": "preinspect-9.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "preinspect-9-process.json",
+      "sha256": "ab14e2b1b163d5c7d9020c09a958457c1b723e53dcb597541bc250259fa30812"
+    },
+    {
+      "path": "postseal-10.txt",
+      "sha256": "8b942758780474eac90871e4ccacf2cd5e0798ddb6b842fb499af63acc0c07ad"
+    },
+    {
+      "path": "postseal-10-process.json",
+      "sha256": "d865f7ff6f00dae2ccc083d5f31c247224948d487e722ccb724f99a2fe4d724d"
+    },
+    {
+      "path": "postseal-results.json",
+      "sha256": "45e6af3a0c3de8833921710c698cf9db2bdd3b0363b20b895b3dc2179f5676d1"
+    },
+    {
+      "path": "apply-result-final.json",
+      "sha256": "a5288ab8e800d8b7745b92cfff364dd99285928cdd6c47c8d5c1a1be294c2bf6"
+    },
+    {
+      "path": "apply-final-stdout.txt",
+      "sha256": "ca1fe64ad7b2ca250a1606deb3b5d515958b9cd6c66361cb5ae85702986abbab"
+    },
+    {
+      "path": "apply-final-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "apply-task-info-11.txt",
+      "sha256": "096588c00ef4d06116176c28c8db21cb9e5ce3b7274509c3af89a776aec63865"
+    },
+    {
+      "path": "apply-task-info-11-process.json",
+      "sha256": "09a2b583165d0b82bee591d12e9e8e0a5aecb7514f8116b8237542bd5eec8b4f"
+    },
+    {
+      "path": "after-stage-apply.txt",
+      "sha256": "d000d4039c0f8fa746eebbfd86e51411f60d0193a954f7699c067552a573d590"
+    },
+    {
+      "path": "after-seal-case.json",
+      "sha256": "825ce0817b52c4eb71ef5159ee24dc389dba3348c3efe2787a2045d8f17b6f63"
+    }
+  ]
+}

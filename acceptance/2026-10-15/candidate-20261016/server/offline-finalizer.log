@@ -1,0 +1,2 @@
+2026-10-16T06:27:24.5294024Z [Info] [Finalize] SYSTEM finalizer started; waiting for the administrator to sign out normally. No forced logoff will be used.
+2026-10-16T06:37:29.4613559Z [Error] [Finalize] Operator profile did not fully unload before timeout; shutdown is refused.

@@ -1,0 +1,12 @@
+{
+  "status": "evidence-complete",
+  "allowRestore": true,
+  "noPendingOfflineEvidence": true,
+  "os": "server",
+  "case": "e0-l0-d0",
+  "checksPassed": 13,
+  "applyExitCode": null,
+  "exitObservation": "Unavailable: immediate shutdown interrupted wrapper; retained clean shutdown-request output and actual poweroff independently observed",
+  "scope": "Postboot inspection; retained sealed snapshot; not offline/MCS certification",
+  "utc": "2026-10-15T18:36:18.690248+00:00"
+}

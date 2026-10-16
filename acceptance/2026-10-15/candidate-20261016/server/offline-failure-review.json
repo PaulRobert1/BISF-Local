@@ -1,0 +1,23 @@
+{
+  "status": "evidence-complete",
+  "testResult": "FAILED: disconnected operator did not unload; not a successful seal",
+  "allowRestore": true,
+  "noPendingOfflineEvidence": true,
+  "reviewedUTC": "2026-10-16T06:46:16.806477+00:00",
+  "originalReceipt": "evidence/server/candidate-offline-seal/e1-l1-d1/20261016T062500Z-b0506f44/receipt.json",
+  "retainedSnapshot": "snapshot-10046",
+  "retainedSnapshotName": "Failed-Offline-Signout-20261016",
+  "powerRecovery": "Normal ShutdownGuest completed after the failed test and retained snapshot; not counted as BISF shutdown",
+  "preservedState": [
+    "operator-seal.json",
+    "finalizer error log",
+    "original failed test receipt",
+    "full failed VM disk state in retained snapshot"
+  ],
+  "artifacts": {
+    "offline-finalizer.log": "ffe5eec7941eb006b73b37e626d6c65dee5907eb9ac17e1d8814f340ea5910d8",
+    "offline-pending-state.json": "18bc1b6579714664d944ab36261eee04c68f2d32e464b8d7a7ad6a5da1eed3e0",
+    "signout-observation.txt": "e55dd21b330282fd4b06232c33f9b9686d22d56606f9dd140ca907d8a0c592af"
+  },
+  "nextTest": "Separate baseline restore; console session before NIC disconnection; no product guard bypass."
+}

@@ -1,0 +1,69 @@
+{
+    "Name":  "e1-l1-d0",
+    "ObservedAfterBoot":  true,
+    "Cases":  [
+                  {
+                      "Case":  "Operator registration",
+                      "Pass":  true,
+                      "Exists":  true
+                  },
+                  {
+                      "Case":  "Operator directory",
+                      "Pass":  true,
+                      "Exists":  true
+                  },
+                  {
+                      "Case":  "Seal task absent",
+                      "Pass":  true
+                  },
+                  {
+                      "Case":  "Pending state absent",
+                      "Pass":  true
+                  },
+                  {
+                      "Case":  "BISF generated fixture selection",
+                      "Pass":  true,
+                      "Exists":  false
+                  },
+                  {
+                      "Case":  "Preserve Citrix.log",
+                      "Pass":  true
+                  },
+                  {
+                      "Case":  "Preserve WEM.log",
+                      "Pass":  true
+                  },
+                  {
+                      "Case":  "Preserve FSLogix.log",
+                      "Pass":  true
+                  },
+                  {
+                      "Case":  "Preserve unrelated.txt",
+                      "Pass":  true
+                  },
+                  {
+                      "Case":  "Event Application original record",
+                      "Pass":  true,
+                      "Retained":  false,
+                      "Readable":  true
+                  },
+                  {
+                      "Case":  "Event System original record",
+                      "Pass":  true,
+                      "Retained":  false,
+                      "Readable":  true
+                  },
+                  {
+                      "Case":  "Event Setup original record",
+                      "Pass":  true,
+                      "Retained":  false,
+                      "Readable":  true
+                  },
+                  {
+                      "Case":  "Event Security original record",
+                      "Pass":  true,
+                      "Retained":  true,
+                      "Readable":  true
+                  }
+              ]
+}

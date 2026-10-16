@@ -1,0 +1,76 @@
+{
+    "Computer":  "BISF-W11-TEST",
+    "UTC":  "2026-10-16T07:01:02.1088168Z",
+    "BootTime":  "2026-10-16T06:58:21.5000000Z",
+    "Products":  [
+                     {
+                         "DisplayName":  "Citrix Virtual Apps and Desktops 7 2507 LTSR CU2 - Virtual Delivery Agent",
+                         "DisplayVersion":  "2507.0.2100.2123"
+                     },
+                     {
+                         "DisplayName":  "Citrix Profile management",
+                         "DisplayVersion":  "25.7.2100.46"
+                     },
+                     {
+                         "DisplayName":  "Citrix Virtual Desktop Agent - x64",
+                         "DisplayVersion":  "7.45.2100.27"
+                     },
+                     {
+                         "DisplayName":  "Microsoft FSLogix Apps",
+                         "DisplayVersion":  "3.26.826.17182"
+                     },
+                     {
+                         "DisplayName":  "Microsoft FSLogix Apps",
+                         "DisplayVersion":  "3.26.826.17182"
+                     },
+                     {
+                         "DisplayName":  "Citrix Workspace Environment Management Agent",
+                         "DisplayVersion":  "25.71.0"
+                     },
+                     {
+                         "DisplayName":  "Citrix Workspace Environment Management Agent",
+                         "DisplayVersion":  "2507.1.110.1"
+                     },
+                     {
+                         "DisplayName":  "Microsoft FSLogix Apps",
+                         "DisplayVersion":  "3.26.826.17182"
+                     }
+                 ],
+    "Services":  [
+                     {
+                         "Name":  "BrokerAgent",
+                         "State":  "Start Pending",
+                         "StartMode":  "Auto"
+                     },
+                     {
+                         "Name":  "ctxProfile",
+                         "State":  "Running",
+                         "StartMode":  "Auto"
+                     },
+                     {
+                         "Name":  "frxsvc",
+                         "State":  "Running",
+                         "StartMode":  "Auto"
+                     },
+                     {
+                         "Name":  "PvsVmAgent",
+                         "State":  "Running",
+                         "StartMode":  "Auto"
+                     },
+                     {
+                         "Name":  "WemAgentSvc",
+                         "State":  "Running",
+                         "StartMode":  "Auto"
+                     },
+                     {
+                         "Name":  "WemLogonSvc",
+                         "State":  "Running",
+                         "StartMode":  "Auto"
+                     }
+                 ],
+    "PendingCBS":  false,
+    "PendingWU":  false,
+    "PendingRename":  [
+                          null
+                      ]
+}

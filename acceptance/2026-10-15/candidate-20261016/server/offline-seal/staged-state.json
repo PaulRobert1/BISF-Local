@@ -1,0 +1,16 @@
+{
+    "SchemaVersion":  1,
+    "Generation":  "17399427-2882-4a2a-b417-58c5d4e1a2e6",
+    "Status":  "Pending",
+    "ConfigHash":  "C9523A1FAD3F13D9EA229EAAC3DFFEAA59B2AE28652C48155074F99006039561",
+    "Master":  {
+                   "Name":  "BISF-S25-TEST",
+                   "MachineGuid":  "1eff4c6b-a729-40e0-98c0-a55c1129ef18",
+                   "SmbiosUuid":  "258F2742-3B21-161B-D672-3D986A65C65C"
+               },
+    "OperatorSid":  "S-1-5-21-2179150373-3800760875-3562492511-1000",
+    "OperatorPath":  "C:\\Users\\BISFOperator",
+    "ProfilesRoot":  "C:\\Users",
+    "TimeoutMinutes":  10,
+    "StagedUtc":  "2026-10-16T07:24:55.5320409Z"
+}

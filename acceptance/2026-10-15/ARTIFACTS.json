@@ -1,5 +1,317 @@
 [
   {
+    "path": "BASELINE-REPORT.md",
+    "sourceSha256": "7f7a7c26d880a6186183e0c4cff3a9f9e166933d73f280b30247b624bb3d4d7c",
+    "stagedSha256": "7f7a7c26d880a6186183e0c4cff3a9f9e166933d73f280b30247b624bb3d4d7c",
+    "bytes": 46837,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "BISF-Test-W11-20261015-snapshots.json",
+    "sourceSha256": "3876ac06ec0b73fe5b15a4d501117f41f7d65e556b2ce5356e044b2af50657b0",
+    "stagedSha256": "389d6be1ab164f4bdbc2f586aec1838a8fe7848865ef808b724379682329ae80",
+    "bytes": 1235,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "LINK-CHECK.json",
+    "sourceSha256": "5dc562e99c38a62e4a3ba59075f7bff05bc7ea4c2d1bf681842103705b572457",
+    "stagedSha256": "5dc562e99c38a62e4a3ba59075f7bff05bc7ea4c2d1bf681842103705b572457",
+    "bytes": 71,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "OMITTED.json",
+    "sourceSha256": "fe43c191d90a6ec08d4feb21d3eee7d28283585819decfc12de282fbbf42df4f",
+    "stagedSha256": "fe43c191d90a6ec08d4feb21d3eee7d28283585819decfc12de282fbbf42df4f",
+    "bytes": 210,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "REPORT.md",
+    "sourceSha256": "53a37b8cf144a3964ad471d22c1d0d2639e6f73c8322c57efd8825742b37c354",
+    "stagedSha256": "53a37b8cf144a3964ad471d22c1d0d2639e6f73c8322c57efd8825742b37c354",
+    "bytes": 4138,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/protected-vm.json",
+    "sourceSha256": "e010f2af03835776fbd14a4ebe37d7ff2be47e1057a283a393eb647f3cb370b6",
+    "stagedSha256": "e010f2af03835776fbd14a4ebe37d7ff2be47e1057a283a393eb647f3cb370b6",
+    "bytes": 245,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/candidate-deployment.json",
+    "sourceSha256": "51005db04d0e7fa4c65fee52e19125e84cf100b0df586b762085a520863f8adb",
+    "stagedSha256": "51005db04d0e7fa4c65fee52e19125e84cf100b0df586b762085a520863f8adb",
+    "bytes": 224,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/candidate-full-tests.json",
+    "sourceSha256": "055ccc7ea0f70c2003aacde64378ea4e9416f60ac26df2d6903c6a8a36af90ba",
+    "stagedSha256": "055ccc7ea0f70c2003aacde64378ea4e9416f60ac26df2d6903c6a8a36af90ba",
+    "bytes": 139,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/failed-offline-seal/apply-result.json",
+    "sourceSha256": "963cf25e5e3abc0adc7b1f97152de57492cb914ba0fc8a5a77c881674a574f6d",
+    "stagedSha256": "963cf25e5e3abc0adc7b1f97152de57492cb914ba0fc8a5a77c881674a574f6d",
+    "bytes": 575,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/failed-offline-seal/power-timeline.json",
+    "sourceSha256": "d7fe619738019d381f0739c5375094d58d3a9068373f22061135f04fe3f14c25",
+    "stagedSha256": "d7fe619738019d381f0739c5375094d58d3a9068373f22061135f04fe3f14c25",
+    "bytes": 16071,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/failed-offline-seal/receipt.json",
+    "sourceSha256": "97f5e334382f4eaf347e5f38320bfb3b08e7a1ce5326ca8429793116d4c1eeb1",
+    "stagedSha256": "97f5e334382f4eaf347e5f38320bfb3b08e7a1ce5326ca8429793116d4c1eeb1",
+    "bytes": 13331,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/failed-offline-seal/staged-state.json",
+    "sourceSha256": "18bc1b6579714664d944ab36261eee04c68f2d32e464b8d7a7ad6a5da1eed3e0",
+    "stagedSha256": "18bc1b6579714664d944ab36261eee04c68f2d32e464b8d7a7ad6a5da1eed3e0",
+    "bytes": 671,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-failure-review.json",
+    "sourceSha256": "b5b3411ddf255c4137c2ba4175412b5e14afb382e93c9d5a52c9074614b0d95d",
+    "stagedSha256": "b5b3411ddf255c4137c2ba4175412b5e14afb382e93c9d5a52c9074614b0d95d",
+    "bytes": 1174,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-finalizer.log",
+    "sourceSha256": "ffe5eec7941eb006b73b37e626d6c65dee5907eb9ac17e1d8814f340ea5910d8",
+    "stagedSha256": "ffe5eec7941eb006b73b37e626d6c65dee5907eb9ac17e1d8814f340ea5910d8",
+    "bytes": 281,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-pending-state.json",
+    "sourceSha256": "18bc1b6579714664d944ab36261eee04c68f2d32e464b8d7a7ad6a5da1eed3e0",
+    "stagedSha256": "18bc1b6579714664d944ab36261eee04c68f2d32e464b8d7a7ad6a5da1eed3e0",
+    "bytes": 671,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-preview.json",
+    "sourceSha256": "6098c602eb317fca5d4231b4b79bdeb83fefab406b1760017e6f2bb953e97a4c",
+    "stagedSha256": "6098c602eb317fca5d4231b4b79bdeb83fefab406b1760017e6f2bb953e97a4c",
+    "bytes": 822,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/apply-final-stdout.txt",
+    "sourceSha256": "91f0963ebe67e85e3ea063cdf253c421d42191d6118221aa4dafac30739a1858",
+    "stagedSha256": "91f0963ebe67e85e3ea063cdf253c421d42191d6118221aa4dafac30739a1858",
+    "bytes": 3951,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/apply-result-final.json",
+    "sourceSha256": "47492bc67db3f0f3d9725e0a3e124b29ee99155352ed9c25c1c3c31fc2dd166e",
+    "stagedSha256": "47492bc67db3f0f3d9725e0a3e124b29ee99155352ed9c25c1c3c31fc2dd166e",
+    "bytes": 575,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/before-seal-profiles-before.json",
+    "sourceSha256": "a3b14f59f1ab4692198930e11005373b084218e14ef171168eefe739961b131d",
+    "stagedSha256": "a3b14f59f1ab4692198930e11005373b084218e14ef171168eefe739961b131d",
+    "bytes": 1435,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/before-seal.xml",
+    "sourceSha256": "c9523a1fad3f13d9ea229eaac3dffeaa59b2ae28652c48155074f99006039561",
+    "stagedSha256": "c9523a1fad3f13d9ea229eaac3dffeaa59b2ae28652c48155074f99006039561",
+    "bytes": 2599,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/console-transfer-stdout.txt",
+    "sourceSha256": "a5644d205ac88f634554f68d575b093a5a44e625b6b22130a25526903d7d30e1",
+    "stagedSha256": "a5644d205ac88f634554f68d575b093a5a44e625b6b22130a25526903d7d30e1",
+    "bytes": 265,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/postseal-results.json",
+    "sourceSha256": "c0edb823e2721619b1bbc837c99fc2f60b01b9bdb665e2a0d64f1d58a113d432",
+    "stagedSha256": "c0edb823e2721619b1bbc837c99fc2f60b01b9bdb665e2a0d64f1d58a113d432",
+    "bytes": 2370,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/power-timeline.json",
+    "sourceSha256": "246645f96f69ccf5749ec39ea77972b2dd01a49e8d7a5ee6093adf1671479e6f",
+    "stagedSha256": "246645f96f69ccf5749ec39ea77972b2dd01a49e8d7a5ee6093adf1671479e6f",
+    "bytes": 2374,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/receipt.json",
+    "sourceSha256": "5b22f93c42df75c091e601d3db2049262313136c698cbdf20103e6fb41f45ede",
+    "stagedSha256": "5b22f93c42df75c091e601d3db2049262313136c698cbdf20103e6fb41f45ede",
+    "bytes": 17255,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/sealed-snapshot.json",
+    "sourceSha256": "02541ae9e569760fb874f6a559977bd84381f1d8ef32d004b45fcaa480c36fcd",
+    "stagedSha256": "02541ae9e569760fb874f6a559977bd84381f1d8ef32d004b45fcaa480c36fcd",
+    "bytes": 150,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/staged-seal-task-info.json",
+    "sourceSha256": "70605d97ce9c6b59a4fe9983b11a3b63ceb14b799aa41674becff8b0b5dbbd3f",
+    "stagedSha256": "70605d97ce9c6b59a4fe9983b11a3b63ceb14b799aa41674becff8b0b5dbbd3f",
+    "bytes": 85,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/staged-seal-task.xml",
+    "sourceSha256": "b28faa7357d500f7abeec70a0b55294fbe50b469e090076905b34c6eec37790f",
+    "stagedSha256": "b28faa7357d500f7abeec70a0b55294fbe50b469e090076905b34c6eec37790f",
+    "bytes": 1414,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/staged-state.json",
+    "sourceSha256": "6594f0264e89f3b31b1f74762bc9d920e987cd3f981635be4bae31bfcd67800c",
+    "stagedSha256": "6594f0264e89f3b31b1f74762bc9d920e987cd3f981635be4bae31bfcd67800c",
+    "bytes": 671,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/offline-seal/vendor-inventory.json",
+    "sourceSha256": "6d23be581df55d7708c69446670729e69c2ed1f62f6d9dc05464f8bf103acda8",
+    "stagedSha256": "6d23be581df55d7708c69446670729e69c2ed1f62f6d9dc05464f8bf103acda8",
+    "bytes": 3046,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/server/post-install.json",
+    "sourceSha256": "534c5d8ddbd35466d98d5c47b097068d2cc99d5ea7f01091189abfe6f74002bc",
+    "stagedSha256": "534c5d8ddbd35466d98d5c47b097068d2cc99d5ea7f01091189abfe6f74002bc",
+    "bytes": 3035,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/source-manifest.json",
+    "sourceSha256": "0d4546b1529b986ca42b9586240f3cc4efdef3942ebc276dc35b65fe7f477e94",
+    "stagedSha256": "0d4546b1529b986ca42b9586240f3cc4efdef3942ebc276dc35b65fe7f477e94",
+    "bytes": 4569,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/candidate-deployment.json",
+    "sourceSha256": "2ace4491e5a5c62444cdbd26c310749d46d1e9aa05cd8be87c83ea26a424e834",
+    "stagedSha256": "2ace4491e5a5c62444cdbd26c310749d46d1e9aa05cd8be87c83ea26a424e834",
+    "bytes": 224,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/candidate-full-tests.json",
+    "sourceSha256": "055ccc7ea0f70c2003aacde64378ea4e9416f60ac26df2d6903c6a8a36af90ba",
+    "stagedSha256": "055ccc7ea0f70c2003aacde64378ea4e9416f60ac26df2d6903c6a8a36af90ba",
+    "bytes": 139,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/installation-receipt-initial.json",
+    "sourceSha256": "6ec4311cf748fefeb131fbe192e3a188d8671683d68fbc80543e219b8a88f8da",
+    "stagedSha256": "6ec4311cf748fefeb131fbe192e3a188d8671683d68fbc80543e219b8a88f8da",
+    "bytes": 574,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/installation-receipt.json",
+    "sourceSha256": "f32921b463530e7decdd081f4e72c29557b6fb3435b734e901545d58d9c51dd5",
+    "stagedSha256": "f32921b463530e7decdd081f4e72c29557b6fb3435b734e901545d58d9c51dd5",
+    "bytes": 2683,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-preview.json",
+    "sourceSha256": "e09526e5034ba6bc0fafaf95604c80b396eac43e875e7a5d97541a91db19ff0d",
+    "stagedSha256": "e09526e5034ba6bc0fafaf95604c80b396eac43e875e7a5d97541a91db19ff0d",
+    "bytes": 797,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/post-install-initial.json",
+    "sourceSha256": "ed8ab1853b318088f9e34578ba9dfa345ff718c520dc911a08a471e99f48a658",
+    "stagedSha256": "ed8ab1853b318088f9e34578ba9dfa345ff718c520dc911a08a471e99f48a658",
+    "bytes": 3041,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/post-install.json",
+    "sourceSha256": "9de1cd9bd98a7a6936fd79900c26597f49e2bc19443bdbdc833505c5c98696b8",
+    "stagedSha256": "9de1cd9bd98a7a6936fd79900c26597f49e2bc19443bdbdc833505c5c98696b8",
+    "bytes": 3035,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "compatibility-2507-research.md",
+    "sourceSha256": "30b1466e59c670241a06e56fa5179c3ef5480723d8f9875ac293d2978a0510bd",
+    "stagedSha256": "30b1466e59c670241a06e56fa5179c3ef5480723d8f9875ac293d2978a0510bd",
+    "bytes": 1561,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
     "path": "evidence/media-search/cvad2012-product-version.txt",
     "sourceSha256": "1f85d6e88122d4300b3b099ce3d6b926dbb217b0f6eef6bb60395a2663e0682b",
     "stagedSha256": "0c909448df8647fddba2e83fdb1230cf19279859561bb5d83b1b6d25b4a012b5",
@@ -14,6 +326,94 @@
     "bytes": 1291,
     "redactedLines": 0,
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
+  },
+  {
+    "path": "evidence/server/account-unknown/evidence-complete.json",
+    "sourceSha256": "7a94db91d20aeae69500885e029a9fb0c225b9bba39aabed04534fd90b4b9d81",
+    "stagedSha256": "cb23b6ab2ad95a50adeb20416a904f7f37c3f2ebbe0701de3cdb7740cd511a4b",
+    "bytes": 240,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/native-config-before.xml",
+    "sourceSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
+    "stagedSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
+    "bytes": 2355,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/prepare-stderr.txt",
+    "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stagedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "bytes": 1,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/prepare-stdout.txt",
+    "sourceSha256": "4c48d674354e1fecf4dcb25da9d05d4af7dec962686a11691725ac6d23d2f5ea",
+    "stagedSha256": "4c48d674354e1fecf4dcb25da9d05d4af7dec962686a11691725ac6d23d2f5ea",
+    "bytes": 3412,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/profiles-after.json",
+    "sourceSha256": "10bc9bcddeaeff6dfd4d71511d22c0d6186e5d42eae5fad473de8fa255c9a314",
+    "stagedSha256": "f6c483d418e572a4ddfa2ffb9545e6fc27be7921d175696df7ac7b23827216f3",
+    "bytes": 2134,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/profiles-before.json",
+    "sourceSha256": "124b376f4dfe6a2c13d62b39de5849342ac31879321d1da6b23a6ec1313a6908",
+    "stagedSha256": "84a1c87a174e99a1f6baad8048044ba19903d99946ce1561a17d5189f250e38c",
+    "bytes": 2413,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/profiles-original.json",
+    "sourceSha256": "10bc9bcddeaeff6dfd4d71511d22c0d6186e5d42eae5fad473de8fa255c9a314",
+    "stagedSha256": "f6c483d418e572a4ddfa2ffb9545e6fc27be7921d175696df7ac7b23827216f3",
+    "bytes": 2134,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/result.json",
+    "sourceSha256": "44d925fd4876f9c311db01edd5ef9b3cc6f97f06b91b0701a28e2aa1cf28fb29",
+    "stagedSha256": "460a36d55373dcce5cb2cf48f20aceb8b79a980169f6a226bfa41fa97b864995",
+    "bytes": 2214,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/source-after.json",
+    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
+    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
+    "bytes": 6328,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/source-before.json",
+    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
+    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
+    "bytes": 6328,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/server/account-unknown/test-config.xml",
+    "sourceSha256": "c88823fc62f833a279d0afae2e6f23ff594cb1362d79a58b04b9a09a8fa9e3dd",
+    "stagedSha256": "49714f80cb8a2312e45e7412570fcb7d465975ff64064e9f50cb2a6bd6b93fb0",
+    "bytes": 2726,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
   },
   {
     "path": "evidence/server/agents-preview-output.txt",
@@ -80,6 +480,406 @@
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   },
   {
+    "path": "evidence/server/matrix/e0-l0-d0/20261015T183002Z-df6d88f6/apply-final-stdout.txt",
+    "sourceSha256": "54fc34df5a3a10b93a8a0afef958f67ecfbd5a5102aef516fab498fd7e33b441",
+    "stagedSha256": "d964afe1726f335aa2993ab372a949c286f07cc8e8f5ea1de2c2681a6d0db94a",
+    "bytes": 3365,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d0/20261015T183002Z-df6d88f6/before-seal-events-before.json",
+    "sourceSha256": "42ef54a1a3ab38e53e8c96983624a6dba2915b6e3c94c79722f536c0e0848d9b",
+    "stagedSha256": "843e08fd717a4aab10a554601ca91b42a3d0c7fe011652051095e787622793be",
+    "bytes": 865,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d0/20261015T183002Z-df6d88f6/before-seal.xml",
+    "sourceSha256": "422a657f637eec9d8d2e9c7894f1b82a743a3410759e9f16913b09e91f8d1c67",
+    "stagedSha256": "65beb39a643c77ad52ea8e9ef9e5d3614301421c80ba040dd9ada657337e4881",
+    "bytes": 2539,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d0/20261015T183002Z-df6d88f6/postseal-results.json",
+    "sourceSha256": "13f76cc8d26d2906cae3673ee19f8d545af1e228ebb66891b6229c774ac4706d",
+    "stagedSha256": "f1732e6638a20b6431ed8fe248fd688554a9c1379127969c342c20863ab43826",
+    "bytes": 2295,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d0/20261015T183002Z-df6d88f6/power-timeline.json",
+    "sourceSha256": "5256a6c4a35b27545f14becb7c033eaf5bbe42c6ff5a4a1a3f12bc20606ef91c",
+    "stagedSha256": "5256a6c4a35b27545f14becb7c033eaf5bbe42c6ff5a4a1a3f12bc20606ef91c",
+    "bytes": 931,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d0/20261015T183002Z-df6d88f6/receipt.json",
+    "sourceSha256": "c82bc97c60016a4fd0bccddd85bc12f50e3c688288fdd5e34b2b596a1fff6461",
+    "stagedSha256": "c82bc97c60016a4fd0bccddd85bc12f50e3c688288fdd5e34b2b596a1fff6461",
+    "bytes": 7786,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d0/20261015T183002Z-df6d88f6/reviewed-completion.json",
+    "sourceSha256": "f0fe51adbd1cc64732633978d02e70edc148deee6dc49696ce27eb9cb7c87225",
+    "stagedSha256": "8b0faeb0966a7f9c14002c9fdc5915dcbf61f90fe8ad0793af8b6d2b89110d59",
+    "bytes": 478,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d0/20261015T183002Z-df6d88f6/sealed-snapshot.json",
+    "sourceSha256": "567a9e2e8662d71ac8accea9d77f3a6afa0cec61c02157bf11b874aa14530c77",
+    "stagedSha256": "567a9e2e8662d71ac8accea9d77f3a6afa0cec61c02157bf11b874aa14530c77",
+    "bytes": 150,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d1/20261015T183646Z-d2ec812a/apply-stdout.txt",
+    "sourceSha256": "e76de98287b908013e3fd440a829ec1a9c4df76ab63a1dd3b331cce26f34ea08",
+    "stagedSha256": "5c21480d98288ce6b6652784a621b796fbd37e720c756dd9938d293d2738a5cf",
+    "bytes": 3926,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d1/20261015T183646Z-d2ec812a/before-seal-events-before.json",
+    "sourceSha256": "f3412fd82393412faf960a00703bffea241c34c7baa65024c28c45ece375f968",
+    "stagedSha256": "02f95fa3a6a1b4580238ce0d0d2dd1131ebc8c8855d2bf941f470b3e5dfc822e",
+    "bytes": 865,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d1/20261015T183646Z-d2ec812a/before-seal.xml",
+    "sourceSha256": "520123ff3c7e09a7e342d51da5c02415fb9ec993274b826dcd5880e657221293",
+    "stagedSha256": "5ce6ad2a460a1539247135c809aad1a046ee77ecb7ca707651e1197d1acaa305",
+    "bytes": 2538,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d1/20261015T183646Z-d2ec812a/postseal-results.json",
+    "sourceSha256": "c3ab6aa99a9e51068363ac197ef4641256527c72afd95f7e11a786462c40586d",
+    "stagedSha256": "d0f41a21a2fbb844d557eecef17c2f17e4bde2b58457a85b843b461a66eb499a",
+    "bytes": 2297,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d1/20261015T183646Z-d2ec812a/power-timeline.json",
+    "sourceSha256": "57a29ca6a8362abaccc641daa00b56490eb8e01e39930ae1775a2793e868c93b",
+    "stagedSha256": "57a29ca6a8362abaccc641daa00b56490eb8e01e39930ae1775a2793e868c93b",
+    "bytes": 1138,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d1/20261015T183646Z-d2ec812a/receipt.json",
+    "sourceSha256": "4a4e74e27ccf87dcf0170a345d3cb9adf02aaec8c4d308cd299bb0d225ae8222",
+    "stagedSha256": "4a4e74e27ccf87dcf0170a345d3cb9adf02aaec8c4d308cd299bb0d225ae8222",
+    "bytes": 10353,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l0-d1/20261015T183646Z-d2ec812a/sealed-snapshot.json",
+    "sourceSha256": "2c71f29e0f1531fa4b6332047cd6c67c3fe1ce3b9228befa36286bb3bdfb8dc1",
+    "stagedSha256": "2c71f29e0f1531fa4b6332047cd6c67c3fe1ce3b9228befa36286bb3bdfb8dc1",
+    "bytes": 150,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment lines redacted if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d0/20261015T184237Z-ddd359d2/apply-final-stdout.txt",
+    "sourceSha256": "7dc35f64918806c25a1f1ca95f1f47c6a10c4c6b0e3da6c023619c1497f27cee",
+    "stagedSha256": "513dc507ac15e5c1e05efcaa682201c6f59e1fce6efe820f7d50f0c625cf7fa6",
+    "bytes": 3505,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d0/20261015T184237Z-ddd359d2/before-seal-events-before.json",
+    "sourceSha256": "ba713132156e90a7cb5f547d78a50e6543b1306a822ce1937992051680f80d80",
+    "stagedSha256": "5535e31eec7519567fae3d5bc3da11fbc8724443c21a9f6e324a22c994a4caa2",
+    "bytes": 865,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d0/20261015T184237Z-ddd359d2/before-seal.xml",
+    "sourceSha256": "7c568fce2d462500ec41c41400b45e7e0a9361fb457eaba6adc43fcceed66700",
+    "stagedSha256": "3b214510e6a9eb86cab87a0dab7de7eb56e26e520da9b0e105f71721dff4a9f0",
+    "bytes": 2538,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d0/20261015T184237Z-ddd359d2/postseal-results.json",
+    "sourceSha256": "eacaef8231033db9b3f0b881c6abded7a11f98c9e7eee8c095ccfdef42db4498",
+    "stagedSha256": "eab2ad30895f0175db7d4d943557bcf70e4a20e84262d38954a15e24e4ad7a8a",
+    "bytes": 2296,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d0/20261015T184237Z-ddd359d2/power-timeline.json",
+    "sourceSha256": "fa36e4d713eaa82d0df176041f7700550489f173266c5c63d2e4f1724bbc13c1",
+    "stagedSha256": "fa36e4d713eaa82d0df176041f7700550489f173266c5c63d2e4f1724bbc13c1",
+    "bytes": 2065,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d0/20261015T184237Z-ddd359d2/receipt.json",
+    "sourceSha256": "dd99ebbd1d2b0dcb062ddd0234e4ae588337836949b200c3353b23fcc5223c7d",
+    "stagedSha256": "dd99ebbd1d2b0dcb062ddd0234e4ae588337836949b200c3353b23fcc5223c7d",
+    "bytes": 8571,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d0/20261015T184237Z-ddd359d2/sealed-snapshot.json",
+    "sourceSha256": "bf663d85f85e9aa68db5018bf39c3960580adf7d229b059142285905e1dd78b5",
+    "stagedSha256": "bf663d85f85e9aa68db5018bf39c3960580adf7d229b059142285905e1dd78b5",
+    "bytes": 150,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d1/20261015T184828Z-e2e668d9/apply-final-stdout.txt",
+    "sourceSha256": "ca1fe64ad7b2ca250a1606deb3b5d515958b9cd6c66361cb5ae85702986abbab",
+    "stagedSha256": "c741ca8cfd0ca3dae5bcca29cb81a9d6123bc9d74b3262f2533ea6f6e322c89d",
+    "bytes": 3926,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d1/20261015T184828Z-e2e668d9/before-seal-events-before.json",
+    "sourceSha256": "151fe8c31d8765e476a21ed2ff47a3249cd02e6bccbb41e2cf9b52a3cc8577ad",
+    "stagedSha256": "18c37ee1508f4cfad693b4e9879a8eaafe98e0e20ccc297240cbe1af655af7ff",
+    "bytes": 865,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d1/20261015T184828Z-e2e668d9/before-seal.xml",
+    "sourceSha256": "48c9aef84c2cd3fdd38c0138d3c18454e535febe49fe2db946fd8a7f74a339c2",
+    "stagedSha256": "6977c3d032a056f4ffb5f9518af9172c613d6477969fa4675b8ff82faa4d5a60",
+    "bytes": 2537,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d1/20261015T184828Z-e2e668d9/postseal-results.json",
+    "sourceSha256": "45e6af3a0c3de8833921710c698cf9db2bdd3b0363b20b895b3dc2179f5676d1",
+    "stagedSha256": "e12a050c1f2f3bb23c765cb3185cd6277de90161f51f32b45148c9fd2759f917",
+    "bytes": 2298,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d1/20261015T184828Z-e2e668d9/power-timeline.json",
+    "sourceSha256": "b6ca7c1938e4272d1487478e6da29e69aae232ddf9535d0145ed879400cd37e5",
+    "stagedSha256": "b6ca7c1938e4272d1487478e6da29e69aae232ddf9535d0145ed879400cd37e5",
+    "bytes": 1447,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d1/20261015T184828Z-e2e668d9/receipt.json",
+    "sourceSha256": "44cae2a40c1abc5c72f1da4c591023a55442365389a0316cc305d30c331f8813",
+    "stagedSha256": "44cae2a40c1abc5c72f1da4c591023a55442365389a0316cc305d30c331f8813",
+    "bytes": 10352,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e0-l1-d1/20261015T184828Z-e2e668d9/sealed-snapshot.json",
+    "sourceSha256": "2010f5ff306137fdf3e673d886cfccbb96678a82a38203bc742517d5042a9b10",
+    "stagedSha256": "2010f5ff306137fdf3e673d886cfccbb96678a82a38203bc742517d5042a9b10",
+    "bytes": 150,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d0/20261015T185448Z-18ccb292/apply-final-stdout.txt",
+    "sourceSha256": "35e8ac10b8d4449ee7495458c1709e2cd506c44a55d1ffbc8b98eb1a871e43e4",
+    "stagedSha256": "2f23b4ddebd648db5cf472c019195047f4558c6d1370c14468212cbf292ccfad",
+    "bytes": 3505,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d0/20261015T185448Z-18ccb292/before-seal-events-before.json",
+    "sourceSha256": "eccbaddc64e3f7ef4aa210d8dfb5ec17e02fbdb6ae5c7270cea27f2ff7aafe70",
+    "stagedSha256": "72e3fa3e7859f9e0090dcc5b41021d7330e9a474c12c64a6bc0d3db899bf2a49",
+    "bytes": 865,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d0/20261015T185448Z-18ccb292/before-seal.xml",
+    "sourceSha256": "242389a2ffbfc6abc70cf85aae8bf41c40d066767f40f0a28ab8bbdd9817a8e5",
+    "stagedSha256": "f961bb93a473753aa58b5512939ecf2088214bd84cfd6b07af941a898cae3b4b",
+    "bytes": 2538,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d0/20261015T185448Z-18ccb292/postseal-results.json",
+    "sourceSha256": "82c028160c2466c42d58cb1558ab84904f1c3c5a3af4495cc24675d03f81e81b",
+    "stagedSha256": "edaf453de78e59c5611ef4785f332b9427d3d6725c797787cdad4e8b5ef68d3e",
+    "bytes": 2298,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d0/20261015T185448Z-18ccb292/power-timeline.json",
+    "sourceSha256": "f71c1d21929c9dd6d648778544a98b4c52f19851d01e002bf0cb8f4784486483",
+    "stagedSha256": "f71c1d21929c9dd6d648778544a98b4c52f19851d01e002bf0cb8f4784486483",
+    "bytes": 1447,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d0/20261015T185448Z-18ccb292/receipt.json",
+    "sourceSha256": "13c780483a712693b938397b25683c849805edbabf549db6830276582f1f6bf5",
+    "stagedSha256": "13c780483a712693b938397b25683c849805edbabf549db6830276582f1f6bf5",
+    "bytes": 8571,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d0/20261015T185448Z-18ccb292/sealed-snapshot.json",
+    "sourceSha256": "92d4b495161498e013b8ebc6dd166a3217dc3217fc807f5979fc62fccec642df",
+    "stagedSha256": "92d4b495161498e013b8ebc6dd166a3217dc3217fc807f5979fc62fccec642df",
+    "bytes": 150,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d1/20261015T190039Z-90a9ddf7/apply-final-stdout.txt",
+    "sourceSha256": "d27a2c1bb5101580bc3be51af7512873ec5a91b8e62d0dde0b148f329f2b6d50",
+    "stagedSha256": "eaa95f1474933a7092838c3e53487c777b847cbf544b2ab6516059c5205e3cf0",
+    "bytes": 3926,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d1/20261015T190039Z-90a9ddf7/before-seal-events-before.json",
+    "sourceSha256": "76d631fb04f600481659215403e805d42f8d58dda4519b72add393a84c9aeaef",
+    "stagedSha256": "333d83bf4af0f731fcb7443f2a7788b5d18a9c869dca5ce1b1ba0697d999553f",
+    "bytes": 865,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d1/20261015T190039Z-90a9ddf7/before-seal.xml",
+    "sourceSha256": "6fd0c55b825e90939688ced34165b1920995f084e409818c1152ea918c1c00c0",
+    "stagedSha256": "43d567082f693d513d70abc5d31b6d6f62bc40e1928356a5aa7f25fae1e8f2a7",
+    "bytes": 2537,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d1/20261015T190039Z-90a9ddf7/postseal-results.json",
+    "sourceSha256": "219f8592ab82b17ced286ee148aa482244587cd03566b7256ca735787e5bae04",
+    "stagedSha256": "75c4e2c60d30fc9d1e45a98d1e7748d7625c3cc5d1cbdc3fab14e102a7b651e5",
+    "bytes": 2300,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d1/20261015T190039Z-90a9ddf7/power-timeline.json",
+    "sourceSha256": "4687928d604ad3840a514bc360ea1ca5d06924a03ff0124c8d06f622ba165849",
+    "stagedSha256": "4687928d604ad3840a514bc360ea1ca5d06924a03ff0124c8d06f622ba165849",
+    "bytes": 1447,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d1/20261015T190039Z-90a9ddf7/receipt.json",
+    "sourceSha256": "1686729404806ee21f2998bc07f22af2b59537f96b32fae2aeb78895b9939f38",
+    "stagedSha256": "1686729404806ee21f2998bc07f22af2b59537f96b32fae2aeb78895b9939f38",
+    "bytes": 10352,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l0-d1/20261015T190039Z-90a9ddf7/sealed-snapshot.json",
+    "sourceSha256": "e1e5fb96ec4ab24702c340b7ad894cb81e95ac8a0d2b094706fd37e1ff06cbd5",
+    "stagedSha256": "e1e5fb96ec4ab24702c340b7ad894cb81e95ac8a0d2b094706fd37e1ff06cbd5",
+    "bytes": 150,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment redaction if found"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l1-d0/20261015T190639Z-38ab10b1/apply-final-stdout.txt",
+    "sourceSha256": "f4c576bc371c292968034421034299d8ac8309626e96d28d2a782a64ff2c4745",
+    "stagedSha256": "f4c576bc371c292968034421034299d8ac8309626e96d28d2a782a64ff2c4745",
+    "bytes": 3506,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l1-d0/20261015T190639Z-38ab10b1/before-seal-events-before.json",
+    "sourceSha256": "80eed816aa7d32e82fc39b3ee3078c775ae0b2c2a003fe5ec5d629aa07762627",
+    "stagedSha256": "80eed816aa7d32e82fc39b3ee3078c775ae0b2c2a003fe5ec5d629aa07762627",
+    "bytes": 895,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l1-d0/20261015T190639Z-38ab10b1/before-seal.xml",
+    "sourceSha256": "eb1e2d1ed511ab4b9b45a490d5e7c6369c99a629ce37a0a1310c27550ced0214",
+    "stagedSha256": "eb1e2d1ed511ab4b9b45a490d5e7c6369c99a629ce37a0a1310c27550ced0214",
+    "bytes": 2600,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l1-d0/20261015T190639Z-38ab10b1/postseal-results.json",
+    "sourceSha256": "9c527010c875a76f371fe4cd8bc9b3da929f163055b35fe6fcaffa3ea8808e89",
+    "stagedSha256": "9c527010c875a76f371fe4cd8bc9b3da929f163055b35fe6fcaffa3ea8808e89",
+    "bytes": 2368,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l1-d0/20261015T190639Z-38ab10b1/power-timeline.json",
+    "sourceSha256": "18ea26d25d42bee103583ae8338d13e7b65272d6bf41c42a2b72587cb1beae94",
+    "stagedSha256": "18ea26d25d42bee103583ae8338d13e7b65272d6bf41c42a2b72587cb1beae94",
+    "bytes": 1550,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l1-d0/20261015T190639Z-38ab10b1/receipt.json",
+    "sourceSha256": "868adf3c28e4c6ddfcd3ff923cef5d46214cbba4f2b560770bece92e45eaa14f",
+    "stagedSha256": "868adf3c28e4c6ddfcd3ff923cef5d46214cbba4f2b560770bece92e45eaa14f",
+    "bytes": 8570,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "evidence/server/matrix/e1-l1-d0/20261015T190639Z-38ab10b1/sealed-snapshot.json",
+    "sourceSha256": "006519b42df29e1415f94a99b0b7d0eb87b5f58d4b86510270080040866d885a",
+    "stagedSha256": "006519b42df29e1415f94a99b0b7d0eb87b5f58d4b86510270080040866d885a",
+    "bytes": 150,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
     "path": "evidence/server/native-baseline/baseline.json",
     "sourceSha256": "0aa5a78f8b4a7611fe7a1c796d6e9e428b7073314f4df00b88a25d8b1fb9192c",
     "stagedSha256": "9a92a48d9b01e038e3d64cf3c0aee310c9e289ff6eee187a8cefb774b8549cd1",
@@ -96,14 +896,6 @@
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   },
   {
-    "path": "evidence/server/normal-signout-power.json",
-    "sourceSha256": "c3db2127edd00a793582eec14036ae28262af6e5fdfdb049257b1b0d63740415",
-    "stagedSha256": "ef4c9d2ae93450bf46d509d8a61711b6b7868a807a805a729d2eb14b9b887255",
-    "bytes": 1147,
-    "redactedLines": 0,
-    "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
-  },
-  {
     "path": "evidence/server/normal-signout/seal-state-acl.json",
     "sourceSha256": "f28ca5b4a15feb32b632ed82f2343e3c6fc289edd48cc1b01b53a2cb58bbe943",
     "stagedSha256": "92b561b149f88868237fda2936be3f01269a60b5158991b11ac9982331733f73",
@@ -116,6 +908,14 @@
     "sourceSha256": "a2769060d34ae3daa270e8148c9fb64f9abdee5634ab96c185770b324683240c",
     "stagedSha256": "ebbe7b461f718bd009d3de33c24055408903d5d291fb44a4ecc208346cb1a8eb",
     "bytes": 1379,
+    "redactedLines": 0,
+    "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
+  },
+  {
+    "path": "evidence/server/normal-signout-power.json",
+    "sourceSha256": "c3db2127edd00a793582eec14036ae28262af6e5fdfdb049257b1b0d63740415",
+    "stagedSha256": "ef4c9d2ae93450bf46d509d8a61711b6b7868a807a805a729d2eb14b9b887255",
+    "bytes": 1147,
     "redactedLines": 0,
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   },
@@ -208,6 +1008,110 @@
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   },
   {
+    "path": "evidence/w11/account-unknown/evidence-complete.json",
+    "sourceSha256": "fe6d878f41de04d7c96ca5cdd7ec500078876352c6212b59691da922a3b4c8a0",
+    "stagedSha256": "fa322eff6f64a4e5726d3a6ecc9cf60fc7f0c0b0cd0292d35b1554dec42b3c19",
+    "bytes": 237,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/native-config-before.xml",
+    "sourceSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
+    "stagedSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
+    "bytes": 2355,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/prepare-stderr.txt",
+    "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stagedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "bytes": 1,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/prepare-stdout.txt",
+    "sourceSha256": "01d5a000bd4968919f9b7ef5540392357c923fb70b19a8ddda901e61b617c1eb",
+    "stagedSha256": "01d5a000bd4968919f9b7ef5540392357c923fb70b19a8ddda901e61b617c1eb",
+    "bytes": 3430,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/profiles-after.json",
+    "sourceSha256": "c0e339642865b6236c9c63775093cb1cc893c95b371ecfaf56c81f9e41a81003",
+    "stagedSha256": "1843d0aefa33070de0fe519010a293397cbbcb6306e5222d1d25d506bb22e3e6",
+    "bytes": 2134,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/profiles-before.json",
+    "sourceSha256": "0816858b808c2949b4844e1cd5c3b6cad3054b20c2b0cc3c76a938643491c7a7",
+    "stagedSha256": "29f8530284920dff802d2da60d479f3561e230a6eea0552d13f6a0e2b1f8ffb9",
+    "bytes": 2413,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/profiles-original.json",
+    "sourceSha256": "c0e339642865b6236c9c63775093cb1cc893c95b371ecfaf56c81f9e41a81003",
+    "stagedSha256": "1843d0aefa33070de0fe519010a293397cbbcb6306e5222d1d25d506bb22e3e6",
+    "bytes": 2134,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/result.json",
+    "sourceSha256": "9b6a55e85441016e4effe9bcc797cd905fa8a803df8c42142e2b2d53b505dfd9",
+    "stagedSha256": "84cc5aac779d30839b6835faf1904056a25a675bd3fdf30e0710cc71696cf2c2",
+    "bytes": 2222,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/source-after.json",
+    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
+    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
+    "bytes": 6328,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/source-before.json",
+    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
+    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
+    "bytes": 6328,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/account-unknown/test-config.xml",
+    "sourceSha256": "228bec99ba863f76d0268701d695c9524ce1974659f8e175f8186eff73246351",
+    "stagedSha256": "b2bfec33f3e8266d9a13fd5739067b4b8cfb34a66d30c9cecbb293689be3409f",
+    "bytes": 2726,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/agents-preview-output.txt",
+    "sourceSha256": "8bf3b323aec755842356d5583b31098a588be4b0952fad2ad5e0d6df4039fae3",
+    "stagedSha256": "020d38a78cd5b6bd683193711cdffd281fa83912d4204598d7eb1aaf4987d2c5",
+    "bytes": 3295,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/agents-preview-results.json",
+    "sourceSha256": "288de36b1e67b3118d257fa71f3276d6eedd8526cee653a2d5b4e3a49ef4f64a",
+    "stagedSha256": "c4980564a0204e4265ef9909704c92816af24bc058a148835b3c41eb2ab22b42",
+    "bytes": 481,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
     "path": "evidence/w11/baseline-output.txt",
     "sourceSha256": "bef6b74e9db4d372f01ed29c14672c30cec8c28b33f0d47cc6f4fa626165eb01",
     "stagedSha256": "57bb857224a4c70d437d8c820cf2e53a775eb31ff33e7ee1f09cf4ea27a2baef",
@@ -240,6 +1144,13 @@
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   },
   {
+    "path": "evidence/w11/fslogix-install-output.txt",
+    "sourceSha256": "dfaf814d50cec4a8c1309ede7e5b88ebbb539898179eb8d8b5544ea4da090e75",
+    "stagedSha256": "3df3437453ac6fcbf3e9b907e505199a707615790e6c500130ffe76c974a6b84",
+    "bytes": 235,
+    "transformation": "UTF-8 text normalized; signed installer result only"
+  },
+  {
     "path": "evidence/w11/gui-v2-final/results.json",
     "sourceSha256": "eab6cc189a6fe332d197b987e8e047f2a67af394be845e0ac544cafa7e4ba772",
     "stagedSha256": "012f8699053b53fe246e7f4f6199ff2e630bc4568d19f1dfeb59c8ab756933fb",
@@ -256,14 +1167,6 @@
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   },
   {
-    "path": "evidence/w11/normal-signout-power.json",
-    "sourceSha256": "2e69ab20f424ec7ed366b82eeac6d6382fa2e8e95d57d4a01c7458731cb62a3b",
-    "stagedSha256": "9a1173762628524918d5993cae1214c2e9c3ea5d23752986cff85ce529cf31cc",
-    "bytes": 1708,
-    "redactedLines": 0,
-    "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
-  },
-  {
     "path": "evidence/w11/normal-signout/seal-state-acl.json",
     "sourceSha256": "b59ef433d18dde05dff560549f40dea182a364358774375537cf622c208b29a1",
     "stagedSha256": "2a45a41d34ee1508b682c5c84f2151c6e96b6c5d0776bf39525e407712ce30e0",
@@ -276,6 +1179,14 @@
     "sourceSha256": "a2769060d34ae3daa270e8148c9fb64f9abdee5634ab96c185770b324683240c",
     "stagedSha256": "ebbe7b461f718bd009d3de33c24055408903d5d291fb44a4ecc208346cb1a8eb",
     "bytes": 1379,
+    "redactedLines": 0,
+    "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
+  },
+  {
+    "path": "evidence/w11/normal-signout-power.json",
+    "sourceSha256": "2e69ab20f424ec7ed366b82eeac6d6382fa2e8e95d57d4a01c7458731cb62a3b",
+    "stagedSha256": "9a1173762628524918d5993cae1214c2e9c3ea5d23752986cff85ce529cf31cc",
+    "bytes": 1708,
     "redactedLines": 0,
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   },
@@ -392,6 +1303,44 @@
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   },
   {
+    "path": "evidence/w11/vda-resume-output.txt",
+    "sourceSha256": "f08896c2d4e1966bde1269dda6656ba7e2d468ba57e871a4518f5d088438b448",
+    "stagedSha256": "bc50cfea83e5b700a13ecaa8c3482d376759c42d4b3b0e79b097e2aaceb0aea5",
+    "bytes": 341,
+    "transformation": "UTF-8 text normalized; signed installer result only"
+  },
+  {
+    "path": "evidence/w11/vendor-baseline-boot.txt",
+    "sourceSha256": "c2e9ea83a4c6f91eb816b52e6ede51a6bf4dbbe97928f705cba07d6c80a1a121",
+    "stagedSha256": "53796b84d8511ae16eee6be455f202873e82416d528a63359e585145266c022c",
+    "bytes": 85,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/vendor-baseline-check.txt",
+    "sourceSha256": "b85e624f5648e15148331dd1ff730547a2cf1daf75d33665350d923044c7cf31",
+    "stagedSha256": "c9b72a797654e90e6dd8d2ca94459b8f1e8845e90e82237de04d7b547b0a2d91",
+    "bytes": 2891,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/vendor-ready-baseline/vendor-install/installed-inventory.json",
+    "sourceSha256": "a1bae78db45947a81423c127ae6c197e9f56cb7c65ff2fdd433dbc1269c38f70",
+    "stagedSha256": "0dbe13f6dd3cebfc2a36f38e2be6afac61f27d54adbe833343792c10aff606a0",
+    "bytes": 11189,
+    "redactedLines": 0,
+    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+  },
+  {
+    "path": "evidence/w11/wem-install-output.txt",
+    "sourceSha256": "aa60bf10bd5905ecaace5d1bffba239eddad1466efd12cbf4b3ec4db90e6ea27",
+    "stagedSha256": "d7debc12c9fc0c2d5e89e5de432f8defb794da2cc0270b922092fe5ff8a6406f",
+    "bytes": 314,
+    "transformation": "UTF-8 text normalized; signed installer result only"
+  },
+  {
     "path": "media-options.md",
     "sourceSha256": "c9061dcb1508557bfc11bebe333db90fad324e65c9c4db7796ae5769981e251f",
     "stagedSha256": "c9061dcb1508557bfc11bebe333db90fad324e65c9c4db7796ae5769981e251f",
@@ -480,14 +1429,6 @@
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   },
   {
-    "path": "source-manifest.json",
-    "sourceSha256": "2e775a9f0735d11eb2ca57dc66f8f0bc36ef62f7c6455da55ac46cac4e6e5858",
-    "stagedSha256": "6fc6b45b11eaa7ada40517d57d0d774443f26b2ddff6bab3ff5925ba05463964",
-    "bytes": 4465,
-    "redactedLines": 0,
-    "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
-  },
-  {
     "path": "source/ACCEPTANCE-TESTING.md",
     "sourceSha256": "32499b455bfb281d3e4e444b30a6ae13461e57937f463fe8444003d1e3ebc0cf",
     "stagedSha256": "32499b455bfb281d3e4e444b30a6ae13461e57937f463fe8444003d1e3ebc0cf",
@@ -496,248 +1437,11 @@
     "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   },
   {
-    "path": "evidence/w11/fslogix-install-output.txt",
-    "sourceSha256": "dfaf814d50cec4a8c1309ede7e5b88ebbb539898179eb8d8b5544ea4da090e75",
-    "stagedSha256": "3df3437453ac6fcbf3e9b907e505199a707615790e6c500130ffe76c974a6b84",
-    "bytes": 235,
-    "transformation": "UTF-8 text normalized; signed installer result only"
-  },
-  {
-    "path": "evidence/w11/wem-install-output.txt",
-    "sourceSha256": "aa60bf10bd5905ecaace5d1bffba239eddad1466efd12cbf4b3ec4db90e6ea27",
-    "stagedSha256": "d7debc12c9fc0c2d5e89e5de432f8defb794da2cc0270b922092fe5ff8a6406f",
-    "bytes": 314,
-    "transformation": "UTF-8 text normalized; signed installer result only"
-  },
-  {
-    "path": "evidence/w11/vda-resume-output.txt",
-    "sourceSha256": "f08896c2d4e1966bde1269dda6656ba7e2d468ba57e871a4518f5d088438b448",
-    "stagedSha256": "bc50cfea83e5b700a13ecaa8c3482d376759c42d4b3b0e79b097e2aaceb0aea5",
-    "bytes": 341,
-    "transformation": "UTF-8 text normalized; signed installer result only"
-  },
-  {
-    "path": "evidence/w11/agents-preview-results.json",
-    "sourceSha256": "288de36b1e67b3118d257fa71f3276d6eedd8526cee653a2d5b4e3a49ef4f64a",
-    "stagedSha256": "c4980564a0204e4265ef9909704c92816af24bc058a148835b3c41eb2ab22b42",
-    "bytes": 481,
+    "path": "source-manifest.json",
+    "sourceSha256": "2e775a9f0735d11eb2ca57dc66f8f0bc36ef62f7c6455da55ac46cac4e6e5858",
+    "stagedSha256": "6fc6b45b11eaa7ada40517d57d0d774443f26b2ddff6bab3ff5925ba05463964",
+    "bytes": 4465,
     "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/agents-preview-output.txt",
-    "sourceSha256": "8bf3b323aec755842356d5583b31098a588be4b0952fad2ad5e0d6df4039fae3",
-    "stagedSha256": "020d38a78cd5b6bd683193711cdffd281fa83912d4204598d7eb1aaf4987d2c5",
-    "bytes": 3295,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/vendor-ready-baseline/vendor-install/installed-inventory.json",
-    "sourceSha256": "a1bae78db45947a81423c127ae6c197e9f56cb7c65ff2fdd433dbc1269c38f70",
-    "stagedSha256": "0dbe13f6dd3cebfc2a36f38e2be6afac61f27d54adbe833343792c10aff606a0",
-    "bytes": 11189,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/vendor-baseline-check.txt",
-    "sourceSha256": "b85e624f5648e15148331dd1ff730547a2cf1daf75d33665350d923044c7cf31",
-    "stagedSha256": "c9b72a797654e90e6dd8d2ca94459b8f1e8845e90e82237de04d7b547b0a2d91",
-    "bytes": 2891,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/vendor-baseline-boot.txt",
-    "sourceSha256": "c2e9ea83a4c6f91eb816b52e6ede51a6bf4dbbe97928f705cba07d6c80a1a121",
-    "stagedSha256": "53796b84d8511ae16eee6be455f202873e82416d528a63359e585145266c022c",
-    "bytes": 85,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "BISF-Test-W11-20261015-snapshots.json",
-    "sourceSha256": "3876ac06ec0b73fe5b15a4d501117f41f7d65e556b2ce5356e044b2af50657b0",
-    "stagedSha256": "389d6be1ab164f4bdbc2f586aec1838a8fe7848865ef808b724379682329ae80",
-    "bytes": 1235,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/native-config-before.xml",
-    "sourceSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
-    "stagedSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
-    "bytes": 2355,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/prepare-stderr.txt",
-    "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "stagedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-    "bytes": 1,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/prepare-stdout.txt",
-    "sourceSha256": "01d5a000bd4968919f9b7ef5540392357c923fb70b19a8ddda901e61b617c1eb",
-    "stagedSha256": "01d5a000bd4968919f9b7ef5540392357c923fb70b19a8ddda901e61b617c1eb",
-    "bytes": 3430,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/profiles-after.json",
-    "sourceSha256": "c0e339642865b6236c9c63775093cb1cc893c95b371ecfaf56c81f9e41a81003",
-    "stagedSha256": "1843d0aefa33070de0fe519010a293397cbbcb6306e5222d1d25d506bb22e3e6",
-    "bytes": 2134,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/profiles-before.json",
-    "sourceSha256": "0816858b808c2949b4844e1cd5c3b6cad3054b20c2b0cc3c76a938643491c7a7",
-    "stagedSha256": "29f8530284920dff802d2da60d479f3561e230a6eea0552d13f6a0e2b1f8ffb9",
-    "bytes": 2413,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/profiles-original.json",
-    "sourceSha256": "c0e339642865b6236c9c63775093cb1cc893c95b371ecfaf56c81f9e41a81003",
-    "stagedSha256": "1843d0aefa33070de0fe519010a293397cbbcb6306e5222d1d25d506bb22e3e6",
-    "bytes": 2134,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/result.json",
-    "sourceSha256": "9b6a55e85441016e4effe9bcc797cd905fa8a803df8c42142e2b2d53b505dfd9",
-    "stagedSha256": "84cc5aac779d30839b6835faf1904056a25a675bd3fdf30e0710cc71696cf2c2",
-    "bytes": 2222,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/source-after.json",
-    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
-    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
-    "bytes": 6328,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/source-before.json",
-    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
-    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
-    "bytes": 6328,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/test-config.xml",
-    "sourceSha256": "228bec99ba863f76d0268701d695c9524ce1974659f8e175f8186eff73246351",
-    "stagedSha256": "b2bfec33f3e8266d9a13fd5739067b4b8cfb34a66d30c9cecbb293689be3409f",
-    "bytes": 2726,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/w11/account-unknown/evidence-complete.json",
-    "sourceSha256": "fe6d878f41de04d7c96ca5cdd7ec500078876352c6212b59691da922a3b4c8a0",
-    "stagedSha256": "fa322eff6f64a4e5726d3a6ecc9cf60fc7f0c0b0cd0292d35b1554dec42b3c19",
-    "bytes": 237,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/evidence-complete.json",
-    "sourceSha256": "7a94db91d20aeae69500885e029a9fb0c225b9bba39aabed04534fd90b4b9d81",
-    "stagedSha256": "cb23b6ab2ad95a50adeb20416a904f7f37c3f2ebbe0701de3cdb7740cd511a4b",
-    "bytes": 240,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/native-config-before.xml",
-    "sourceSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
-    "stagedSha256": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
-    "bytes": 2355,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/prepare-stderr.txt",
-    "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "stagedSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-    "bytes": 1,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/prepare-stdout.txt",
-    "sourceSha256": "4c48d674354e1fecf4dcb25da9d05d4af7dec962686a11691725ac6d23d2f5ea",
-    "stagedSha256": "4c48d674354e1fecf4dcb25da9d05d4af7dec962686a11691725ac6d23d2f5ea",
-    "bytes": 3412,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/profiles-after.json",
-    "sourceSha256": "10bc9bcddeaeff6dfd4d71511d22c0d6186e5d42eae5fad473de8fa255c9a314",
-    "stagedSha256": "f6c483d418e572a4ddfa2ffb9545e6fc27be7921d175696df7ac7b23827216f3",
-    "bytes": 2134,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/profiles-before.json",
-    "sourceSha256": "124b376f4dfe6a2c13d62b39de5849342ac31879321d1da6b23a6ec1313a6908",
-    "stagedSha256": "84a1c87a174e99a1f6baad8048044ba19903d99946ce1561a17d5189f250e38c",
-    "bytes": 2413,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/profiles-original.json",
-    "sourceSha256": "10bc9bcddeaeff6dfd4d71511d22c0d6186e5d42eae5fad473de8fa255c9a314",
-    "stagedSha256": "f6c483d418e572a4ddfa2ffb9545e6fc27be7921d175696df7ac7b23827216f3",
-    "bytes": 2134,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/result.json",
-    "sourceSha256": "44d925fd4876f9c311db01edd5ef9b3cc6f97f06b91b0701a28e2aa1cf28fb29",
-    "stagedSha256": "460a36d55373dcce5cb2cf48f20aceb8b79a980169f6a226bfa41fa97b864995",
-    "bytes": 2214,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/source-after.json",
-    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
-    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
-    "bytes": 6328,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/source-before.json",
-    "sourceSha256": "403e5f784d1ea2ff49aed3e8249bf7c55167a8edc4f9717561c89ea729bf4621",
-    "stagedSha256": "5bea58220675bff1ebcb36d2875dc5b5009594324df5b2c69cd33dbe0b36fcaa",
-    "bytes": 6328,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
-  },
-  {
-    "path": "evidence/server/account-unknown/test-config.xml",
-    "sourceSha256": "c88823fc62f833a279d0afae2e6f23ff594cb1362d79a58b04b9a09a8fa9e3dd",
-    "stagedSha256": "49714f80cb8a2312e45e7412570fcb7d465975ff64064e9f50cb2a6bd6b93fb0",
-    "bytes": 2726,
-    "redactedLines": 0,
-    "transformation": "UTF-8 LF normalization; credential assignment line redaction if detected"
+    "transformation": "text normalized UTF-8 LF; local Markdown links relative; credential assignment lines redacted where found"
   }
 ]
