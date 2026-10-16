@@ -659,3 +659,5 @@ successful run currently requires manual review; no verified automatic success
 path is claimed. Run servicing separately, review its result, then leave
 `ComponentCleanup=false` for preparation. BISF does not switch to DISM, use
 ResetBase, cancel tasks automatically or erase failure state to continue sealing.
+
+Production release and rollback procedure: [PRODUCTION-RUNBOOK.md](PRODUCTION-RUNBOOK.md). The full acceptance gate remains open.
