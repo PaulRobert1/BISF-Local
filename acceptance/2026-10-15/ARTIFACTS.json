@@ -33,11 +33,19 @@
   },
   {
     "path": "REPORT.md",
-    "sourceSha256": "54c23549ab4f54c4b6b8f593a5fb2e6b7d04239cc544d43672aa9bb31b6e9380",
-    "stagedSha256": "54c23549ab4f54c4b6b8f593a5fb2e6b7d04239cc544d43672aa9bb31b6e9380",
-    "bytes": 4616,
+    "sourceSha256": "76f24fb618b9ed598cf61ba3be6bce07383cf74b6ef5545703c16ad0b5c9178a",
+    "stagedSha256": "76f24fb618b9ed598cf61ba3be6bce07383cf74b6ef5545703c16ad0b5c9178a",
+    "bytes": 4977,
     "redactedLines": 0,
-    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+    "transformation": "Explicit evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/final-state.json",
+    "sourceSha256": "9f3e135a96856407b2fababd376cf5a1a1c72ae2043e3137d8f87159f397cdc6",
+    "stagedSha256": "9f3e135a96856407b2fababd376cf5a1a1c72ae2043e3137d8f87159f397cdc6",
+    "bytes": 787,
+    "redactedLines": 0,
+    "transformation": "Explicit evidence or report; credential-scanned before publication"
   },
   {
     "path": "candidate-20261016/protected-vm.json",

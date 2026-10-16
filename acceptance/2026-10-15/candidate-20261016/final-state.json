@@ -1,0 +1,29 @@
+{
+  "observedUTC": "2026-10-16T07:39:11.721655+00:00",
+  "vms": [
+    {
+      "vm": "vm-10017",
+      "name": "Win11Personal",
+      "power": "poweredOn",
+      "uuid": "4227909a-92b4-8eb9-1c93-5af2833c4afc",
+      "changeVersion": "2026-10-16T07:26:29.011334Z",
+      "hasSnapshots": false
+    },
+    {
+      "vm": "vm-10020",
+      "name": "BISF-Test-W11-20261015",
+      "power": "poweredOff",
+      "uuid": "422701db-729a-181c-af1a-947e82170327",
+      "changeVersion": "2026-10-16T07:33:27.368686Z",
+      "hasSnapshots": true
+    },
+    {
+      "vm": "vm-10021",
+      "name": "BISF-Test-S2025-20261015",
+      "power": "poweredOff",
+      "uuid": "42278f25-213b-1b16-d672-3d986a65c65c",
+      "changeVersion": "2026-10-16T07:27:24.680306Z",
+      "hasSnapshots": true
+    }
+  ]
+}
