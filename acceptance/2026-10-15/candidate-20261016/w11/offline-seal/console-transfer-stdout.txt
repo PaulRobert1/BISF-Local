@@ -1,0 +1,5 @@
+{
+    "Utc":  "2026-10-16T07:08:50.1739090Z",
+    "SessionId":  2,
+    "Sessions":  " USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME\r\n\u003ebisfoperator          console             2  Active          .  10/16/2026 7:07 AM\r\n"
+}

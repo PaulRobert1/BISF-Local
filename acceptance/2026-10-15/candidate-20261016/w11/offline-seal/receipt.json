@@ -1,0 +1,299 @@
+{
+  "status": "failed-needs-review",
+  "os": "w11",
+  "case": "e1-l1-d1",
+  "flags": {
+    "events": true,
+    "logs": true,
+    "deferred": true
+  },
+  "baseline": {
+    "name": "Ready-Candidate-CVAD2507-20261016",
+    "ref": "snapshot-10048",
+    "vm": "vm-10020",
+    "uuid": "422701db-729a-181c-af1a-947e82170327",
+    "createdUtc": "2026-10-16T07:04:28.826190+00:00"
+  },
+  "allowRestore": false,
+  "noPendingOfflineEvidence": false,
+  "startedUTC": "2026-10-16T07:05:24.764195+00:00",
+  "baselineProfile": "cvad2507-wem2507-fslogix",
+  "vendorInventory": {
+    "Services": [
+      {
+        "Name": "BrokerAgent",
+        "DisplayName": "Citrix Desktop Service",
+        "State": "Running",
+        "Path": "C:\\Program Files\\Citrix\\Virtual Desktop Agent\\BrokerAgent.exe",
+        "FileVersion": "7.45.2100.27",
+        "ProductVersion": "7.45.2100.27"
+      },
+      {
+        "Name": "frxsvc",
+        "DisplayName": "FSLogix Apps Services",
+        "State": "Running",
+        "Path": "C:\\Program Files\\FSLogix\\Apps\\frxsvc.exe",
+        "FileVersion": "3.26.826.17182",
+        "ProductVersion": "3.26"
+      },
+      {
+        "Name": "WemAgentSvc",
+        "DisplayName": "Citrix WEM Agent Host Service",
+        "State": "Running",
+        "Path": "C:\\Program Files (x86)\\Citrix\\Workspace Environment Management Agent\\Citrix.Wem.Agent.Service.exe",
+        "FileVersion": "2507.1.0.1",
+        "ProductVersion": "2507.1.0.1"
+      },
+      {
+        "Name": "WemLogonSvc",
+        "DisplayName": "Citrix WEM User Logon Service",
+        "State": "Running",
+        "Path": "C:\\Program Files (x86)\\Citrix\\Workspace Environment Management Agent\\Citrix.Wem.Agent.LogonService.exe",
+        "FileVersion": "2507.1.0.1",
+        "ProductVersion": "2507.1.0.1"
+      }
+    ],
+    "Products": [
+      {
+        "DisplayName": "Citrix Virtual Apps and Desktops 7 2507 LTSR CU2 - Virtual Delivery Agent",
+        "DisplayVersion": "2507.0.2100.2123"
+      },
+      {
+        "DisplayName": "Microsoft FSLogix Apps",
+        "DisplayVersion": "3.26.826.17182"
+      },
+      {
+        "DisplayName": "Microsoft FSLogix Apps",
+        "DisplayVersion": "3.26.826.17182"
+      },
+      {
+        "DisplayName": "Citrix Workspace Environment Management Agent",
+        "DisplayVersion": "25.71.0"
+      },
+      {
+        "DisplayName": "Citrix Workspace Environment Management Agent",
+        "DisplayVersion": "2507.1.110.1"
+      },
+      {
+        "DisplayName": "Microsoft FSLogix Apps",
+        "DisplayVersion": "3.26.826.17182"
+      }
+    ]
+  },
+  "networkDisconnectedUTC": "2026-10-16T07:09:04.816845+00:00",
+  "candidateManifest": {
+    "base": "fac7b1def5787e0d9ab8bcbb0707880d7572edc2",
+    "branch": "fix/forward-compatibility-20261016",
+    "files": {
+      ".github/workflows/pester-windows-2025.yml": "9e784b12b7c31edc97b10ba88a71af849ff52ff7542b67b465a0f8685127027c",
+      ".gitignore": "42447b04fc539bc10a02e3171ca36a732b0ed356950421266297f641799d3626",
+      "ACCEPTANCE-TESTING.md": "32499b455bfb281d3e4e444b30a6ae13461e57937f463fe8444003d1e3ebc0cf",
+      "CONTINUE-HERE.txt": "0084be3666621e50ae69ecf43296084caf89763eec71404b7a8e826ba74e135c",
+      "Configure-BISF-LogCleanup.ps1": "546287773fa9bbf1b8a7e745da23ca61c9f37c414a567d8e2900353354f49647",
+      "GlobalConfig.xml": "6b084021132915686649260378953c7ed5acc217f30368de66c1857e0de288df",
+      "GlobalConfig.xsd": "d9cb30a9a088979b4206d5018d8af094b0152668ab022002b74b8b154a108920",
+      "IMPLEMENTATION-NOTES.md": "509bd40388f17511a8b9837d2c7afd48cad9056309b5d5aa935edc7924e55ba2",
+      "Invoke-BISF.ps1": "538f7b14485f41cb08c7815b1d6189f70df60ff187edd681ca75a67a648d4fa7",
+      "LICENSE": "42289afe97723ded3b5ba603db0ebe16b8bfb33680f675d1565527c2273392f1",
+      "Modules/BISF.Local.psm1": "7658e5c6c0eb3fa1d56f5a62e73307832a4ca77ee45a0ac0152c525f9e09ff7d",
+      "Modules/Private/Citrix.ps1": "ea03a1a85557117d92b1e144d612ad11447b0b79d72bf49a0772aa09ca2a4df7",
+      "Modules/Private/CloneHealth.ps1": "7b422c038923d61fd92d88c50d5f198e9db6ac8998e7be6d6a70b5418d495dbd",
+      "Modules/Private/Configuration.ps1": "0cc0b3d4694302805bafb1043a8c6434a097906c052f1dda70aa71588f9e774b",
+      "Modules/Private/Finalization.ps1": "abe8a25207ff6cbfb706352f5a88ebcf9e5ece97cf64b3109ba946ca617882a2",
+      "Modules/Private/Lifecycle.ps1": "516922a53de8d8b8b4ecb6a11e6750b3f6ddaa9213c8f1c36db00dc56a4d7dc7",
+      "Modules/Private/LogCleanup.ps1": "9d4b7e2d0bc844c69397c71e2645cbb9dfcc22a37e755a36afe999ac787911fb",
+      "Modules/Private/Logging.ps1": "4ecb383b9521869ef885b89da4433a4bb31f7a357eb4d8522c9a631445f94ab3",
+      "Modules/Private/Maintenance.ps1": "c6f0bac3fd18056228bb7282c01b82e47a06e44a113118b18909a8981ce93777",
+      "Modules/Private/Operations.ps1": "686b94e861badf65ef95549459689792ca985156b1ed699edbb7d1f2b0499eec",
+      "Modules/Private/Preflight.ps1": "548989855d1bf8111bd02c90aa3455f933e4f110eca051553f33ac2ca6d20c37",
+      "Modules/Private/Profiles.ps1": "224cbcd3fe33ec12f5327f397618592cc59e79b0cd444d4312758073eac83304",
+      "Modules/Private/Runner.ps1": "38e287058c75dceba3d3c4d8523112f4cd0adf7a48cf56d8a1326369cff7ad66",
+      "README.md": "63fcb9bd07fcabc2d516780bffe7e81d4e59cd40abfb5964947d26f46e5f7497",
+      "REVIEW-2026-10-15.md": "fdcdaaa47a9dd96e1d2de32aefc401b30b1599e2d38aebe72cb53c1145ac6202",
+      "TEST-RESULTS.md": "558eba313c379ce85ebbdf440fed9c48acdd668501475258e260d6239ba89e41",
+      "Tests/Citrix.Tests.ps1": "c08860d2bf07f055be85a5f5442ff79f3f3f1633318e55ca257738cd2a9d5714",
+      "Tests/CloneHealth.Tests.ps1": "0f7a86eda559e81c778e1a39c2706bd8b9c5ee41756f1815044637d62abffc6e",
+      "Tests/Configuration.Tests.ps1": "fbdc0e8479689b55c5b30dd64e43244ac852d0b13dfb20983cee7f15dec6a66b",
+      "Tests/Finalization.Tests.ps1": "152dde2324874c4e981fd91ae8d217402d1d185e370fb6d8c92b7cc912460b22",
+      "Tests/Integration.Tests.ps1": "20d8387a342bc2fb1fe905601de88b391cbc96ed0ac6fde69497b50b0345722c",
+      "Tests/Invoke-Tests.ps1": "18c535e5faf9477d75e644b75a98ac2f86707cf5e126a2a557ef7694026f12cd",
+      "Tests/Lifecycle.Tests.ps1": "e86663014a2812839c7ecbeef8d06abb227ab6aff6a1c39f413ab0027d489bb5",
+      "Tests/LogCleanup.Tests.ps1": "79daf92e44e175d7af3579509d1debaacf7de7b4c0459c9f068f961c4118c391",
+      "Tests/LogCleanupEditor.Tests.ps1": "4253185d7d5d8b70e1f6650ea07f29f1d6fa736c6090435428cee6a56a14efdc",
+      "Tests/Maintenance.Tests.ps1": "3330ecbee12e217fe529e1dd1622ce454054653e34efd1b55573d41f86024f5e",
+      "Tests/Module.Tests.ps1": "64a408dc58678b3a5727313307d0e4ef16f331a268c82e2646733a9fbe47ebb9",
+      "Tests/Operations.Tests.ps1": "83b9aaa079a4bb8c8328cf7219a7c3d902593c7f4656d02a3c2d79d3dbfed7c6",
+      "Tests/Preflight.Tests.ps1": "67f47aa62dd8c4e92cb7c85633ce6ffba0056bb98cea0e0373d88e585aa50207",
+      "Tests/Profiles.Tests.ps1": "9b7f3d0fe3ea90f2d052791d5886191a4b2eeeb6668d6ef6252346d743c70329",
+      "Tests/SourceAudit.ps1": "1d069d60f890c2c76dd0a088cb39d4687d7561b90dd299f5cb165d15538b2f5b",
+      "Tests/Static.Tests.ps1": "6a5ba3edc133e6229216c5f2148bc5ad5110a73590cd76ad4f023cf833dacebc",
+      "UPSTREAM.md": "8a9bc2169c0d3bf2933b91cb098b98d8821d8128e506b8f5cf8bec9a01cfa761",
+      "WORK-HANDOFF.md": "f40752f3cdde79b42983bd0055a84bf8c68078456aafc157745fa8cab27e9150"
+    },
+    "commit": "573cdf6cf41d4fa053256af5bd5a630b9e172f2f"
+  },
+  "error": "TimeoutError: Interactive result not produced: apply",
+  "finishedUTC": "2026-10-16T07:11:21.329925+00:00",
+  "files": [
+    {
+      "path": "baseline-1.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "baseline-1-process.json",
+      "sha256": "eb0ee55a065eaf5386ac2db783bfb1b4b385d31c993e8414b17ea30e7262fb73"
+    },
+    {
+      "path": "vendor-ready-2.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vendor-ready-2-process.json",
+      "sha256": "e0af46f693d7c0e0262a74a600dffbe61bec7a29c9ba7769b69e53d576376e2f"
+    },
+    {
+      "path": "vendor-inventory-3.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vendor-inventory-3-process.json",
+      "sha256": "dab0d5cbe07304d105255e19d745cf1e7e1886e3adda1501d9cfedb47eb1a096"
+    },
+    {
+      "path": "vendor-inventory.json",
+      "sha256": "6d23be581df55d7708c69446670729e69c2ed1f62f6d9dc05464f8bf103acda8"
+    },
+    {
+      "path": "case-config-4.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "case-config-4-process.json",
+      "sha256": "ed736d4ca21d12a30a335bfdd749f25b0244df72e2b254f7364862c0b4a9ff89"
+    },
+    {
+      "path": "rdp-helper.txt",
+      "sha256": "0fd3e64518b75f2d8e851526f490e2fb3604a8a157fc38b1e12687a3e95b80fa"
+    },
+    {
+      "path": "operator-ready-5.txt",
+      "sha256": "ca4a016eae14ab0c7ebb935a6e24ae8b512958f25c788f11eb99566d066b7957"
+    },
+    {
+      "path": "operator-ready-5-process.json",
+      "sha256": "65433ddd7c8200d1f83764aeef1c83adbcb675a3b7dcf08a24be1b73e1eef94f"
+    },
+    {
+      "path": "quiescence-6.txt",
+      "sha256": "63b9b00d5b59ca6a0cce06b05589a6cc7c9ebb0e900bfa3f3c07d533b9f11d29"
+    },
+    {
+      "path": "quiescence-6-process.json",
+      "sha256": "c1b39a4a10ed090a6f08dec558c9c38311ef1a5933785a0c26f3db2c4f00ec50"
+    },
+    {
+      "path": "start-console-transfer-7.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "start-console-transfer-7-process.json",
+      "sha256": "8f9bb0cb615d3d143def889dad7d7170afc5d4655db1fbf855fd4702a307a01c"
+    },
+    {
+      "path": "console-transfer-task.json",
+      "sha256": "47786d67bc73c4b917475be8431bd83d4af5dd61c16fd00b0d3be687f6fa81ef"
+    },
+    {
+      "path": "console-transfer-result.json",
+      "sha256": "05eafab851b3a2e1ff059164badccffe8bb6161011b8bfab4af57511ddf8f2d9"
+    },
+    {
+      "path": "console-transfer-stdout.txt",
+      "sha256": "9152de20f0de2b4e904c82fa2500caacbf75f44f2228c1cb3375ca3a4dc87e38"
+    },
+    {
+      "path": "console-transfer-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "console-confirm-8.txt",
+      "sha256": "d165b6b106d8c69aeda11a74a73b27221bd6ee6d9ee2b6c8ee1b55f638aa5823"
+    },
+    {
+      "path": "console-confirm-8-process.json",
+      "sha256": "15215443186d8bd232d2a5b61286d0c41941a5d3b2a8eec2daa98b8dd002c6bf"
+    },
+    {
+      "path": "offline-adapter-9.txt",
+      "sha256": "9ceb5f5ff818dd796dd2b68efe486f8444cf15ed4d4da9196bdf6a066f840fc0"
+    },
+    {
+      "path": "offline-adapter-9-process.json",
+      "sha256": "af040f7a525fdd042f8bbfbca51977a038b802ddb44b6092e5c82e8f2b8810eb"
+    },
+    {
+      "path": "start-fixtures-10.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "start-fixtures-10-process.json",
+      "sha256": "3179165d5652628c4c28815e8bc79e2aee785a018bc90d47c33dd725c2424e92"
+    },
+    {
+      "path": "fixtures-task.json",
+      "sha256": "c68050a5819d15ee22d51a83b9e06f509ead71f1969d4a450a245855f6ccd230"
+    },
+    {
+      "path": "fixtures-result.json",
+      "sha256": "e6ea7bc295891aa3475ab9604a901f0062cfdb41e6712dede27c32f8f23e1ed8"
+    },
+    {
+      "path": "fixtures-stdout.txt",
+      "sha256": "2eeb4b6af211826702d4d550af3c22027b6262a47dc5881577bf0a25aa4a8be4"
+    },
+    {
+      "path": "fixtures-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "before-seal-case.json",
+      "sha256": "2bcab1ab618a7e591bc6b04acfd6a9e4db03e8064482e2ab9db504d88f3ac27e"
+    },
+    {
+      "path": "before-seal-events-before.json",
+      "sha256": "bb0040c9a43965bb8f2885af526eb98d2ee53002551706c716820c67c7dc2f1f"
+    },
+    {
+      "path": "before-seal-profiles-before.json",
+      "sha256": "294412c861614694ccbe9dd2021596e1f30508a1886e922c69d5502c81002a3b"
+    },
+    {
+      "path": "before-seal-config-hash.json",
+      "sha256": "d4c55dd8fa2e7b7eaae6ee49d084feadd98fc03773e084316848ee326cb50ea3"
+    },
+    {
+      "path": "before-fixture-profiles.json",
+      "sha256": "66f8ac55b0ef63a880e30b11477535107e94735a80b29d6481040e2aa9e8ac01"
+    },
+    {
+      "path": "before-stage-fixtures.txt",
+      "sha256": "d160c1596b05544237a83922f305b0ad95524cea64d20a89534a75df37e11448"
+    },
+    {
+      "path": "before-seal.xml",
+      "sha256": "0979d36bda2a3cdb389bf0a43decd2a30f003bfd95eec2b70d3e918e9de8c063"
+    },
+    {
+      "path": "start-apply-11.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "start-apply-11-process.json",
+      "sha256": "1d56507b82491b72544851bb03c1781707876ab40b61e14a39cab2b6be877281"
+    },
+    {
+      "path": "apply-task.json",
+      "sha256": "16fae76e1956f13f075a40e196da7ce7559f9105e21c9457c19b2bcc8eabe630"
+    }
+  ]
+}

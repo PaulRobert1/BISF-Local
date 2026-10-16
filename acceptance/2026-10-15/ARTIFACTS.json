@@ -33,9 +33,9 @@
   },
   {
     "path": "REPORT.md",
-    "sourceSha256": "53a37b8cf144a3964ad471d22c1d0d2639e6f73c8322c57efd8825742b37c354",
-    "stagedSha256": "53a37b8cf144a3964ad471d22c1d0d2639e6f73c8322c57efd8825742b37c354",
-    "bytes": 4138,
+    "sourceSha256": "54c23549ab4f54c4b6b8f593a5fb2e6b7d04239cc544d43672aa9bb31b6e9380",
+    "stagedSha256": "54c23549ab4f54c4b6b8f593a5fb2e6b7d04239cc544d43672aa9bb31b6e9380",
+    "bytes": 4616,
     "redactedLines": 0,
     "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
   },
@@ -284,6 +284,142 @@
     "sourceSha256": "e09526e5034ba6bc0fafaf95604c80b396eac43e875e7a5d97541a91db19ff0d",
     "stagedSha256": "e09526e5034ba6bc0fafaf95604c80b396eac43e875e7a5d97541a91db19ff0d",
     "bytes": 797,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/apply-final-stdout.txt",
+    "sourceSha256": "34fa5575fae927b54f962aa705b80ac4b860de837906a9c78c98510a0b4781c5",
+    "stagedSha256": "34fa5575fae927b54f962aa705b80ac4b860de837906a9c78c98510a0b4781c5",
+    "bytes": 3970,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/apply-result-final.json",
+    "sourceSha256": "646f5aad321aea7f0681f94eb2fba980816afd08d271036817edc6ed7993e9a9",
+    "stagedSha256": "646f5aad321aea7f0681f94eb2fba980816afd08d271036817edc6ed7993e9a9",
+    "bytes": 575,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/before-seal-profiles-before.json",
+    "sourceSha256": "294412c861614694ccbe9dd2021596e1f30508a1886e922c69d5502c81002a3b",
+    "stagedSha256": "294412c861614694ccbe9dd2021596e1f30508a1886e922c69d5502c81002a3b",
+    "bytes": 1435,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/before-seal.xml",
+    "sourceSha256": "0979d36bda2a3cdb389bf0a43decd2a30f003bfd95eec2b70d3e918e9de8c063",
+    "stagedSha256": "0979d36bda2a3cdb389bf0a43decd2a30f003bfd95eec2b70d3e918e9de8c063",
+    "bytes": 2599,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/console-transfer-stdout.txt",
+    "sourceSha256": "9152de20f0de2b4e904c82fa2500caacbf75f44f2228c1cb3375ca3a4dc87e38",
+    "stagedSha256": "9152de20f0de2b4e904c82fa2500caacbf75f44f2228c1cb3375ca3a4dc87e38",
+    "bytes": 265,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/continuation-receipt.json",
+    "sourceSha256": "d896e912277b9c316726e555ea3c0fe27c98195049517bd972cea9e85848c3f7",
+    "stagedSha256": "d896e912277b9c316726e555ea3c0fe27c98195049517bd972cea9e85848c3f7",
+    "bytes": 14810,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/observation-history.json",
+    "sourceSha256": "a5685be7cc59836c0a0dd0509a8d54c68fd46c5288bbc2ba3151c850cddf842d",
+    "stagedSha256": "a5685be7cc59836c0a0dd0509a8d54c68fd46c5288bbc2ba3151c850cddf842d",
+    "bytes": 955,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/postboot-receipt.json",
+    "sourceSha256": "6437232e1f2b150f3ec0aad0900143a2a11de1bbaeddc0b210e0c0324fe7fc45",
+    "stagedSha256": "6437232e1f2b150f3ec0aad0900143a2a11de1bbaeddc0b210e0c0324fe7fc45",
+    "bytes": 17583,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/postseal-results.json",
+    "sourceSha256": "c0edb823e2721619b1bbc837c99fc2f60b01b9bdb665e2a0d64f1d58a113d432",
+    "stagedSha256": "c0edb823e2721619b1bbc837c99fc2f60b01b9bdb665e2a0d64f1d58a113d432",
+    "bytes": 2370,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/power-timeline.json",
+    "sourceSha256": "6108b1789985b565c9ff7e40b7db3d4b5cba86a81cb962edf9567e2ba8bf00a5",
+    "stagedSha256": "6108b1789985b565c9ff7e40b7db3d4b5cba86a81cb962edf9567e2ba8bf00a5",
+    "bytes": 1137,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/receipt.json",
+    "sourceSha256": "7df6d10e9560a1e169917422115a041a9e143c4beab8d1c5c478bd4892721d05",
+    "stagedSha256": "7df6d10e9560a1e169917422115a041a9e143c4beab8d1c5c478bd4892721d05",
+    "bytes": 12968,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/sealed-snapshot-metadata.json",
+    "sourceSha256": "9f94b2dce609c73df49d0ff3da093010a31be11311f381bd49d3db5c63b0bd71",
+    "stagedSha256": "9f94b2dce609c73df49d0ff3da093010a31be11311f381bd49d3db5c63b0bd71",
+    "bytes": 313,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/sealed-snapshot.json",
+    "sourceSha256": "a877e87350c34196a5dd24a179585dde9174e897ba82916af981ec1b7dcc6502",
+    "stagedSha256": "a877e87350c34196a5dd24a179585dde9174e897ba82916af981ec1b7dcc6502",
+    "bytes": 147,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/staged-seal-task-info.json",
+    "sourceSha256": "a30299fd736c9fa092e53ccd9fd68d975e4944bc862782d72f5b3aede270272d",
+    "stagedSha256": "a30299fd736c9fa092e53ccd9fd68d975e4944bc862782d72f5b3aede270272d",
+    "bytes": 85,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/staged-seal-task.xml",
+    "sourceSha256": "b28faa7357d500f7abeec70a0b55294fbe50b469e090076905b34c6eec37790f",
+    "stagedSha256": "b28faa7357d500f7abeec70a0b55294fbe50b469e090076905b34c6eec37790f",
+    "bytes": 1414,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/staged-state.json",
+    "sourceSha256": "ef43b6a80d691e6fcbbd9d9763be2b748c7a7ab0aac4dc3381892951c5279639",
+    "stagedSha256": "ef43b6a80d691e6fcbbd9d9763be2b748c7a7ab0aac4dc3381892951c5279639",
+    "bytes": 671,
+    "redactedLines": 0,
+    "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
+  },
+  {
+    "path": "candidate-20261016/w11/offline-seal/vendor-inventory.json",
+    "sourceSha256": "6d23be581df55d7708c69446670729e69c2ed1f62f6d9dc05464f8bf103acda8",
+    "stagedSha256": "6d23be581df55d7708c69446670729e69c2ed1f62f6d9dc05464f8bf103acda8",
+    "bytes": 3046,
     "redactedLines": 0,
     "transformation": "Explicit candidate evidence or report; credential-scanned before publication"
   },

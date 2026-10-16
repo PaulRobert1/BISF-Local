@@ -1,0 +1,16 @@
+{
+    "SchemaVersion":  1,
+    "Generation":  "f456c92c-002b-4663-95c9-3f676a1e25be",
+    "Status":  "Pending",
+    "ConfigHash":  "0979D36BDA2A3CDB389BF0A43DECD2A30F003BFD95EEC2B70D3E918E9DE8C063",
+    "Master":  {
+                   "Name":  "BISF-W11-TEST",
+                   "MachineGuid":  "f204e7a1-7ab8-4f2b-9192-5e147beb4ffe",
+                   "SmbiosUuid":  "DB012742-9A72-1C18-AF1A-947E82170327"
+               },
+    "OperatorSid":  "S-1-5-21-1208933770-1335860016-3683188281-1000",
+    "OperatorPath":  "C:\\Users\\BISFOperator",
+    "ProfilesRoot":  "C:\\Users",
+    "TimeoutMinutes":  10,
+    "StagedUtc":  "2026-10-16T07:12:58.4258006Z"
+}

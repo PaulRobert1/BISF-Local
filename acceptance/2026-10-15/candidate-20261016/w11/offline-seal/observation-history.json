@@ -1,0 +1,12 @@
+{
+  "outcome": "PASS for the tested local offline scenario",
+  "originalHarnessTimeout": "90-second observation wait expired while existing Prepare continued; it later returned 0 at 07:13:01 without restarting it.",
+  "priorityPause": "Actual BISF shutdown observed at 07:20:02; sealed snapshot10049 captured poweredOff. Controller interrupted during subsequent boot readiness to honor Server-first order. VM parked normally, then only postboot inspection resumed.",
+  "finalChecks": {
+    "passed": 13,
+    "failed": 0
+  },
+  "powerEvidence": "sealed-snapshot-metadata.json confirms native powered-off capture before the priority pause. power-timeline.json was reused by the postboot continuation and now records final parking; it is not the original complete polling history. Earlier per-phase receipt hashes describe files at that phase; ARTIFACTS.json describes the final staged bytes.",
+  "noPrepareRetry": true,
+  "noForcedLogoffOrPoweroff": true
+}
