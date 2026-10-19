@@ -16,7 +16,7 @@ function Invoke-BISFLocal {
 Export-ModuleMember -Function Invoke-BISFLocal
 '@|Set-Content (Join-Path $dir 'Modules\BISF.Local.psm1')
 $cases=@(
- @{Name='Default';Args=$null;Config='GlobalConfig.xml';Mode='Validate'},
+ @{Name='Default';Args=$null;Config='GlobalConfig.xml';Mode='Prepare'},
  @{Name='Explicit';Args=('-Mode Validate -ConfigPath "'+$dir+'\custom config.xml"');Config='custom config.xml';Mode='Validate'}
 )
 foreach($case in $cases){

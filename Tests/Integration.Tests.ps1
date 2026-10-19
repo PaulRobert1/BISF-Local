@@ -11,7 +11,7 @@ BeforeAll {
 Describe 'Full workflow safety and results' {
     BeforeEach {
         $cfg=Join-Path $TestDrive ([guid]::NewGuid().ToString()+'.xml')
-        (Get-Content "$root/GlobalConfig.xml" -Raw).Replace('<Enabled>true</Enabled>','<Enabled>false</Enabled>') | Set-Content $cfg
+        (Get-Content "$root/Tests/Fixtures/OptInBaseline.xml" -Raw).Replace('<Enabled>true</Enabled>','<Enabled>false</Enabled>') | Set-Content $cfg
         $script:trace=New-Object 'System.Collections.Generic.List[string]'
         $script:pending=$false; $script:lastCompletion=$null
         Mock Enter-BISFJournal { $script:pending=$true; 'journal' }
@@ -464,7 +464,7 @@ Describe 'Full workflow safety and results' {
 Describe 'Citrix final shutdown boundary' {
     BeforeEach {
         $cfg=Join-Path $TestDrive ([guid]::NewGuid().ToString()+'.xml')
-        [xml]$xml=Get-Content "$root/GlobalConfig.xml" -Raw
+        [xml]$xml=Get-Content "$root/Tests/Fixtures/OptInBaseline.xml" -Raw
         $xml.BISF.Logging.Enabled='false'
         $xml.BISF.Citrix.VDA.StopBeforeShutdown='true'
         $xml.BISF.FinalAction='Shutdown'

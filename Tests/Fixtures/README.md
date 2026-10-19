@@ -1,0 +1,1 @@
+OptInBaseline.xml preserves the previous all-disabled configuration for focused legacy and operation tests. PackagedDefaults.Tests.ps1 separately tests the shipped enabled defaults. Never substitute this fixture for the shipped user configuration.

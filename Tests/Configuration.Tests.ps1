@@ -9,7 +9,7 @@ BeforeAll {
 Describe 'Configuration and logging contract' {
     BeforeEach {
         $cfgPath = Join-Path $TestDrive 'GlobalConfig.xml'
-        if (Test-Path "$root/GlobalConfig.xml") { Copy-Item "$root/GlobalConfig.xml" $cfgPath }
+        if (Test-Path "$root/Tests/Fixtures/OptInBaseline.xml") { Copy-Item "$root/Tests/Fixtures/OptInBaseline.xml" $cfgPath }
     }
     It 'reads a real configuration hash under WhatIf without changing caller preference or bytes' {
         $expected=(Get-FileHash -LiteralPath $cfgPath -Algorithm SHA256).Hash

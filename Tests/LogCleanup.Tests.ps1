@@ -7,7 +7,7 @@ BeforeAll {
 }
 Describe 'Opt-in log cleanup XML and strict selection' {
     BeforeEach {
-        $c=Read-BISFConfig "$root/GlobalConfig.xml" $root
+        $c=Read-BISFConfig "$root/Tests/Fixtures/OptInBaseline.xml" $root
     }
     It 'defaults both cleanup switches to disabled' {
         $c.LogCleanup.WindowsEventLogs | Should -BeFalse

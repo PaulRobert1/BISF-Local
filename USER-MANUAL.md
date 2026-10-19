@@ -22,16 +22,17 @@ Preparation runs fully offline with local Windows APIs and installed agents. It 
 The package includes `BISF-Local.exe` (Windows x64). Keep it beside `Invoke-BISF.ps1` and the rest of the package. From an elevated command prompt, run:
 
 ```text
-BISF-Local.exe
+BISF-Local.exe -Mode Validate
 BISF-Local.exe -Mode Prepare -WhatIf
+BISF-Local.exe
 BISF-Local.exe -Mode Prepare
 ```
 
-No arguments runs validation. The EXE uses installed Windows PowerShell 5.1, forwards arguments and returns its exit code. It does not install the framework, automatically elevate, download dependencies, or bypass execution policy. Configure cleanup first as described below. Use `BISF-Local.exe --help` for usage.
+**No arguments runs Prepare and applies the enabled cleanup.** After a successful preparation, sign out normally: the SYSTEM task removes the eligible operator profile, finishes log cleanup and shuts down. Use `BISF-Local.exe -Mode Validate` for checks only. The EXE uses installed Windows PowerShell 5.1, forwards arguments and returns its exit code. It does not install the framework, automatically elevate, download dependencies, or bypass execution policy. Configure cleanup first as described below. Use `BISF-Local.exe --help` for usage.
 
 ## 2. Choose the cleanup
 
-Edit the existing `GlobalConfig.xml`; keep its element order. Cleanup options default to `false`, and `FinalAction` defaults to `None`.
+Edit the existing `GlobalConfig.xml`; keep its element order. Temp, user-profile, Recycle Bin, event-log, BISF-log and operator-profile cleanup default to `true`; `FinalAction` defaults to `Shutdown`. Set unwanted options to `false` before running. Configuration Manager resets, clone personalization, the separate VDA-stop option, and component cleanup remain disabled. These cannot all be combined with operator-profile finalization.
 
 | Setting | What it does |
 | --- | --- |
@@ -49,7 +50,7 @@ Profiles displayed as **Account Unknown** are eligible when Windows reports a va
 
 Keep `Servicing.ComponentCleanup=false`. Perform component servicing separately: the optional scheduled-task integration currently refuses sealing because it cannot reliably prove completion.
 
-Keep pending-reboot and other-loaded-profile checks enabled. For ordinary Citrix MCS use, leave `Personalization.Enabled` and both `ConfigurationManager` reset options `false`.
+Keep pending-reboot and other-loaded-profile checks enabled. Leave `Personalization.Enabled`, both `ConfigurationManager` reset options, and `Citrix.VDA.StopBeforeShutdown` false while operator-profile finalization is enabled.
 
 To choose log cleanup using checkboxes:
 

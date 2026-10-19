@@ -6,7 +6,7 @@ BeforeAll {
 Describe 'Checkbox editor configuration writes' {
     BeforeEach {
         $cfg=Join-Path $TestDrive ([guid]::NewGuid().ToString('N')+'.xml')
-        [xml]$xml=Get-Content "$root/GlobalConfig.xml" -Raw
+        [xml]$xml=Get-Content "$root/Tests/Fixtures/OptInBaseline.xml" -Raw
         $xml.BISF.FinalAction='Shutdown'
         $xml.Save($cfg)
         $hash=(Get-FileHash -LiteralPath $cfg).Hash

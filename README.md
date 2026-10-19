@@ -1,5 +1,8 @@
 # BIS-F Local PowerShell edition
 
+**Current package defaults:** running `BISF-Local.exe` or `Invoke-BISF.ps1` without a mode now runs **Prepare**. Temp, user-profile, Recycle Bin, Windows/BISF log and operator-profile cleanup are enabled, with shutdown after normal operator sign-out. Disable unwanted actions in `GlobalConfig.xml`. Configuration Manager resets, clone personalization, separate VDA stopping and unverifiable component cleanup remain off. Use `-Mode Validate` for checks only or `-Mode Prepare -WhatIf` for preview. Omitted legacy XML options still default to false in the parser.
+
+
 For setup and everyday operation, see the [user manual](USER-MANUAL.md).
 
 Unofficial, reduced-scope derivative based on the public EUCweb/BIS-F 7.1912.7
@@ -34,15 +37,15 @@ script, XML) rather than copying a single module onto an older installation.
 
 | Configuration setting | Default | Effect if enabled |
 | --- | --- | --- |
-| `Cleanup.WindowsTemp` | false | Age-based files under `%windir%\Temp` |
-| `Cleanup.CurrentUserTemp` | false | Age-based files under operator profile's Temp |
-| `Cleanup.UserProfiles` | false | Unloaded, non-system user profiles via Windows profile provider |
-| `Cleanup.RecycleBin` | false | Empty **invoking user's** system-drive Recycle Bin through `Clear-RecycleBin` |
+| `Cleanup.WindowsTemp` | true | Age-based files under `%windir%\Temp` |
+| `Cleanup.CurrentUserTemp` | true | Age-based files under operator profile's Temp |
+| `Cleanup.UserProfiles` | true | Unloaded, non-system user profiles via Windows profile provider |
+| `Cleanup.RecycleBin` | true | Empty **invoking user's** system-drive Recycle Bin through `Clear-RecycleBin` |
 | `Servicing.ComponentCleanup` | false | Run Windows' built-in `\Microsoft\Windows\Servicing\StartComponentCleanup` maintenance task; fail closed when completion cannot be verified |
 | `Servicing.TimeoutMinutes` | 75 | Refuse further operations if servicing does not finish inside this bound |
 | `Preflight.MinimumSystemDriveFreeGB` | 0 | Fail preflight when system-drive free space is below this threshold |
 | `Preflight.BlockOtherLoadedProfiles` | false if omitted, true in new XML | Refuse preparation if other non-system profiles remain loaded or referenced; repeat checks during preparation and before final sealing |
-| `Finalization.RemoveOperatorProfile` | false | Opt-in two-phase SYSTEM finalizer (normal sign-out, then delete operator profile and shut down) |
+| `Finalization.RemoveOperatorProfile` | true | Two-phase SYSTEM finalizer (normal sign-out, then delete operator profile and shut down) |
 | `Finalization.TimeoutMinutes` | 30 | Maximum period the SYSTEM task waits for a clean operator sign-out |
 
 ### Safe Windows Update and disk cleanup
@@ -336,9 +339,9 @@ invalid values and XML DTDs are rejected. Boolean values are XML booleans (`true
 |---|---|---|
 | Logging.Enabled | true | File logging; false means no log file/directory writes |
 | Logging.Path | `.\logs` | Script-relative or absolute log destination |
-| Cleanup.WindowsTemp | false | Delete old files under `%SystemRoot%\Temp` |
-| Cleanup.CurrentUserTemp | false | Delete old files under the executing user's LocalApplicationData\Temp; not every profile |
-| Cleanup.UserProfiles | false | **Opt-in** removal of unloaded, non-system Windows user profiles from master image via `Win32_UserProfile` and `Remove-CimInstance`; no age threshold |
+| Cleanup.WindowsTemp | true | Delete old files under `%SystemRoot%\Temp` |
+| Cleanup.CurrentUserTemp | true | Delete old files under the executing user's LocalApplicationData\Temp; not every profile |
+| Cleanup.UserProfiles | true | Removal of unloaded, non-system Windows user profiles from master image via `Win32_UserProfile` and `Remove-CimInstance`; no age threshold |
 | Cleanup.ExcludedProfileSIDs | none | Optional `<ExcludedProfileSIDs><SID>...</SID></ExcludedProfileSIDs>`: protect domain/admin/service-account profile SIDs from cleanup |
 | Cleanup.MinimumAgeDays | 7 | Last-write age threshold, integer 1–3650 days |
 | ConfigurationManager.PrepareIdentityReset | false | Stop CcmExec; remove SMS store certificates and `%SystemRoot%\SMSCFG.ini`; leave client stopped |
@@ -348,7 +351,7 @@ invalid values and XML DTDs are rejected. Boolean values are XML booleans (`true
 | Citrix.VDA.StopBeforeShutdown | false | Stop Desktop Service immediately before shutdown; requires VDA enabled and FinalAction=Shutdown |
 | Citrix.WEM.Enabled | true | Inventory installed version; check WEM services/SENS startup, accounts and cache path; preserve configuration |
 | Preflight.BlockPendingReboot | true | Pending reboot blocks Prepare and its Validate preflight; false permits continuing |
-| FinalAction | None | `Shutdown` requests shutdown after all selected Prepare operations succeed |
+| FinalAction | Shutdown | `Shutdown` requests shutdown after all selected Prepare operations succeed |
 
 The temporary-file cleanup excludes reparse points and protects the package, configuration,
 state, configured logs and the detected WEM cache when WEM checks are enabled. It rechecks

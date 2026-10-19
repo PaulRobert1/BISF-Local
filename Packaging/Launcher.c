@@ -12,7 +12,7 @@ void entry(void) {
  else {while(*args && *args!=L' ' && *args!=L'\t')args++;}
  while(*args==L' ' || *args==L'\t')args++;
  if(!lstrcmpW(args,L"--help") || !lstrcmpW(args,L"/?")) {
- say("BISF Local: runs adjacent Invoke-BISF.ps1 using Windows PowerShell 5.1.\r\nDefault: Validate. Use an elevated console for preparation.\r\nBISF-Local.exe -Mode Prepare -WhatIf\r\nBISF-Local.exe -Mode Prepare\r\nBISF-Local.exe -Mode VerifyClone\r\nKeep the entire package together. Execution policy is not bypassed.\r\n");ExitProcess(0);}
+ say("BISF Local: runs adjacent Invoke-BISF.ps1 using Windows PowerShell 5.1.\r\nDefault: Prepare; enabled cleanup and shutdown after operator sign-out. Use an elevated console for preparation.\r\nBISF-Local.exe -Mode Validate\r\nBISF-Local.exe -Mode Prepare -WhatIf\r\nBISF-Local.exe -Mode Prepare\r\nBISF-Local.exe -Mode VerifyClone\r\nKeep the entire package together. Execution policy is not bypassed.\r\n");ExitProcess(0);}
  p=module+lstrlenW(module);while(p>module && p[-1]!=L'\\')p--;*p=0;
  if(lstrlenW(module)>32000){say("Package path too long.\r\n");ExitProcess(1);}
  lstrcpyW(script,module);lstrcatW(script,L"Invoke-BISF.ps1");

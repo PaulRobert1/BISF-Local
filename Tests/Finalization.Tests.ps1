@@ -7,7 +7,7 @@ BeforeAll {
 }
 Describe 'Two-phase operator seal configuration and trust boundaries' {
     BeforeEach {
-        $c=Read-BISFConfig (Join-Path $root 'GlobalConfig.xml') $root
+        $c=Read-BISFConfig (Join-Path $root 'Tests/Fixtures/OptInBaseline.xml') $root
         $c.Finalization.RemoveOperatorProfile=$true
         $c.Cleanup.UserProfiles=$true
         $c.FinalAction='Shutdown'
@@ -19,7 +19,7 @@ Describe 'Two-phase operator seal configuration and trust boundaries' {
     }
     It 'never replaces the approved config hash with an edit made before state staging' {
         $path=Join-Path $TestDrive 'staging-config.xml'
-        Copy-Item (Join-Path $root 'GlobalConfig.xml') $path
+        Copy-Item (Join-Path $root 'Tests/Fixtures/OptInBaseline.xml') $path
         $approvedHash=(Get-FileHash -LiteralPath $path).Hash
         Add-Content -LiteralPath $path -Value '<!-- changed since confirmation -->'
         Mock Get-BISFIdentity { [pscustomobject]@{Name='MASTER'} }
@@ -75,7 +75,7 @@ Describe 'Two-phase operator seal configuration and trust boundaries' {
         Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-1005' }
         Mock Get-BISFProfilesRoot { $users }
         Mock Get-CimInstance { [pscustomobject]@{Special=$false;LocalPath=$operator} }
-        { Get-BISFOperatorSealTarget $c $root (Join-Path $root 'GlobalConfig.xml') -ProtectedPaths @((Join-Path $operator 'WEM')) } | Should -Throw '*inside*operator profile*'
+        { Get-BISFOperatorSealTarget $c $root (Join-Path $root 'Tests/Fixtures/OptInBaseline.xml') -ProtectedPaths @((Join-Path $operator 'WEM')) } | Should -Throw '*inside*operator profile*'
     }
 }
 Describe 'Task Scheduler inventory error semantics' {
@@ -90,13 +90,13 @@ Describe 'Task Scheduler inventory error semantics' {
         }
     }
     It 'fails closed when Task Scheduler cannot enumerate tasks' {
-        { Test-BISFOperatorSealTaskOwnership $root (Join-Path $root 'GlobalConfig.xml') } | Should -Throw '*Task Scheduler unavailable*'
+        { Test-BISFOperatorSealTaskOwnership $root (Join-Path $root 'Tests/Fixtures/OptInBaseline.xml') } | Should -Throw '*Task Scheduler unavailable*'
     }
 }
 Describe 'Operator staging prerequisites before any preparation' {
     BeforeEach {
         . "$root/Modules/Private/Preflight.ps1"
-        $c=Read-BISFConfig (Join-Path $root 'GlobalConfig.xml') $root
+        $c=Read-BISFConfig (Join-Path $root 'Tests/Fixtures/OptInBaseline.xml') $root
         $c.Cleanup.UserProfiles=$true
         $c.Finalization.RemoveOperatorProfile=$true
         $c.FinalAction='Shutdown'
@@ -109,11 +109,11 @@ Describe 'Operator staging prerequisites before any preparation' {
     }
     It 'checks the <Leaf> trust boundary before preparation' -ForEach @(@{Leaf='Modules'},@{Leaf='GlobalConfig.xsd'}) {
         Mock Test-BISFProtectedLocation { if ((Split-Path -Leaf $Path) -eq $Leaf) { throw 'Untrusted dependency' } }
-        { Test-BISFPreflight $c Prepare @(Get-BISFPlan $c Prepare) $root (Join-Path $root 'GlobalConfig.xml') $null } | Should -Throw '*Untrusted dependency*'
+        { Test-BISFPreflight $c Prepare @(Get-BISFPlan $c Prepare) $root (Join-Path $root 'Tests/Fixtures/OptInBaseline.xml') $null } | Should -Throw '*Untrusted dependency*'
     }
     It 'refuses retained operator state during preflight rather than after ordinary cleanup' {
         Mock Test-Path { $LiteralPath -like '*operator-seal.json' }
-        { Test-BISFPreflight $c Prepare @(Get-BISFPlan $c Prepare) $root (Join-Path $root 'GlobalConfig.xml') $null } | Should -Throw '*Existing operator-seal state*'
+        { Test-BISFPreflight $c Prepare @(Get-BISFPlan $c Prepare) $root (Join-Path $root 'Tests/Fixtures/OptInBaseline.xml') $null } | Should -Throw '*Existing operator-seal state*'
     }
 }
 Describe 'SYSTEM finalizer operator profile safety rules' {
@@ -130,10 +130,10 @@ Describe 'SYSTEM finalizer operator profile safety rules' {
             ConfigHash='a'*64
         }
         $script:p=[pscustomobject]@{SID=$script:state.OperatorSid;LocalPath=$script:userPath;Loaded=$false;Special=$false;RefCount=0}
-        $script:c=Read-BISFConfig (Join-Path $root 'GlobalConfig.xml') $root
+        $script:c=Read-BISFConfig (Join-Path $root 'Tests/Fixtures/OptInBaseline.xml') $root
         $script:c.Finalization.RemoveOperatorProfile=$true
         $script:c.FinalAction='Shutdown'
-        $script:c | Add-Member NoteProperty Path (Join-Path $root 'GlobalConfig.xml')
+        $script:c | Add-Member NoteProperty Path (Join-Path $root 'Tests/Fixtures/OptInBaseline.xml')
         $script:state.ConfigHash=(Get-FileHash -LiteralPath $script:c.Path).Hash
         Mock Get-BISFCurrentUserSid { 'S-1-5-18' }
         Mock Get-BISFIdentity { $script:state.Master }
@@ -190,7 +190,7 @@ Describe 'SYSTEM finalizer operator profile safety rules' {
 Describe 'Finalization shutdown boundary' {
     BeforeEach {
         $script:cfg=Join-Path $TestDrive ('Config-'+[guid]::NewGuid().ToString('N')+'.xml')
-        [xml]$xml=Get-Content (Join-Path $root 'GlobalConfig.xml') -Raw
+        [xml]$xml=Get-Content (Join-Path $root 'Tests/Fixtures/OptInBaseline.xml') -Raw
         $xml.BISF.Cleanup.UserProfiles='true'
         $xml.BISF.Finalization.RemoveOperatorProfile='true'
         $xml.BISF.FinalAction='Shutdown'

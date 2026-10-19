@@ -9,7 +9,7 @@ BeforeAll {
 Describe 'Platform and plan validation' {
     BeforeEach {
         $i=[pscustomobject]@{Build=26100;ProductType=3;Version='10.0.26100';Edition='Desktop';PSVersion='5.1';Is64Bit=$true;IsAdmin=$true;PendingReboot=$false}
-        $c=Read-BISFConfig "$root/GlobalConfig.xml" $root
+        $c=Read-BISFConfig "$root/Tests/Fixtures/OptInBaseline.xml" $root
     }
     It 'accepts Server 2025 and Windows 11 workstation builds' {
         { Test-BISFPlatform $i $c Prepare } | Should -Not -Throw
@@ -132,7 +132,7 @@ Describe 'Enabled integration dependencies' {
         . "$root/Modules/Private/Lifecycle.ps1"
     }
     BeforeEach {
-        $c=Read-BISFConfig "$root/GlobalConfig.xml" $root
+        $c=Read-BISFConfig "$root/Tests/Fixtures/OptInBaseline.xml" $root
         Mock Test-BISFPlatform {}
         Mock Test-BISFProtectedLocation {}
         Mock Test-BISFTaskOwnership {}
@@ -147,27 +147,27 @@ Describe 'Enabled integration dependencies' {
         $original='{"Status":"Pending","AcceptanceFixture":true}'
         [IO.File]::WriteAllText($statePath,$original)
         $c.Finalization.RemoveOperatorProfile=$false
-        { Test-BISFPreflight $c $Mode @() $isolated "$root/GlobalConfig.xml" $null } | Should -Throw '*operator-seal state*'
+        { Test-BISFPreflight $c $Mode @() $isolated "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Throw '*operator-seal state*'
         [IO.File]::ReadAllText($statePath) | Should -BeExactly $original
     }
     It 'blocks another interactive profile when the readiness option is enabled' {
         $c.Preflight.BlockOtherLoadedProfiles=$true
         Mock Get-BISFLoadedNonSystemProfiles { [pscustomobject]@{SID='S-1-5-21-111-222-333-1005';Loaded=$true} }
-        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Throw '*Other loaded local user profiles*'
+        { Test-BISFPreflight $c Prepare @() $root "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Throw '*Other loaded local user profiles*'
     }
     It 'blocks preparation with insufficient system-drive space' {
         $c.Preflight.MinimumSystemDriveFreeGB=15
         Mock Get-BISFSystemDriveStatus { [pscustomobject]@{Drive='C:';FreeGB=9;TotalGB=100} }
-        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Throw '*Not enough free space*'
+        { Test-BISFPreflight $c Prepare @() $root "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Throw '*Not enough free space*'
     }
     It 'allows sufficient disk space while keeping user-session checks independent' {
         $c.Preflight.MinimumSystemDriveFreeGB=15
         Mock Get-BISFSystemDriveStatus { [pscustomobject]@{Drive='C:';FreeGB=30;TotalGB=100} }
-        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Not -Throw
+        { Test-BISFPreflight $c Prepare @() $root "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Not -Throw
     }
     It 'does not require client or scheduler commands when their features are disabled' {
         Mock Get-Command { throw 'unneeded dependency query' }
-        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Not -Throw
+        { Test-BISFPreflight $c Prepare @() $root "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Not -Throw
     }
     It 'accepts ScheduledTasks commands implemented as CDXML functions' {
         $c.Personalization.Enabled=$true
@@ -175,6 +175,6 @@ Describe 'Enabled integration dependencies' {
             if (($CommandType -band [System.Management.Automation.CommandTypes]::Function) -eq 0) { throw 'ScheduledTasks CDXML command is a Function, not a Cmdlet' }
             [pscustomobject]@{Name=$Name;CommandType='Function'}
         }
-        { Test-BISFPreflight $c Prepare @(Get-BISFPlan $c Prepare) $root "$root/GlobalConfig.xml" $null } | Should -Not -Throw
+        { Test-BISFPreflight $c Prepare @(Get-BISFPlan $c Prepare) $root "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Not -Throw
     }
 }

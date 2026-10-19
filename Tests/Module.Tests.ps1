@@ -9,7 +9,7 @@ Describe 'Exported module under production strict mode' {
             # Module PSScriptRoot points to Modules, so resolve via module path instead.
             $package=Split-Path (Split-Path (Get-Module BISF.Local).Path -Parent) -Parent
             $config=Join-Path $TestDrive 'config.xml'
-            (Get-Content (Join-Path $package 'GlobalConfig.xml') -Raw).Replace('<Enabled>true</Enabled>','<Enabled>false</Enabled>') | Set-Content $config
+            (Get-Content (Join-Path $package 'Tests/Fixtures/OptInBaseline.xml') -Raw).Replace('<Enabled>true</Enabled>','<Enabled>false</Enabled>') | Set-Content $config
             Mock Get-BISFInventory { [pscustomobject]@{Caption='Test';Build=26100;Identity=[pscustomobject]@{Name='MASTER'};CMInstalled=$false} }
             Mock Test-BISFPreflight {}
             Mock Get-BISFPendingRebootReasons { @() }
@@ -26,7 +26,7 @@ Describe 'Citrix production module strict mode' {
     It 'discovers and reports an enabled VDA without relying on dot-source test scope' {
         InModuleScope BISF.Local {
             $package=Split-Path (Split-Path (Get-Module BISF.Local).Path -Parent) -Parent
-            $c=Read-BISFConfig (Join-Path $package 'GlobalConfig.xml') $package
+            $c=Read-BISFConfig (Join-Path $package 'Tests/Fixtures/OptInBaseline.xml') $package
             $c.Citrix.WEM.Enabled=$false
             Mock Get-BISFCitrixServices { @(
                 [pscustomobject]@{Name='BrokerAgent';DisplayName='Citrix Desktop Service';StartMode='Auto';State='Running';PathName='C:\Citrix\BrokerAgent.exe'},
