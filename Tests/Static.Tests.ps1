@@ -32,7 +32,7 @@ Describe 'Source-only runtime audit' {
             $violations | Should -BeNullOrEmpty -Because $f.Name
         }
     }
-    It 'contains no executable or compiled payload' {
-        @(Get-ChildItem $root -Recurse -File | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and $_.Extension -in '.exe','.dll','.com','.bat','.cmd','.msi' }).Count | Should -Be 0
+    It 'contains no compiled payload except the explicitly requested root launcher' {
+        @(Get-ChildItem $root -Recurse -File | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and $_.FullName -ne (Join-Path $root 'BISF-Local.exe') -and $_.Extension -in '.exe','.dll','.com','.bat','.cmd','.msi' }).Count | Should -Be 0
     }
 }

@@ -17,6 +17,18 @@ Set-Location 'C:\Program Files\BISF-Local'
 
 Preparation runs fully offline with local Windows APIs and installed agents. It downloads nothing. Broker connections and network profile storage need their normal network access after deployment.
 
+## EXE launcher
+
+The package includes `BISF-Local.exe` (Windows x64). Keep it beside `Invoke-BISF.ps1` and the rest of the package. From an elevated command prompt, run:
+
+```text
+BISF-Local.exe
+BISF-Local.exe -Mode Prepare -WhatIf
+BISF-Local.exe -Mode Prepare
+```
+
+No arguments runs validation. The EXE uses installed Windows PowerShell 5.1, forwards arguments and returns its exit code. It does not install the framework, automatically elevate, download dependencies, or bypass execution policy. Configure cleanup first as described below. Use `BISF-Local.exe --help` for usage.
+
 ## 2. Choose the cleanup
 
 Edit the existing `GlobalConfig.xml`; keep its element order. Cleanup options default to `false`, and `FinalAction` defaults to `None`.

@@ -12,8 +12,8 @@ or Windows 11 workstation or newer. The version gate is an eligibility
 check, not certification of every Windows/agent combination. PowerShell 7 is for
 portable development tests only; the runtime rejects it.
 
-The package has no executable payloads, installer, GPO configuration, downloads or
-external executable calls. Optional startup personalization launches only the built-in
+The package includes an optional x64 `BISF-Local.exe` launcher for the adjacent PowerShell entry point. It has no installer, GPO configuration, downloads or
+vendor executable calls. The launcher starts only the built-in Windows PowerShell host. Optional startup personalization launches only the built-in
 Windows PowerShell host. Existing policy and network/security settings are preserved.
 
 **Draft acceptance gate:** the complete sign-out, SYSTEM profile removal, selected
