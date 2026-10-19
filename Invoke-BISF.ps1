@@ -15,10 +15,15 @@ performs no image changes; enabled logging may create diagnostic log files.
 [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
 param(
     [ValidateSet('Validate','Prepare','Personalize','Finalize','VerifyClone')][string]$Mode='Validate',
-    [string]$ConfigPath=(Join-Path $PSScriptRoot 'GlobalConfig.xml')
+    [string]$ConfigPath
 )
 $ErrorActionPreference='Stop'
 try {
+    # Windows PowerShell 5.1 may leave PSScriptRoot empty during parameter binding.
+    # Resolve the default only after entering the script; preserve explicit paths.
+    if (-not $PSBoundParameters.ContainsKey('ConfigPath')) {
+        $ConfigPath=Join-Path $PSScriptRoot 'GlobalConfig.xml'
+    }
     Import-Module (Join-Path $PSScriptRoot 'Modules/BISF.Local.psm1') -Force -ErrorAction Stop
     if ($Mode -eq 'VerifyClone') {
         # Read-only local inventory; never applies image operations or writes logs.
