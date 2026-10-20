@@ -33,7 +33,17 @@ function Get-BISFWindowsRelease {
         RequiresCompatibilityReview=$true
         Guidance='Unsupported Windows family or kernel version.'
     }
-    if ([string]$Inventory.Version -notmatch '^10\.0\.') { return $platform }
+    $kernel=$null
+    if (-not [version]::TryParse([string]$Inventory.Version,[ref]$kernel) -or $build -le 0 -or $kernel.Major -lt 10) { return $platform }
+    if ($kernel.Major -gt 10 -or $kernel.Minor -gt 0) {
+        if ([int]$Inventory.ProductType -in @(1,3)) {
+            $platform.Family=if ([int]$Inventory.ProductType -eq 3) { 'Windows Server' } else { 'Windows workstation' }
+            $platform.Release='Unrecognized future Windows release'
+            $platform.Eligible=$true
+            $platform.Guidance='Newer Windows release: required APIs and safety checks still apply. Eligibility does not certify the OS, Citrix, WEM or profile provider combination; validate on a disposable image.'
+        }
+        return $platform
+    }
     if ([int]$Inventory.ProductType -eq 1 -and $build -ge 22000) {
         $platform.Family='Windows 11 workstation'
         $platform.Eligible=$true
@@ -70,7 +80,8 @@ function Get-BISFWindowsRelease {
     } elseif ([int]$Inventory.ProductType -eq 3 -and $build -gt 26100) {
         $platform.Family='Windows Server'
         $platform.Release='Unrecognized future Windows Server build'
-        $platform.Guidance='Later Windows Server releases are not automatically eligible for destructive preparation until platform-specific validation is added.'
+        $platform.Eligible=$true
+        $platform.Guidance='Newer Windows Server build: required APIs and safety checks still apply. Eligibility is not vendor certification; validate the exact OS, VDA, WEM and profile provider on a disposable image.'
     }
     $platform
 }
@@ -82,7 +93,7 @@ function Test-BISFPlatform {
     if ($Inventory.ProductType -eq 2) { throw 'Domain controllers cannot be prepared.' }
     $platform=Get-BISFWindowsRelease $Inventory
     if (-not $platform.Eligible) {
-        throw ('Target must be Windows Server 2025 (26100) or Windows 11 workstation (22000+). Detected: {0}, build {1}. {2}' -f $platform.Release,$platform.Build,$platform.Guidance)
+        throw ('Target must be Windows Server 2025 or newer, or Windows 11 workstation or newer. Detected: {0}, build {1}. {2}' -f $platform.Release,$platform.Build,$platform.Guidance)
     }
     if ($Mode -eq 'Prepare' -and $Inventory.PendingReboot -and $Config.Preflight.BlockPendingReboot) {
         throw 'A pending reboot blocks preparation. Reboot the master and retry.'
@@ -99,7 +110,13 @@ function Test-BISFPreflight {
     $targetMode = $Mode
     if ($Mode -eq 'Validate') { $targetMode = 'Prepare' }
     Test-BISFPlatform $Inventory $Config $targetMode
+    # A previous seal remains unfinished even if the operator disables deferred
+    # cleanup in a new configuration. Never let that change bypass recovery.
+    if ($targetMode -eq 'Prepare' -and (Test-Path -LiteralPath (Get-BISFOperatorSealStatePath $ScriptRoot) -ErrorAction Stop)) {
+        throw 'Existing operator-seal state detected. Resolve the earlier sealing attempt before preparing again.'
+    }
     $ids = @($Plan | ForEach-Object { $_.Id })
+    if ($ids -contains 'ExplorerSettings') { Test-BISFExplorerPreflight $ScriptRoot }
     if ($Config.ConfigurationManager.PrepareIdentityReset -or $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
         $svc = Get-Service -Name CcmExec -ErrorAction Stop
         if ($svc.StartType -eq 'Disabled') { throw 'CcmExec is disabled; fix the client before preparing.' }

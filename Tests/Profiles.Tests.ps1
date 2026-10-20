@@ -24,8 +24,22 @@ Describe 'Citrix MCS user profile inventory and safe deletion' {
                 @($script:profiles | Where-Object { "SID='$($_.SID)'" -eq $Filter })
             } else { $script:profiles }
         }
-        Mock Remove-BISFCimUserProfile { $script:deleted.Add($Profile.SID) }
+        Mock Remove-BISFCimUserProfile { $script:deleted.Add($Profile.SID); $script:profiles=@($script:profiles|Where-Object SID -ne $Profile.SID); [IO.Directory]::Delete($Profile.LocalPath,$true) }
         Mock Write-BISFLog {}
+    }
+    It 'stops ordinary cleanup when provider removal leaves profile files behind' {
+        $first=Join-Path $script:profileRoot 'first'
+        $second=Join-Path $script:profileRoot 'second'
+        New-Item -ItemType Directory $first,$second|Out-Null
+        $marker=Join-Path $first 'locked-file.txt'
+        [IO.File]::WriteAllText($marker,'preserve partial failure')
+        $script:profiles=@((New-TestProfile $script:userSid $first),(New-TestProfile 'S-1-5-21-111-222-333-1003' $second))
+        $plan=Get-BISFUserProfilePlan
+        Mock Remove-BISFCimUserProfile { $script:deleted.Add($Profile.SID); $script:profiles=@($script:profiles|Where-Object SID -ne $Profile.SID) }
+        { Invoke-BISFUserProfileCleanup $plan $null } | Should -Throw '*profile directory remains*'
+        $script:deleted.Count | Should -Be 1
+        [IO.File]::ReadAllText($marker) | Should -Be 'preserve partial failure'
+        Test-Path -LiteralPath $second | Should -BeTrue
     }
     It 'selects inactive, registered, non-special profiles from the configured Users root' {
         $folder=Join-Path $script:profileRoot 'testuser'

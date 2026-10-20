@@ -1,17 +1,22 @@
 # BIS-F Local PowerShell edition
 
+**Current package defaults:** running `BISF-Local.exe` or `Invoke-BISF.ps1` without a mode now runs **Prepare**. Temp, user-profile, Recycle Bin, Windows/BISF log and operator-profile cleanup are enabled, with shutdown after normal operator sign-out. Disable unwanted actions in `GlobalConfig.xml`. Configuration Manager resets, clone personalization, separate VDA stopping and unverifiable component cleanup remain off. Use `-Mode Validate` for checks only or `-Mode Prepare -WhatIf` for preview. Omitted legacy XML options still default to false in the parser.
+
+
+For setup and everyday operation, see the [user manual](USER-MANUAL.md).
+
 Unofficial, reduced-scope derivative based on the public EUCweb/BIS-F 7.1912.7
 source. It prepares selected parts of a local master image using Windows PowerShell
 cmdlets and .NET APIs. It does not capture, generalize, or provision an image and
 is not a drop-in replacement for all upstream BIS-F integrations.
 
-Target: elevated **64-bit Windows PowerShell 5.1**, Windows Server 2025 build 26100
-or Windows 11 workstation build 22000 or later. The version gate is an eligibility
+Target: elevated **64-bit Windows PowerShell 5.1**, Windows Server 2025 or newer
+or Windows 11 workstation or newer. The version gate is an eligibility
 check, not certification of every Windows/agent combination. PowerShell 7 is for
 portable development tests only; the runtime rejects it.
 
-The package has no executable payloads, installer, GPO configuration, downloads or
-external executable calls. Optional startup personalization launches only the built-in
+The package includes an optional x64 `BISF-Local.exe` launcher for the adjacent PowerShell entry point. It has no installer, GPO configuration, downloads or
+vendor executable calls. The launcher starts only the built-in Windows PowerShell host. Optional startup personalization launches only the built-in
 Windows PowerShell host. Existing policy and network/security settings are preserved.
 
 **Draft acceptance gate:** the complete sign-out, SYSTEM profile removal, selected
@@ -32,15 +37,15 @@ script, XML) rather than copying a single module onto an older installation.
 
 | Configuration setting | Default | Effect if enabled |
 | --- | --- | --- |
-| `Cleanup.WindowsTemp` | false | Age-based files under `%windir%\Temp` |
-| `Cleanup.CurrentUserTemp` | false | Age-based files under operator profile's Temp |
-| `Cleanup.UserProfiles` | false | Unloaded, non-system user profiles via Windows profile provider |
-| `Cleanup.RecycleBin` | false | Empty **invoking user's** system-drive Recycle Bin through `Clear-RecycleBin` |
-| `Servicing.ComponentCleanup` | false | Run Windows' built-in `\Microsoft\Windows\Servicing\StartComponentCleanup` maintenance task and await success |
+| `Cleanup.WindowsTemp` | true | Age-based files under `%windir%\Temp` |
+| `Cleanup.CurrentUserTemp` | true | Age-based files under operator profile's Temp |
+| `Cleanup.UserProfiles` | true | Unloaded, non-system user profiles via Windows profile provider |
+| `Cleanup.RecycleBin` | true | Empty **invoking user's** system-drive Recycle Bin through `Clear-RecycleBin` |
+| `Servicing.ComponentCleanup` | false | Run Windows' built-in `\Microsoft\Windows\Servicing\StartComponentCleanup` maintenance task; fail closed when completion cannot be verified |
 | `Servicing.TimeoutMinutes` | 75 | Refuse further operations if servicing does not finish inside this bound |
 | `Preflight.MinimumSystemDriveFreeGB` | 0 | Fail preflight when system-drive free space is below this threshold |
 | `Preflight.BlockOtherLoadedProfiles` | false if omitted, true in new XML | Refuse preparation if other non-system profiles remain loaded or referenced; repeat checks during preparation and before final sealing |
-| `Finalization.RemoveOperatorProfile` | false | Opt-in two-phase SYSTEM finalizer (normal sign-out, then delete operator profile and shut down) |
+| `Finalization.RemoveOperatorProfile` | true | Two-phase SYSTEM finalizer (normal sign-out, then delete operator profile and shut down) |
 | `Finalization.TimeoutMinutes` | 30 | Maximum period the SYSTEM task waits for a clean operator sign-out |
 
 ### Safe Windows Update and disk cleanup
@@ -48,11 +53,12 @@ script, XML) rather than copying a single module onto an older installation.
 Windows component-store maintenance is **not** the same as clearing
 `SoftwareDistribution` or deleting WinSxS directories. When enabled, BISF
 invokes the Microsoft-installed scheduled task
-`\Microsoft\Windows\Servicing\StartComponentCleanup`, verifies its
-completion/result, and refuses further image operations on failure or
-timeout. Completion requires a new LastRunTime relative to the pre-start
-baseline, Ready state and result zero; a recent prior success or Queued
-state is insufficient. This task may honor an update retention period and is not
+`\Microsoft\Windows\Servicing\StartComponentCleanup`. A new LastRunTime,
+Ready state and result zero cannot distinguish successful completion from a
+cancelled COM-handler run. BISF therefore refuses further image operations when
+completion is unverifiable, as well as on failure or timeout. See the servicing
+limitation below; there is currently no verified automatic success path.
+This task may honor an update retention period and is not
 guaranteed to reclaim all space. The script does not run DISM.exe, change
 Windows Update services, perform `/ResetBase`, delete rollback packages
 or remove update caches manually. It does not reset WSUS policy.
@@ -78,18 +84,11 @@ and final sealing, and passes that same hash into operator staging. An edit duri
 servicing must be reviewed through a new Prepare; it cannot silently enable a log
 option in the SYSTEM worker.
 
-- Windows Event Logs: Application, System, and Setup channels only.
-- BISF diagnostics: files generated by BISF's own logger only.
+Enabled Administrative and Operational event channels, including vendor channels, are cleared at final sealing. Security and disabled/Analytic/Debug channels are preserved. Windows permission-protected channels are retained and reported as warnings; other clearing failures still block shutdown. Each result is recorded in the BISF execution log. Windows can generate new events during shutdown.
 
-Both LogCleanup.WindowsEventLogs and LogCleanup.BISFLogs default to
-false, and require FinalAction=Shutdown when enabled. Security auditing,
-other Windows event channels, Citrix/WEM/FSLogix and remote files remain
-untouched. Validate and Prepare -WhatIf only preview the selected plan.
-When an operator's profile is being sealed, selected hygiene happens
-under the SYSTEM finalizer, after the administrator signs out. Windows
-may generate additional event records during shutdown, so completely
-empty event logs are not guaranteed. Retain required diagnostic records
-and follow organizational audit policy before opting in.
+`LogCleanup.WindowsEventLogs=true`, `LogCleanup.BISFLogs=false`: detailed BISF execution logs remain on the master. Log cleanup requires `FinalAction=Shutdown`. With operator-profile removal enabled, final cleanup and automatic shutdown follow normal operator sign-out.
+
+`Explorer.RemoveQuickAccess=true` removes Quick Access/Home navigation registrations and opens Explorer at This PC. `Explorer.ClassicContextMenu=true` requests the classic context menu using the per-user shell registration. Both apply to the operator and through Active Setup at Explorer sign-in for other users. Keep the package at its protected installation path. Windows shell behavior can vary by build; setting either option false skips application and does not undo existing settings.
 
 ### Two-phase deletion of the operator's own profile
 
@@ -239,7 +238,8 @@ member server (3). Domain controllers (2) remain blocked.
 | Windows 11 26H1 | 28000 | Recognized specialized new-hardware release; Citrix compatibility not assumed |
 | Other future Windows 11-family 10.0 workstation builds >=22000 | Other | Accepted by existing script-level build gate; **explicit compatibility warning** |
 | Windows Server 2025 | 26100, ProductType 3 | Recognized server |
-| Later Windows Server builds | Other | Blocked until tested and added |
+| Later Windows Server builds | >26100 | Eligible with compatibility-review diagnostics; required APIs and safety checks still apply |
+| Future Windows kernel families (workstation/member server) | Newer than 10.0 | Eligible with compatibility-review diagnostics; no inferred vendor certification |
 | Windows 10, Windows Server 2022/2019 and domain controllers | Older/any DC | Outside this specialized package's preparation scope |
 
 **Citrix version support is separate from script eligibility.**
@@ -332,9 +332,9 @@ invalid values and XML DTDs are rejected. Boolean values are XML booleans (`true
 |---|---|---|
 | Logging.Enabled | true | File logging; false means no log file/directory writes |
 | Logging.Path | `.\logs` | Script-relative or absolute log destination |
-| Cleanup.WindowsTemp | false | Delete old files under `%SystemRoot%\Temp` |
-| Cleanup.CurrentUserTemp | false | Delete old files under the executing user's LocalApplicationData\Temp; not every profile |
-| Cleanup.UserProfiles | false | **Opt-in** removal of unloaded, non-system Windows user profiles from master image via `Win32_UserProfile` and `Remove-CimInstance`; no age threshold |
+| Cleanup.WindowsTemp | true | Delete old files under `%SystemRoot%\Temp` |
+| Cleanup.CurrentUserTemp | true | Delete old files under the executing user's LocalApplicationData\Temp; not every profile |
+| Cleanup.UserProfiles | true | Removal of unloaded, non-system Windows user profiles from master image via `Win32_UserProfile` and `Remove-CimInstance`; no age threshold |
 | Cleanup.ExcludedProfileSIDs | none | Optional `<ExcludedProfileSIDs><SID>...</SID></ExcludedProfileSIDs>`: protect domain/admin/service-account profile SIDs from cleanup |
 | Cleanup.MinimumAgeDays | 7 | Last-write age threshold, integer 1–3650 days |
 | ConfigurationManager.PrepareIdentityReset | false | Stop CcmExec; remove SMS store certificates and `%SystemRoot%\SMSCFG.ini`; leave client stopped |
@@ -344,7 +344,7 @@ invalid values and XML DTDs are rejected. Boolean values are XML booleans (`true
 | Citrix.VDA.StopBeforeShutdown | false | Stop Desktop Service immediately before shutdown; requires VDA enabled and FinalAction=Shutdown |
 | Citrix.WEM.Enabled | true | Inventory installed version; check WEM services/SENS startup, accounts and cache path; preserve configuration |
 | Preflight.BlockPendingReboot | true | Pending reboot blocks Prepare and its Validate preflight; false permits continuing |
-| FinalAction | None | `Shutdown` requests shutdown after all selected Prepare operations succeed |
+| FinalAction | Shutdown | `Shutdown` requests shutdown after all selected Prepare operations succeed |
 
 The temporary-file cleanup excludes reparse points and protects the package, configuration,
 state, configured logs and the detected WEM cache when WEM checks are enabled. It rechecks
@@ -438,7 +438,7 @@ does not install agents, configure delivery controllers/WEM endpoints, change de
 mode, or enable optimizations. Existing settings remain in effect.
 
 Citrix versions are informational: **older and newer releases are accepted**. The
-platform gate remains Windows Server 2025 build 26100 or Windows 11 workstation.
+platform gate accepts Windows Server 2025 / Windows 11 and newer releases, while retaining administrator, architecture, PowerShell, domain-controller and operation-specific safety checks.
 Required installed components and service configuration are still checked. Legacy
 ExpectedRelease XML elements are accepted but ignored; the supplied config omits them.
 
@@ -633,3 +633,29 @@ Windows image. Before production, use a disposable clone and record:
 
 License: GNU GPLv3; no warranty. See LICENSE and UPSTREAM.md.
 
+
+## Offline execution and newer releases
+
+Copy the complete package to a protected local directory before execution. Runtime
+uses Windows PowerShell 5.1, local Windows APIs and the locally installed agents.
+It does not download modules, query release catalogs, send telemetry or require
+Internet access. Pester is a separately supplied development dependency, not a
+runtime requirement. Local preparation can run with the VM network disconnected.
+External broker registration, WEM synchronization and FSLogix/UPM network profile
+attachment are deployment checks, not evidence produced by local preparation.
+
+Newer Windows releases are eligible without an upper build/version ceiling;
+unknown releases retain explicit compatibility-review diagnostics. Citrix/WEM
+versions are informational and FSLogix is inventoried locally. Required service,
+path, privilege, profile, pending-reboot and shutdown guards still apply. This
+policy does not guarantee that every future agent layout or OS API will work.
+
+**Servicing limitation:** `ComponentCleanup` remains opt-in and uses the built-in
+Microsoft task. BISF now refuses to continue after a success-looking aggregate
+result because cancelled runs can also report Ready/result 0. Even a genuinely
+successful run currently requires manual review; no verified automatic success
+path is claimed. Run servicing separately, review its result, then leave
+`ComponentCleanup=false` for preparation. BISF does not switch to DISM, use
+ResetBase, cancel tasks automatically or erase failure state to continue sealing.
+
+Production release and rollback procedure: [PRODUCTION-RUNBOOK.md](PRODUCTION-RUNBOOK.md). The full acceptance gate remains open.

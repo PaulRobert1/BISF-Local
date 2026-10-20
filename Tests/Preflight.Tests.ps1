@@ -9,7 +9,7 @@ BeforeAll {
 Describe 'Platform and plan validation' {
     BeforeEach {
         $i=[pscustomobject]@{Build=26100;ProductType=3;Version='10.0.26100';Edition='Desktop';PSVersion='5.1';Is64Bit=$true;IsAdmin=$true;PendingReboot=$false}
-        $c=Read-BISFConfig "$root/GlobalConfig.xml" $root
+        $c=Read-BISFConfig "$root/Tests/Fixtures/OptInBaseline.xml" $root
     }
     It 'accepts Server 2025 and Windows 11 workstation builds' {
         { Test-BISFPlatform $i $c Prepare } | Should -Not -Throw
@@ -53,13 +53,26 @@ Describe 'Platform and plan validation' {
         $platform.RequiresCompatibilityReview | Should -BeTrue
         $platform.Guidance | Should -Match 'Unknown client build'
     }
-    It 'rejects later Windows Server builds until explicitly validated' {
+    It 'accepts later Windows Server builds with explicit compatibility-review diagnostics' {
         $i.Build=27500
         $i.Version='10.0.27500'
         $platform=Get-BISFWindowsRelease $i
-        $platform.Eligible | Should -BeFalse
+        $platform.Eligible | Should -BeTrue
+        $platform.RecognizedBuild | Should -BeFalse
         $platform.RequiresCompatibilityReview | Should -BeTrue
-        { Test-BISFPlatform $i $c Prepare } | Should -Throw '*Windows Server*'
+        { Test-BISFPlatform $i $c Prepare } | Should -Not -Throw
+    }
+    It 'accepts future Windows kernel families without claiming a recognized release: <ProductType>' -ForEach @(@{ProductType=1},@{ProductType=3}) {
+        $i.ProductType=$ProductType; $i.Version='11.0.1000'; $i.Build=1000
+        $platform=Get-BISFWindowsRelease $i
+        $platform.Eligible | Should -BeTrue
+        $platform.RecognizedBuild | Should -BeFalse
+        $platform.RequiresCompatibilityReview | Should -BeTrue
+        { Test-BISFPlatform $i $c Prepare } | Should -Not -Throw
+        $i.PendingReboot=$true
+        { Test-BISFPlatform $i $c Prepare } | Should -Throw '*reboot*'
+        $i.ProductType=2
+        { Test-BISFPlatform $i $c Prepare } | Should -Throw '*Domain controllers*'
     }
     It 'flags Windows 11 26H1 and 26H2 for VDA compatibility review' {
         $i.ProductType=1
@@ -74,7 +87,7 @@ Describe 'Platform and plan validation' {
         @{Field='ProductType';Value=2},@{Field='Build';Value=20348},
         @{Field='Edition';Value='Core'},@{Field='PSVersion';Value='7.6'},
         @{Field='Is64Bit';Value=$false},@{Field='IsAdmin';Value=$false},
-        @{Field='Version';Value='11.0.0'}
+        @{Field='Version';Value='6.3.9600'},@{Field='Version';Value='invalid'}
     ) {
         $i.$Field=$Value
         { Test-BISFPlatform $i $c Prepare } | Should -Throw
@@ -119,31 +132,42 @@ Describe 'Enabled integration dependencies' {
         . "$root/Modules/Private/Lifecycle.ps1"
     }
     BeforeEach {
-        $c=Read-BISFConfig "$root/GlobalConfig.xml" $root
+        $c=Read-BISFConfig "$root/Tests/Fixtures/OptInBaseline.xml" $root
         Mock Test-BISFPlatform {}
         Mock Test-BISFProtectedLocation {}
         Mock Test-BISFTaskOwnership {}
         Mock Get-BISFLoadedNonSystemProfiles { @() }
         Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-1002' }
     }
+    It 'refuses retained operator seal state even when deferred cleanup is disabled: <Mode>' -ForEach @(@{Mode='Prepare'},@{Mode='Validate'}) {
+        $isolated=Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $stateDir=Join-Path $isolated 'state'
+        $null=New-Item -ItemType Directory -Path $stateDir -Force
+        $statePath=Join-Path $stateDir 'operator-seal.json'
+        $original='{"Status":"Pending","AcceptanceFixture":true}'
+        [IO.File]::WriteAllText($statePath,$original)
+        $c.Finalization.RemoveOperatorProfile=$false
+        { Test-BISFPreflight $c $Mode @() $isolated "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Throw '*operator-seal state*'
+        [IO.File]::ReadAllText($statePath) | Should -BeExactly $original
+    }
     It 'blocks another interactive profile when the readiness option is enabled' {
         $c.Preflight.BlockOtherLoadedProfiles=$true
         Mock Get-BISFLoadedNonSystemProfiles { [pscustomobject]@{SID='S-1-5-21-111-222-333-1005';Loaded=$true} }
-        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Throw '*Other loaded local user profiles*'
+        { Test-BISFPreflight $c Prepare @() $root "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Throw '*Other loaded local user profiles*'
     }
     It 'blocks preparation with insufficient system-drive space' {
         $c.Preflight.MinimumSystemDriveFreeGB=15
         Mock Get-BISFSystemDriveStatus { [pscustomobject]@{Drive='C:';FreeGB=9;TotalGB=100} }
-        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Throw '*Not enough free space*'
+        { Test-BISFPreflight $c Prepare @() $root "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Throw '*Not enough free space*'
     }
     It 'allows sufficient disk space while keeping user-session checks independent' {
         $c.Preflight.MinimumSystemDriveFreeGB=15
         Mock Get-BISFSystemDriveStatus { [pscustomobject]@{Drive='C:';FreeGB=30;TotalGB=100} }
-        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Not -Throw
+        { Test-BISFPreflight $c Prepare @() $root "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Not -Throw
     }
     It 'does not require client or scheduler commands when their features are disabled' {
         Mock Get-Command { throw 'unneeded dependency query' }
-        { Test-BISFPreflight $c Prepare @() $root "$root/GlobalConfig.xml" $null } | Should -Not -Throw
+        { Test-BISFPreflight $c Prepare @() $root "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Not -Throw
     }
     It 'accepts ScheduledTasks commands implemented as CDXML functions' {
         $c.Personalization.Enabled=$true
@@ -151,6 +175,6 @@ Describe 'Enabled integration dependencies' {
             if (($CommandType -band [System.Management.Automation.CommandTypes]::Function) -eq 0) { throw 'ScheduledTasks CDXML command is a Function, not a Cmdlet' }
             [pscustomobject]@{Name=$Name;CommandType='Function'}
         }
-        { Test-BISFPreflight $c Prepare @(Get-BISFPlan $c Prepare) $root "$root/GlobalConfig.xml" $null } | Should -Not -Throw
+        { Test-BISFPreflight $c Prepare @(Get-BISFPlan $c Prepare) $root "$root/Tests/Fixtures/OptInBaseline.xml" $null } | Should -Not -Throw
     }
 }

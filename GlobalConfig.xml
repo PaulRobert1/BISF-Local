@@ -6,23 +6,23 @@
     <Path>.\logs</Path>
   </Logging>
   <Cleanup>
-    <WindowsTemp>false</WindowsTemp>
-    <CurrentUserTemp>false</CurrentUserTemp>
-    <!-- Opt-in: delete unloaded non-system profiles from a quiescent MCS master. -->
-    <UserProfiles>false</UserProfiles>
+    <WindowsTemp>true</WindowsTemp>
+    <CurrentUserTemp>true</CurrentUserTemp>
+    <!-- Enabled by default: delete unloaded non-system profiles from a quiescent MCS master. -->
+    <UserProfiles>true</UserProfiles>
     <MinimumAgeDays>7</MinimumAgeDays>
     <!-- Clears only the invoking user's Recycle Bin when explicitly enabled. -->
-    <RecycleBin>false</RecycleBin>
+    <RecycleBin>true</RecycleBin>
   </Cleanup>
   <!-- Uses Microsoft's built-in Servicing StartComponentCleanup scheduled task. -->
   <Servicing>
     <ComponentCleanup>false</ComponentCleanup>
     <TimeoutMinutes>75</TimeoutMinutes>
   </Servicing>
-  <!-- Optional final seal cleanup: Windows Event Logs (Application/System/Setup)
-       and BISF-generated diagnostic logs. Security audit and Citrix logs preserved. -->
+  <!-- Enabled final seal cleanup: enabled Administrative/Operational event logs
+       across eligible enabled channels. Security auditing and BISF execution logs are preserved. -->
   <LogCleanup>
-    <WindowsEventLogs>false</WindowsEventLogs>
+    <WindowsEventLogs>true</WindowsEventLogs>
     <BISFLogs>false</BISFLogs>
   </LogCleanup>
   <ConfigurationManager>
@@ -50,11 +50,15 @@
     <BlockOtherLoadedProfiles>true</BlockOtherLoadedProfiles>
   </Preflight>
   <!-- Requires UserProfiles=true, FinalAction=Shutdown, administrator logoff,
-       and a protected BIS-F local installation; disabled by default. -->
+       and a protected BIS-F local installation; enabled by default. -->
   <Finalization>
-    <RemoveOperatorProfile>false</RemoveOperatorProfile>
+    <RemoveOperatorProfile>true</RemoveOperatorProfile>
     <TimeoutMinutes>30</TimeoutMinutes>
   </Finalization>
   <!-- None or Shutdown. Shutdown only follows successful Prepare. -->
-  <FinalAction>None</FinalAction>
+  <Explorer>
+    <RemoveQuickAccess>true</RemoveQuickAccess>
+    <ClassicContextMenu>true</ClassicContextMenu>
+  </Explorer>
+  <FinalAction>Shutdown</FinalAction>
 </BISF>

@@ -5,8 +5,8 @@ Local PowerShell-only image preparation, preview and clone personalization.
 .DESCRIPTION
 Unofficial reduced-scope derivative of EUCweb BIS-F 7.1912.7.
 Modified 2026-10-12. GPL-3.0. See LICENSE, UPSTREAM.md and README.md.
-Configuration defaults to GlobalConfig.xml beside this script. Default mode Validate
-performs no image changes; enabled logging may create diagnostic log files.
+Configuration defaults to GlobalConfig.xml beside this script. Default mode Prepare applies enabled cleanup. Use -Mode Validate for checks only
+or -Mode Prepare -WhatIf to preview without applying image operations.
 .EXAMPLE
 .\Invoke-BISF.ps1 -Mode Prepare -WhatIf
 .EXAMPLE
@@ -14,11 +14,16 @@ performs no image changes; enabled logging may create diagnostic log files.
 #>
 [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
 param(
-    [ValidateSet('Validate','Prepare','Personalize','Finalize','VerifyClone')][string]$Mode='Validate',
-    [string]$ConfigPath=(Join-Path $PSScriptRoot 'GlobalConfig.xml')
+    [ValidateSet('Validate','Prepare','Personalize','Finalize','VerifyClone')][string]$Mode='Prepare',
+    [string]$ConfigPath
 )
 $ErrorActionPreference='Stop'
 try {
+    # Windows PowerShell 5.1 may leave PSScriptRoot empty during parameter binding.
+    # Resolve the default only after entering the script; preserve explicit paths.
+    if (-not $PSBoundParameters.ContainsKey('ConfigPath')) {
+        $ConfigPath=Join-Path $PSScriptRoot 'GlobalConfig.xml'
+    }
     Import-Module (Join-Path $PSScriptRoot 'Modules/BISF.Local.psm1') -Force -ErrorAction Stop
     if ($Mode -eq 'VerifyClone') {
         # Read-only local inventory; never applies image operations or writes logs.

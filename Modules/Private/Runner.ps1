@@ -16,6 +16,9 @@ function Get-BISFPlan {
         }
         if ($Config.Cleanup.RecycleBin) { $steps.Add([pscustomobject]@{Id='RecycleBin';Description='Empty the Windows system-drive Recycle Bin'}) }
         if ($Config.Cleanup.UserProfiles) { $steps.Add([pscustomobject]@{Id='UserProfiles';Description='Remove inactive non-system local Windows user profiles through CIM'}) }
+        if ($null -ne $Config.PSObject.Properties['Explorer'] -and ($Config.Explorer.RemoveQuickAccess -or $Config.Explorer.ClassicContextMenu)) {
+            $steps.Add([pscustomobject]@{Id='ExplorerSettings';Description='Remove Quick Access/Home and enable classic context menus for Explorer users'})
+        }
         if ($Config.ConfigurationManager.PrepareIdentityReset) { $steps.Add([pscustomobject]@{Id='CMPrepare';Description='Stop CcmExec and remove SMS client identity'}) }
         if ($Config.Personalization.Enabled -or $Config.ConfigurationManager.PrepareIdentityReset -or $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
             $steps.Add([pscustomobject]@{Id='Lifecycle';Description='Record a preparation generation and optional startup task'})
@@ -52,9 +55,9 @@ function Invoke-BISFLocal {
     try {
         $ScriptRoot=[IO.Path]::GetFullPath($ScriptRoot)
         $ConfigPath=Resolve-BISFPath $ConfigPath $ScriptRoot
-        $hash=(Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash
+        $hash=(Get-BISFFileHash -LiteralPath $ConfigPath).Hash
         $config=Read-BISFConfig $ConfigPath $ScriptRoot
-        if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) {
+        if ((Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $hash) {
             throw 'Configuration changed while reading settings. Retry with a stable configuration.'
         }
         $inventory=Get-BISFInventory
@@ -172,7 +175,7 @@ function Invoke-BISFLocal {
                 }
                 if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
                 $applying=$true
-                if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during preflight.' }
+                if ((Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $hash) { throw 'Configuration changed during preflight.' }
                 $needsState=($Mode -eq 'Prepare' -and (@($plan | ForEach-Object { $_.Id }) -contains 'Lifecycle'))
                 if ($needsState -or $Mode -eq 'Personalize' -or (Test-Path -LiteralPath $statePath)) { $journal=Enter-BISFJournal $ScriptRoot $Mode }
                 if ($needsState) {
@@ -189,7 +192,7 @@ function Invoke-BISFLocal {
                     if ($step.Id -in @('VDAStop','Shutdown','OperatorFinalize','LogCleanup')) { continue }
                     $currentStep=$step.Id
                     if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
-                    if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed during image operations.' }
+                    if ((Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $hash) { throw 'Configuration changed during image operations.' }
                     Write-BISFLog $logger Info $step.Id ('Starting: '+$step.Description)
                     switch ($step.Id) {
                         'Servicing' {
@@ -211,6 +214,7 @@ function Invoke-BISFLocal {
                         'UserProfiles' {
                             Invoke-BISFUserProfileCleanup $profilePlan $logger
                         }
+                        'ExplorerSettings' { Invoke-BISFExplorerCustomization $config $ScriptRoot $logger }
                         'CMPrepare' { $previousCM=Invoke-BISFCMPrepare }
                         'Lifecycle' {
                             if ($config.Personalization.Enabled) { Register-BISFStartupTask (Join-Path $ScriptRoot 'Invoke-BISF.ps1') $ConfigPath }
@@ -235,7 +239,7 @@ function Invoke-BISFLocal {
                 if ($plan.Count -eq 0) { Write-BISFLog $logger Info Prepare 'No image operations enabled. Nothing was sealed or captured.' }
                 $currentStep='Finalize'
                 if ($Mode -eq 'Prepare') { Test-BISFPreparationProfiles $config }
-                if ((Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $hash) { throw 'Configuration changed before final sealing.' }
+                if ((Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $hash) { throw 'Configuration changed before final sealing.' }
                 if ($config.Preflight.BlockPendingReboot -and @(Get-BISFPendingRebootReasons).Count -gt 0) {
                     throw 'Windows servicing now requires a reboot; refusing to finalize or shut down.'
                 }
@@ -254,9 +258,9 @@ function Invoke-BISFLocal {
                     if ($config.LogCleanup.WindowsEventLogs -or $config.LogCleanup.BISFLogs) {
                         $currentStep='LogCleanup'
                         # This is deliberately the last logging/cleanup step before
-                        # requesting shutdown. Security and arbitrary vendor logs stay intact.
-                        Write-BISFLog $logger Info LogCleanup 'Final-stage log hygiene requested. Security audit log and Citrix/WEM logs are not touched.'
-                        Invoke-BISFLogCleanup $config
+                        # requesting shutdown. Security auditing stays intact.
+                        Write-BISFLog $logger Info LogCleanup 'Final-stage log hygiene requested. Eligible enabled Administrative/Operational channels will be cleared; Security auditing is preserved.'
+                        Invoke-BISFLogCleanup $config $logger
                         $results.Add([pscustomobject]@{Id='LogCleanup';Status='Completed';Message='Selected master log cleanup completed.'})
                     }
                     $currentStep='Shutdown'

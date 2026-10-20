@@ -1,6 +1,8 @@
 # Disposable Windows / MCS acceptance gate
 
-Status: **NOT RUN. PR #2 must remain draft.** Hosted Pester tests mock Windows
+Status: **INCOMPLETE. PR #2 and candidate PR #5 remain draft.** Current evidence is
+tracked in [issue #3](https://github.com/PaulRobert1/BISF-Local/issues/3). Some
+native runs have passed; unchecked rows below remain release gates. Hosted Pester tests mock Windows
 profile removal, servicing, event clearing, scheduled workers and shutdown.
 They do not establish that an image is safe to deploy. Do not use SWCTXMASTER05
 for these tests. Use separate backed-up, disposable masters and test catalogs.
@@ -34,7 +36,7 @@ maintenance process. Session scans do not prevent a new Windows logon.
 | Log scope | On fresh snapshots test all four WindowsEventLogs/BISFLogs combinations with explicit Shutdown, both with and without deferred operator cleanup | Only Application/System/Setup and matching BISF-generated files are selected; Security, vendor channels/files, other files and remote locations survive; events created during shutdown are allowed |
 | Ordinary profiles | Make inactive disposable profiles, explicit SID exclusions, a built-in/reserved profile, and a loaded/disconnected session | Only eligible inactive profiles are removed through the provider; operator, reserved and excluded profiles survive; busy profiles block according to configured guards; no raw folder deletion |
 | Dependencies | Put a package copy/config/logs or alternate WEM cache beneath an otherwise eligible disposable profile | That profile is protected; operator finalization rejects a target containing a runtime dependency; ordinary sibling profile remains eligible |
-| Servicing | Enable ComponentCleanup on a serviced disposable master | The requested built-in task actually starts and finishes successfully; a previous recent success does not count; failure/timeout/pending reboot blocks subsequent sealing and shutdown |
+| Servicing | Follow the separate-servicing policy in PRODUCTION-RUNBOOK.md and prepare with ComponentCleanup=false; separately test opt-in failure guards | Maintenance completion and required reboots are evidenced before sealing; unverifiable optional task completion, failure, timeout and pending reboot refuse further preparation. The optional task integration has no qualified success path and must not be presented as one |
 | Recycle Bin/temp | Add expendable eligible and too-new temp files, unrelated files and current-user recycle items | Age/path guards hold; only selected temp roots and invoking user's system-drive recycle contents change |
 | Protected SYSTEM handoff | Enable UserProfiles and RemoveOperatorProfile with Shutdown; run Prepare | Task is SYSTEM/highest, triggerless, exact package action, no execution-policy bypass; protected state exists; Prepare returns Staged without logoff, deletion of operator, or immediate shutdown |
 | Disconnect vs sign-out | Disconnect RDP, inspect from hypervisor/second admin as appropriate, then restore snapshot and repeat with normal sign-out | Disconnect keeps profile loaded and causes no deletion/shutdown; normal sign-out permits provider removal only after all nonsystem profiles unload and references drain |
@@ -94,3 +96,12 @@ Record pass/fail and evidence links for each row on each OS. Keep PR #2 draft
 until the complete sign-out -> profile removal -> selected log cleanup ->
 shutdown -> capture -> clone workflow passes on both platforms and is reviewed.
 Merging still requires the operator's authorization.
+
+## Configuration-specific WEM scope (2026-10-16)
+
+The operator confirms the master has no WEM backend configuration. Backend
+registration, settings synchronization and persistence are **NOT APPLICABLE to
+this configuration**; no success is inferred. Verify that the installed but
+unconfigured agent is tolerated and its files/settings and detected cache paths
+are preserved. If a WEM backend is configured later, qualify those external
+integration checks before declaring that configuration accepted.

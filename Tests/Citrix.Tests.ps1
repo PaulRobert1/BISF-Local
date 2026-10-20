@@ -4,14 +4,14 @@ BeforeAll {
     if (Test-Path "$root/Modules/Private/Citrix.ps1") { . "$root/Modules/Private/Citrix.ps1" }
 }
 Describe 'Citrix XML and MCS validation' {
-    BeforeEach { $c=Read-BISFConfig "$root/GlobalConfig.xml" $root }
+    BeforeEach { $c=Read-BISFConfig "$root/Tests/Fixtures/OptInBaseline.xml" $root }
     It 'enables VDA and WEM release checks in the supplied configuration' {
         $c.Citrix.VDA.Enabled | Should -BeTrue
         $c.Citrix.WEM.Enabled | Should -BeTrue
         $c.Citrix.VDA.StopBeforeShutdown | Should -BeFalse
     }
     It 'keeps older configurations without Citrix disabled' {
-        (Get-Content "$root/GlobalConfig.xml" -Raw) -replace '(?s)  <Citrix>.*?</Citrix>\s*','' | Set-Content "$TestDrive/old.xml"
+        (Get-Content "$root/Tests/Fixtures/OptInBaseline.xml" -Raw) -replace '(?s)  <Citrix>.*?</Citrix>\s*','' | Set-Content "$TestDrive/old.xml"
         $old=Read-BISFConfig "$TestDrive/old.xml" $root
         $old.Citrix.VDA.Enabled | Should -BeFalse
         $old.Citrix.WEM.Enabled | Should -BeFalse
@@ -29,7 +29,7 @@ Describe 'Citrix XML and MCS validation' {
 }
 Describe 'Citrix prerequisite checks preserve installed configuration' {
     BeforeEach {
-        $c=Read-BISFConfig "$root/GlobalConfig.xml" $root
+        $c=Read-BISFConfig "$root/Tests/Fixtures/OptInBaseline.xml" $root
         $script:services=@(
             [pscustomobject]@{Name='BrokerAgent';DisplayName='Citrix Desktop Service';StartMode='Auto';State='Running';StartName='LocalSystem';PathName='"C:\Citrix\BrokerAgent.exe"'},
             [pscustomobject]@{Name='PvsVmAgent';DisplayName='Citrix Pvs for VMs Agent';StartMode='Manual';State='Stopped';StartName='LocalSystem';PathName='"C:\Citrix\Identity.exe"'},

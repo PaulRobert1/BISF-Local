@@ -89,7 +89,7 @@ function Test-BISFOperatorSealTaskOwnership {
 function New-BISFOperatorSealState {
     param($Config,$Target,[string]$ConfigPath,[string]$ExpectedHash)
     if ($ExpectedHash -notmatch '^[A-Fa-f0-9]{64}$' -or
-        (Get-FileHash -LiteralPath $ConfigPath -Algorithm SHA256 -ErrorAction Stop).Hash -ne $ExpectedHash) {
+        (Get-BISFFileHash -LiteralPath $ConfigPath).Hash -ne $ExpectedHash) {
         throw 'Configuration changed before operator staging or no confirmed hash was supplied.'
     }
     [pscustomobject]@{
@@ -178,7 +178,7 @@ function Test-BISFOperatorSealCandidate {
     if (-not $Config.Finalization.RemoveOperatorProfile -or $Config.FinalAction -ne 'Shutdown') {
         throw 'Operator seal was disabled or shutdown no longer approved.'
     }
-    if ($State.ConfigHash -ne (Get-FileHash -LiteralPath $Config.Path -Algorithm SHA256 -ErrorAction Stop).Hash) {
+    if ($State.ConfigHash -ne (Get-BISFFileHash -LiteralPath $Config.Path).Hash) {
         throw 'Configuration changed since staging operator seal.'
     }
     $identity=Get-BISFIdentity
@@ -257,11 +257,9 @@ function Invoke-BISFOperatorSealFinalizer {
         $target=Get-BISFOperatorSealProfile $state $config
         if (-not $target.Ready) { throw 'Operator profile became busy before final deletion; shutdown refused.' }
         Remove-BISFCimUserProfile $target.Profile
-        if (@(Get-CimInstance -ClassName Win32_UserProfile -Filter "SID='$($state.OperatorSid)'" -ErrorAction Stop).Count -gt 0) {
-            throw 'Windows still reports the operator profile after deletion.'
-        }
+        Assert-BISFUserProfileRemoved -SID $state.OperatorSid -LocalPath $state.OperatorPath
         Write-BISFLog $logger Info Finalize ("Operator profile removed: SID={0}; local path={1}" -f $state.OperatorSid,$state.OperatorPath)
-        # No restart/shutdown unless registration is cleaned and the pending state
+        # No restart/shutdown unless profile files/registration are absent and pending state
         # is consumed. If cleanup fails, manual recovery is required.
         Unregister-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -Confirm:$false -ErrorAction Stop
         $statePath=Get-BISFOperatorSealStatePath $ScriptRoot
@@ -270,7 +268,7 @@ function Invoke-BISFOperatorSealFinalizer {
         Write-BISFLog $logger Info Finalize 'Operator cleanup and staging-state removal succeeded; optional last-stage log cleanup follows. Requesting shutdown afterwards.'
         # Do not write diagnostics between successful log deletion and shutdown.
         # A failed cleanup refuses shutdown and writes an error to the log.
-        Invoke-BISFLogCleanup $config
+        Invoke-BISFLogCleanup $config $logger
         Stop-Computer -Confirm:$false -ErrorAction Stop
         return 0
     } catch {

@@ -9,7 +9,14 @@ Describe 'Source-only runtime audit' {
         @{Source='Invoke-Expression $command'},@{Source='& $command'},
         @{Source='[Diagnostics.Process]::Start("tool")'},
         @{Source='Set-ItemProperty HKLM:\Software\Policies\BISF -Name X -Value 1'},
-        @{Source='netsh int tcp set global rss=disable'}
+        @{Source='netsh int tcp set global rss=disable'},
+        @{Source='Invoke-WebRequest https://example.invalid'},
+        @{Source='Invoke-RestMethod https://example.invalid'},
+        @{Source='Install-Module Pester'},@{Source='Find-Module Pester'},
+        @{Source='New-Object System.Net.WebClient'},
+        @{Source='[System.Net.Http.HttpClient]::new()'},
+        @{Source='Start-BitsTransfer https://example.invalid/file C:\file'},
+        @{Source='Test-NetConnection example.invalid'}
     ) {
         @(Get-BISFSourceViolations -Source $Source).Count | Should -BeGreaterThan 0
     }
@@ -18,14 +25,14 @@ Describe 'Source-only runtime audit' {
         @(Get-BISFSourceViolations -Source 'New-ScheduledTaskAction -Execute (Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe")').Count | Should -Be 0
     }
     It 'parses all runtime scripts and rejects forbidden runtime operations' {
-        $files=@(Get-Item "$root/Invoke-BISF.ps1") + @(Get-ChildItem "$root/Modules" -Recurse -File | Where-Object Extension -in '.ps1','.psm1')
+        $files=@(Get-Item "$root/Invoke-BISF.ps1", "$root/Apply-BISFUserSettings.ps1") + @(Get-ChildItem "$root/Modules" -Recurse -File | Where-Object Extension -in '.ps1','.psm1')
         $files.Count | Should -BeGreaterThan 5
         foreach ($f in $files) {
             $violations=@(Get-BISFSourceViolations -Source (Get-Content $f.FullName -Raw) -AllowModuleLoader:($f.Extension -eq '.psm1'))
             $violations | Should -BeNullOrEmpty -Because $f.Name
         }
     }
-    It 'contains no executable or compiled payload' {
-        @(Get-ChildItem $root -Recurse -File | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and $_.Extension -in '.exe','.dll','.com','.bat','.cmd','.msi' }).Count | Should -Be 0
+    It 'contains no compiled payload except the explicitly requested root launcher' {
+        @(Get-ChildItem $root -Recurse -File | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and $_.FullName -ne (Join-Path $root 'BISF-Local.exe') -and $_.Extension -in '.exe','.dll','.com','.bat','.cmd','.msi' }).Count | Should -Be 0
     }
 }

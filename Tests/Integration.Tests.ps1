@@ -11,7 +11,7 @@ BeforeAll {
 Describe 'Full workflow safety and results' {
     BeforeEach {
         $cfg=Join-Path $TestDrive ([guid]::NewGuid().ToString()+'.xml')
-        (Get-Content "$root/GlobalConfig.xml" -Raw).Replace('<Enabled>true</Enabled>','<Enabled>false</Enabled>') | Set-Content $cfg
+        (Get-Content "$root/Tests/Fixtures/OptInBaseline.xml" -Raw).Replace('<Enabled>true</Enabled>','<Enabled>false</Enabled>') | Set-Content $cfg
         $script:trace=New-Object 'System.Collections.Generic.List[string]'
         $script:pending=$false; $script:lastCompletion=$null
         Mock Enter-BISFJournal { $script:pending=$true; 'journal' }
@@ -36,10 +36,14 @@ Describe 'Full workflow safety and results' {
         Mock Stop-Computer { $script:trace.Add('shutdown') }
     }
     It 'validates without image mutations or log creation when disabled' {
+        $logPath=Join-Path $TestDrive ('disabled-logs-'+[guid]::NewGuid().ToString('N'))
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Logging.Path=[string]$logPath
+        $xml.Save($cfg)
         $r=Invoke-BISFLocal -ConfigPath $cfg -ScriptRoot $root
         $r.ExitCode | Should -Be 0
         $script:trace.Count | Should -Be 0
-        Test-Path (Join-Path $root 'logs') | Should -BeFalse
+        Test-Path $logPath | Should -BeFalse
     }
     It 'previews selected operations without mutations' {
         (Get-Content $cfg -Raw).Replace('<PrepareIdentityReset>false','<PrepareIdentityReset>true').Replace('<FinalAction>None','<FinalAction>Shutdown') | Set-Content $cfg
@@ -460,7 +464,7 @@ Describe 'Full workflow safety and results' {
 Describe 'Citrix final shutdown boundary' {
     BeforeEach {
         $cfg=Join-Path $TestDrive ([guid]::NewGuid().ToString()+'.xml')
-        [xml]$xml=Get-Content "$root/GlobalConfig.xml" -Raw
+        [xml]$xml=Get-Content "$root/Tests/Fixtures/OptInBaseline.xml" -Raw
         $xml.BISF.Logging.Enabled='false'
         $xml.BISF.Citrix.VDA.StopBeforeShutdown='true'
         $xml.BISF.FinalAction='Shutdown'

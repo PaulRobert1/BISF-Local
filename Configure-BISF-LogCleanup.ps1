@@ -65,7 +65,7 @@ $form.Controls.Add($title)
 $eventCheck=New-Object System.Windows.Forms.CheckBox
 $eventCheck.Location=New-Object System.Drawing.Point(23,55)
 $eventCheck.Size=New-Object System.Drawing.Size(560,27)
-$eventCheck.Text='Clear Windows Event Logs: Application, System, Setup'
+$eventCheck.Text='Clear enabled Administrative/Operational logs (except Security)'
 $eventCheck.Checked=$ev
 $form.Controls.Add($eventCheck)
 
