@@ -47,6 +47,9 @@
       <xs:element name="RemoveOperatorProfile" type="xs:boolean"/>
       <xs:element name="TimeoutMinutes"><xs:simpleType><xs:restriction base="xs:positiveInteger"><xs:maxInclusive value="90"/></xs:restriction></xs:simpleType></xs:element>
     </xs:sequence></xs:complexType></xs:element>
+    <xs:element name="Explorer" minOccurs="0"><xs:complexType><xs:sequence>
+      <xs:element name="RemoveQuickAccess" type="xs:boolean"/><xs:element name="ClassicContextMenu" type="xs:boolean"/>
+    </xs:sequence></xs:complexType></xs:element>
     <xs:element name="FinalAction" type="FinalAction"/>
   </xs:sequence><xs:attribute name="SchemaVersion" use="required" fixed="1" type="xs:string"/></xs:complexType></xs:element>
 </xs:schema>

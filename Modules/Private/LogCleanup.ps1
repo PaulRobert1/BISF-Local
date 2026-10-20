@@ -1,10 +1,15 @@
 # BISF-Local — explicit master-only log hygiene.
-# This module intentionally excludes Security auditing and arbitrary Citrix/WEM logs.
+# Security auditing and disabled/Analytic/Debug channels are preserved.
 # Windows Event Logs are cleared through supported .NET APIs, not by deleting .evtx files.
 
+function Get-BISFEventLogInventory {
+    Get-WinEvent -ListLog * -Force -ErrorAction Stop
+}
 function Get-BISFEventLogCleanupChannels {
-    # Fixed allowlist. Never enumerate and delete every event channel.
-    @('Application','System','Setup')
+    @(Get-BISFEventLogInventory | Where-Object {
+        $_.LogName -ne 'Security' -and $_.IsEnabled -and
+        [string]$_.LogType -in @('Administrative','Operational')
+    } | ForEach-Object LogName | Sort-Object -Unique)
 }
 function Test-BISFLogCleanupSettings {
     param($Config)
@@ -36,10 +41,17 @@ function Test-BISFLogCleanupPreflight {
         Test-BISFProtectedLocation $dir
     }
 }
+function Get-BISFEventLogMetadata {
+    param([string]$Channel)
+    Get-WinEvent -ListLog ([WildcardPattern]::Escape($Channel)) -ErrorAction Stop
+}
 function Clear-BISFEventLogChannel {
     param([Parameter(Mandatory=$true)][string]$Channel)
-    if ($Channel -cnotin @(Get-BISFEventLogCleanupChannels)) {
-        throw "Refusing to clear an event channel outside the allowlist: $Channel"
+    if ($Channel -eq 'Security') { throw 'Security is outside the eligible allowlist.' }
+    $metadata=@(Get-BISFEventLogMetadata $Channel)
+    if ($metadata.Count -ne 1 -or $metadata[0].LogName -cne $Channel -or -not $metadata[0].IsEnabled -or
+        [string]$metadata[0].LogType -notin @('Administrative','Operational')) {
+        throw "Refusing to clear an event channel outside the eligible allowlist: $Channel"
     }
     [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.ClearLog($Channel)
 }
@@ -73,17 +85,22 @@ function Remove-BISFLocalLogs {
     }
 }
 function Invoke-BISFLogCleanup {
-    param($Config)
+    param($Config,$Logger)
     Test-BISFLogCleanupSettings $Config
     if ($Config.LogCleanup.WindowsEventLogs) {
-        # Fixed set of non-Security channels. Windows may write new events after
-        # clearing; this is final-stage hygiene, not a guarantee of empty logs.
+        $failed=@()
         foreach ($channel in Get-BISFEventLogCleanupChannels) {
-            Clear-BISFEventLogChannel $channel
+            try {
+                Clear-BISFEventLogChannel $channel
+                Write-BISFLog $Logger Info LogCleanup "Cleared event channel: $channel"
+            } catch {
+                $failed+=$channel
+                Write-BISFLog $Logger Error LogCleanup "Failed event channel: $channel; $($_.Exception.Message)"
+            }
         }
+        if($failed.Count){throw ('Event log cleanup failed; shutdown blocked: '+($failed -join ', '))}
     }
     if ($Config.LogCleanup.BISFLogs) {
         Remove-BISFLocalLogs $Config.Logging.Path
     }
 }
-

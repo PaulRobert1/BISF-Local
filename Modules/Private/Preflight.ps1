@@ -116,6 +116,7 @@ function Test-BISFPreflight {
         throw 'Existing operator-seal state detected. Resolve the earlier sealing attempt before preparing again.'
     }
     $ids = @($Plan | ForEach-Object { $_.Id })
+    if ($ids -contains 'ExplorerSettings') { Test-BISFExplorerPreflight $ScriptRoot }
     if ($Config.ConfigurationManager.PrepareIdentityReset -or $Config.ConfigurationManager.CloneTrustedRootKeyReset) {
         $svc = Get-Service -Name CcmExec -ErrorAction Stop
         if ($svc.StartType -eq 'Disabled') { throw 'CcmExec is disabled; fix the client before preparing.' }

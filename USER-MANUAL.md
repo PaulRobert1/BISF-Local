@@ -32,7 +32,7 @@ BISF-Local.exe -Mode Prepare
 
 ## 2. Choose the cleanup
 
-Edit the existing `GlobalConfig.xml`; keep its element order. Temp, user-profile, Recycle Bin, event-log, BISF-log and operator-profile cleanup default to `true`; `FinalAction` defaults to `Shutdown`. Set unwanted options to `false` before running. Configuration Manager resets, clone personalization, the separate VDA-stop option, and component cleanup remain disabled. These cannot all be combined with operator-profile finalization.
+Edit the existing `GlobalConfig.xml`; keep its element order. Temp, user-profile, Recycle Bin, event-log and operator-profile cleanup default to `true`; `FinalAction` defaults to `Shutdown`. BISF execution logs are retained (`LogCleanup.BISFLogs=false`). Both Explorer options below default to `true`. Set unwanted options to `false` before running. Configuration Manager resets, clone personalization, the separate VDA-stop option, and component cleanup remain disabled. These cannot all be combined with operator-profile finalization.
 
 | Setting | What it does |
 | --- | --- |
@@ -41,9 +41,11 @@ Edit the existing `GlobalConfig.xml`; keep its element order. Temp, user-profile
 | `Cleanup.MinimumAgeDays` | Sets the temporary-file age threshold; default 7 days. This does not limit profile deletion by age. |
 | `Cleanup.UserProfiles` | Removes eligible unloaded local profiles through Windows. |
 | `Cleanup.RecycleBin` | Empties the invoking user's system-drive Recycle Bin. |
-| `LogCleanup.WindowsEventLogs` | Clears Application, System and Setup logs. |
-| `LogCleanup.BISFLogs` | Removes BISF-generated diagnostic logs. |
+| `LogCleanup.WindowsEventLogs` | Clears enabled Administrative/Operational channels, including vendor channels; preserves Security and disabled/Analytic/Debug channels. |
+| `LogCleanup.BISFLogs` | Leave false to retain detailed execution logs on the master. |
 | `Finalization.RemoveOperatorProfile` | Removes the operator's eligible profile after normal sign-out, then shuts down. |
+| `Explorer.RemoveQuickAccess` | Removes Quick Access/Home from Explorer; opens This PC. |
+| `Explorer.ClassicContextMenu` | Requests the classic right-click menu at Explorer sign-in. |
 | `FinalAction` | `None` leaves Windows running; `Shutdown` requests shutdown after successful preparation. |
 
 Profiles displayed as **Account Unknown** are eligible when Windows reports a valid user SID and a safe, unloaded profile. System, loaded, excluded and protected profiles are preserved; missing or unsafe paths are refused. Review the preview before deletion.
@@ -58,7 +60,7 @@ To choose log cleanup using checkboxes:
 .\Configure-BISF-LogCleanup.ps1
 ```
 
-This only saves configuration. Both log-cleanup options require `FinalAction=Shutdown`. Security and dedicated Citrix/WEM/FSLogix event channels are preserved.
+This only saves configuration. Both log-cleanup options require `FinalAction=Shutdown`. Security is preserved. Failures clearing eligible channels block shutdown. Explorer settings apply to new and existing users at Explorer sign-in; keep the installed package in place. Disabling an Explorer option skips it; it does not reverse settings already applied. Shell behavior can vary between Windows builds.
 
 ## 3. Preview and prepare
 

@@ -7,9 +7,9 @@ Describe 'Requested packaged preparation defaults' {
   $c=Read-BISFConfig (Join-Path $root 'GlobalConfig.xml') $root
   {Test-BISFOperatorSealSettings $c;Test-BISFCitrixSettings $c;Test-BISFLogCleanupSettings $c}|Should -Not -Throw
   $ids=@(Get-BISFPlan $c Prepare|ForEach-Object Id)
-  ($ids -join ',')|Should -Be 'WindowsTemp,CurrentUserTemp,RecycleBin,UserProfiles,LogCleanup,OperatorFinalize'
+  ($ids -join ',')|Should -Be 'WindowsTemp,CurrentUserTemp,RecycleBin,UserProfiles,ExplorerSettings,LogCleanup,OperatorFinalize'
   $c.LogCleanup.WindowsEventLogs|Should -BeTrue
-  $c.LogCleanup.BISFLogs|Should -BeTrue
+  $c.LogCleanup.BISFLogs|Should -BeFalse
   $c.FinalAction|Should -Be 'Shutdown'
  }
  It 'keeps Configuration Manager and incompatible or unverifiable operations disabled' {
@@ -26,6 +26,7 @@ Describe 'Requested packaged preparation defaults' {
   [xml]$xml=Get-Content (Join-Path $root 'GlobalConfig.xml') -Raw
   foreach($n in 'WindowsTemp','CurrentUserTemp','RecycleBin','UserProfiles'){$xml.BISF.Cleanup.$n='false'}
   $xml.BISF.LogCleanup.WindowsEventLogs='false';$xml.BISF.LogCleanup.BISFLogs='false'
+  $xml.BISF.Explorer.RemoveQuickAccess='false';$xml.BISF.Explorer.ClassicContextMenu='false'
   $xml.BISF.Finalization.RemoveOperatorProfile='false';$xml.BISF.FinalAction='None'
   $p=Join-Path $TestDrive 'disabled.xml';$xml.Save($p);$c=Read-BISFConfig $p $root
   @(Get-BISFPlan $c Prepare).Count|Should -Be 0

@@ -83,6 +83,11 @@ function Read-BISFConfig {
         $logCleanup.WindowsEventLogs=[Xml.XmlConvert]::ToBoolean($b.LogCleanup.WindowsEventLogs.Trim())
         $logCleanup.BISFLogs=[Xml.XmlConvert]::ToBoolean($b.LogCleanup.BISFLogs.Trim())
     }
+    $explorer=[pscustomobject]@{RemoveQuickAccess=$false;ClassicContextMenu=$false}
+    if ($null -ne $doc.SelectSingleNode('/BISF/Explorer')) {
+        $explorer.RemoveQuickAccess=[Xml.XmlConvert]::ToBoolean($b.Explorer.RemoveQuickAccess.Trim())
+        $explorer.ClassicContextMenu=[Xml.XmlConvert]::ToBoolean($b.Explorer.ClassicContextMenu.Trim())
+    }
     $finalization=[pscustomobject]@{RemoveOperatorProfile=$false;TimeoutMinutes=30}
     if ($null -ne $doc.SelectSingleNode('/BISF/Finalization')) {
         $finalization.RemoveOperatorProfile=[Xml.XmlConvert]::ToBoolean($b.Finalization.RemoveOperatorProfile.Trim())
@@ -106,6 +111,7 @@ function Read-BISFConfig {
         Servicing = $servicing
         LogCleanup = $logCleanup
         Finalization = $finalization
+        Explorer = $explorer
         ConfigurationManager = [pscustomobject]@{
             PrepareIdentityReset = [Xml.XmlConvert]::ToBoolean($b.ConfigurationManager.PrepareIdentityReset.Trim())
             CloneTrustedRootKeyReset = [Xml.XmlConvert]::ToBoolean($b.ConfigurationManager.CloneTrustedRootKeyReset.Trim())

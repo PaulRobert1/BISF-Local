@@ -25,7 +25,7 @@ Describe 'Source-only runtime audit' {
         @(Get-BISFSourceViolations -Source 'New-ScheduledTaskAction -Execute (Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe")').Count | Should -Be 0
     }
     It 'parses all runtime scripts and rejects forbidden runtime operations' {
-        $files=@(Get-Item "$root/Invoke-BISF.ps1") + @(Get-ChildItem "$root/Modules" -Recurse -File | Where-Object Extension -in '.ps1','.psm1')
+        $files=@(Get-Item "$root/Invoke-BISF.ps1", "$root/Apply-BISFUserSettings.ps1") + @(Get-ChildItem "$root/Modules" -Recurse -File | Where-Object Extension -in '.ps1','.psm1')
         $files.Count | Should -BeGreaterThan 5
         foreach ($f in $files) {
             $violations=@(Get-BISFSourceViolations -Source (Get-Content $f.FullName -Raw) -AllowModuleLoader:($f.Extension -eq '.psm1'))

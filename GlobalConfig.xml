@@ -19,11 +19,11 @@
     <ComponentCleanup>false</ComponentCleanup>
     <TimeoutMinutes>75</TimeoutMinutes>
   </Servicing>
-  <!-- Enabled final seal cleanup: Windows Event Logs (Application/System/Setup)
-       and BISF-generated diagnostic logs. Security audit and Citrix logs preserved. -->
+  <!-- Enabled final seal cleanup: enabled Administrative/Operational event logs
+       across eligible enabled channels. Security auditing and BISF execution logs are preserved. -->
   <LogCleanup>
     <WindowsEventLogs>true</WindowsEventLogs>
-    <BISFLogs>true</BISFLogs>
+    <BISFLogs>false</BISFLogs>
   </LogCleanup>
   <ConfigurationManager>
     <PrepareIdentityReset>false</PrepareIdentityReset>
@@ -56,5 +56,9 @@
     <TimeoutMinutes>30</TimeoutMinutes>
   </Finalization>
   <!-- None or Shutdown. Shutdown only follows successful Prepare. -->
+  <Explorer>
+    <RemoveQuickAccess>true</RemoveQuickAccess>
+    <ClassicContextMenu>true</ClassicContextMenu>
+  </Explorer>
   <FinalAction>Shutdown</FinalAction>
 </BISF>

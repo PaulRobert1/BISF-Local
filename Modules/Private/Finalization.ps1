@@ -268,7 +268,7 @@ function Invoke-BISFOperatorSealFinalizer {
         Write-BISFLog $logger Info Finalize 'Operator cleanup and staging-state removal succeeded; optional last-stage log cleanup follows. Requesting shutdown afterwards.'
         # Do not write diagnostics between successful log deletion and shutdown.
         # A failed cleanup refuses shutdown and writes an error to the log.
-        Invoke-BISFLogCleanup $config
+        Invoke-BISFLogCleanup $config $logger
         Stop-Computer -Confirm:$false -ErrorAction Stop
         return 0
     } catch {

@@ -7,12 +7,20 @@ BeforeAll {
 }
 Describe 'Opt-in log cleanup XML and strict selection' {
     BeforeEach {
+        Mock Get-BISFEventLogInventory {
+            foreach($n in 'Application','System','Setup','Vendor/Operational','Security'){
+                [pscustomobject]@{LogName=$n;IsEnabled=$true;LogType='Operational'}
+            }
+            [pscustomobject]@{LogName='Disabled';IsEnabled=$false;LogType='Operational'}
+            [pscustomobject]@{LogName='Analytic';IsEnabled=$true;LogType='Analytic'}
+        }
+        Mock Get-BISFEventLogMetadata {Get-BISFEventLogInventory|Where-Object LogName -eq $Channel}
         $c=Read-BISFConfig "$root/Tests/Fixtures/OptInBaseline.xml" $root
     }
     It 'defaults both cleanup switches to disabled' {
         $c.LogCleanup.WindowsEventLogs | Should -BeFalse
         $c.LogCleanup.BISFLogs | Should -BeFalse
-        @(Get-BISFEventLogCleanupChannels) | Should -Be @('Application','System','Setup')
+        @(Get-BISFEventLogCleanupChannels) | Should -Be @('Application','Setup','System','Vendor/Operational')
     }
     It 'does not automatically clear logs during ordinary master preparation' {
         Mock Clear-BISFEventLogChannel { throw 'Must not clear Windows event logs' }
@@ -28,11 +36,11 @@ Describe 'Opt-in log cleanup XML and strict selection' {
         $c.LogCleanup.BISFLogs=$true
         { Test-BISFLogCleanupSettings $c } | Should -Throw '*FinalAction=Shutdown*'
     }
-    It 'never accepts Security or arbitrary operational channels' {
+    It 'never accepts Security or ineligible channels' {
         { Clear-BISFEventLogChannel 'Security' } | Should -Throw '*allowlist*'
-        { Clear-BISFEventLogChannel 'Microsoft-Windows-PowerShell/Operational' } | Should -Throw '*allowlist*'
+        { Clear-BISFEventLogChannel 'Analytic' } | Should -Throw '*allowlist*'
     }
-    It 'uses the fixed three Windows channels and optional own logs only when selected' {
+    It 'uses eligible Windows and vendor channels and optional own logs only when selected' {
         $c.FinalAction='Shutdown'
         $c.LogCleanup.WindowsEventLogs=$true
         $c.LogCleanup.BISFLogs=$true
@@ -41,8 +49,17 @@ Describe 'Opt-in log cleanup XML and strict selection' {
         Mock Clear-BISFEventLogChannel { $script:channels.Add($Channel) }
         Mock Remove-BISFLocalLogs { $script:own++ }
         Invoke-BISFLogCleanup $c
-        ($script:channels -join ',') | Should -Be 'Application,System,Setup'
+        ($script:channels -join ',') | Should -Be 'Application,Setup,System,Vendor/Operational'
         $script:own | Should -Be 1
+    }
+    It 'attempts remaining channels after a failure and blocks shutdown with retained evidence' {
+        $c.FinalAction='Shutdown';$c.LogCleanup.WindowsEventLogs=$true
+        Mock Clear-BISFEventLogChannel {if($Channel -eq 'Application'){throw 'denied'}}
+        Mock Write-BISFLog {}
+        {Invoke-BISFLogCleanup $c}|Should -Throw '*shutdown blocked*'
+        Should -Invoke Clear-BISFEventLogChannel -Times 4
+        Should -Invoke Write-BISFLog -Times 1 -ParameterFilter {$Level -eq 'Error'}
+        Should -Invoke Write-BISFLog -Times 3 -ParameterFilter {$Level -eq 'Info'}
     }
     It 'refuses log clearing without a readable target event channel' {
         $c.FinalAction='Shutdown'
