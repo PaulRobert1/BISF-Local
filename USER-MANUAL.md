@@ -60,7 +60,7 @@ To choose log cleanup using checkboxes:
 .\Configure-BISF-LogCleanup.ps1
 ```
 
-This only saves configuration. Both log-cleanup options require `FinalAction=Shutdown`. Security is preserved. Failures clearing eligible channels block shutdown. Explorer settings apply to new and existing users at Explorer sign-in; keep the installed package in place. Disabling an Explorer option skips it; it does not reverse settings already applied. Shell behavior can vary between Windows builds.
+This only saves configuration. Both log-cleanup options require `FinalAction=Shutdown`. Security is preserved. Permission-protected channels are retained with a warning; other clearing failures block shutdown. Explorer settings apply to new and existing users at Explorer sign-in; keep the installed package in place. Disabling an Explorer option skips it; it does not reverse settings already applied. Shell behavior can vary between Windows builds.
 
 ## 3. Preview and prepare
 

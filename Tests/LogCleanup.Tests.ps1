@@ -52,6 +52,15 @@ Describe 'Opt-in log cleanup XML and strict selection' {
         ($script:channels -join ',') | Should -Be 'Application,Setup,System,Vendor/Operational'
         $script:own | Should -Be 1
     }
+    It 'preserves permission-protected logs with a warning and clears writable channels' {
+        $c.FinalAction='Shutdown';$c.LogCleanup.WindowsEventLogs=$true
+        Mock Clear-BISFEventLogChannel {if($Channel -eq 'Application'){throw (New-Object UnauthorizedAccessException('Read-only channel'))}}
+        Mock Write-BISFLog {}
+        {Invoke-BISFLogCleanup $c}|Should -Not -Throw
+        Should -Invoke Clear-BISFEventLogChannel -Times 4
+        Should -Invoke Write-BISFLog -Times 1 -ParameterFilter {$Level -eq 'Warning' -and $Message -match 'permission-protected'}
+        Should -Invoke Write-BISFLog -Times 3 -ParameterFilter {$Level -eq 'Info'}
+    }
     It 'attempts remaining channels after a failure and blocks shutdown with retained evidence' {
         $c.FinalAction='Shutdown';$c.LogCleanup.WindowsEventLogs=$true
         Mock Clear-BISFEventLogChannel {if($Channel -eq 'Application'){throw 'denied'}}

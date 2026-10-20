@@ -84,7 +84,7 @@ and final sealing, and passes that same hash into operator staging. An edit duri
 servicing must be reviewed through a new Prepare; it cannot silently enable a log
 option in the SYSTEM worker.
 
-Enabled Administrative and Operational event channels, including vendor channels, are cleared at final sealing. Security and disabled/Analytic/Debug channels are preserved. Each result is recorded in the BISF execution log; a failure blocks shutdown. Windows can generate new events during shutdown.
+Enabled Administrative and Operational event channels, including vendor channels, are cleared at final sealing. Security and disabled/Analytic/Debug channels are preserved. Windows permission-protected channels are retained and reported as warnings; other clearing failures still block shutdown. Each result is recorded in the BISF execution log. Windows can generate new events during shutdown.
 
 `LogCleanup.WindowsEventLogs=true`, `LogCleanup.BISFLogs=false`: detailed BISF execution logs remain on the master. Log cleanup requires `FinalAction=Shutdown`. With operator-profile removal enabled, final cleanup and automatic shutdown follow normal operator sign-out.
 

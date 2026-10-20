@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-20",
+  "scope": "Requested Explorer settings, eligible event-log clearing, retained BISF diagnostics and automatic shutdown; not full Citrix/WEM production certification",
+  "basePackageCommit": "6f0ff984b7b076666641c2c581663b738a28c76d",
+  "logCleanupSha256": "d757c59e9e5e5f120b736d03e99a4e8f8d2816ded09f96622b3cf15c93cbd5a9",
+  "nativeTests": {
+    "passed": 290,
+    "failed": 0,
+    "skipped": 0
+  },
+  "windows11": {
+    "build": 26200,
+    "freshUserActiveSetup": true,
+    "quickAccessHomeAbsentVisual": true,
+    "normalRightClickClassicMenuVisual": true,
+    "defaultPreparationNormalSignOutAndPowerOffObserved": true,
+    "postbootLogRetention": "Not measured on MCS clone because its OS disk is nonpersistent"
+  },
+  "server2025": {
+    "build": 26100,
+    "focusedNewSettingsAndPowerOffObserved": true,
+    "persistentMasterPostboot": {
+      "retainedLogBytes": 52530,
+      "clearedEventChannels": 418,
+      "permissionProtectedChannels": [
+        "Microsoft-Windows-LiveId/Operational"
+      ],
+      "cleanupErrors": 0,
+      "applicationTestEventsRemaining": 0,
+      "securityOldestUtc": "2026-10-15T17:18:43.6974405Z",
+      "securityPredatesPreparation": true
+    },
+    "scope": "Profile/temp cleanup disabled for focused new-settings and log-retention test"
+  },
+  "fix": "Preserve channels when Windows denies Clear permission; log a warning; continue to fail on other clearing errors",
+  "safetyChecksObserved": [
+    "Pending reboot refused preparation",
+    "Other loaded profile refused preparation"
+  ],
+  "evidenceLocal": {
+    "visual": "evidence/w11/explorer-menu.png",
+    "nativeTests": "evidence/server/mcs-clone/1296cd9d8d2c4994a13c12f65a53afcc.txt",
+    "persistentMaster": "evidence/server/persistent-explorer-seal/postboot-retention.txt",
+    "logs": "evidence/server/persistent-explorer-seal/retained-logs.zip"
+  },
+  "originalPersonalAndProductionVMs": "untouched"
+}

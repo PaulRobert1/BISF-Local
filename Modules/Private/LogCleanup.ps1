@@ -94,6 +94,12 @@ function Invoke-BISFLogCleanup {
                 Clear-BISFEventLogChannel $channel
                 Write-BISFLog $Logger Info LogCleanup "Cleared event channel: $channel"
             } catch {
+                # Some enabled Operational channels (for example LiveId) grant
+                # read access only, even to SYSTEM. Preserve their ACL and data.
+                if ($_.Exception.GetBaseException() -is [UnauthorizedAccessException]) {
+                    Write-BISFLog $Logger Warning LogCleanup "Preserved permission-protected event channel: $channel; Windows denied Clear access."
+                    continue
+                }
                 $failed+=$channel
                 Write-BISFLog $Logger Error LogCleanup "Failed event channel: $channel; $($_.Exception.Message)"
             }
