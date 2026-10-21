@@ -51,6 +51,15 @@ try {
     if ($PSBoundParameters.ContainsKey('WhatIf')) { $arguments.WhatIf=$PSBoundParameters.WhatIf }
     if ($PSBoundParameters.ContainsKey('Confirm')) { $arguments.Confirm=$PSBoundParameters.Confirm }
     $result=Invoke-BISFLocal @arguments
+    if ($Mode -eq 'Prepare' -and -not $WhatIfPreference -and $result.ExitCode -eq 0 -and
+        $null -ne $result.PSObject.Properties['OperatorSignOut'] -and $null -ne $result.OperatorSignOut) {
+        # The preparation runner has returned, including logger/mutex cleanup.
+        try {
+            $null=Invoke-BISFOperatorSignOut -ScriptRoot $PSScriptRoot -ConfigPath $ConfigPath -Context $result.OperatorSignOut
+        } catch {
+            throw "Preparation completed, but automatic sign-out failed; finalization remains pending. $($_.Exception.Message)"
+        }
+    }
     exit $result.ExitCode
 } catch {
     Write-Error -Message $_.Exception.Message -ErrorAction Continue

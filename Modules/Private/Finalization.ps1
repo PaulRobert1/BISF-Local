@@ -1,6 +1,6 @@
 # BISF-Local: explicitly opted-in two-phase SYSTEM finalization.
-# The operator must sign out normally. No forced logoff, raw folder deletion,
-# external vendor tools or direct deletion of an in-use profile.
+# Successful Prepare requests normal operator sign-out after SYSTEM readiness.
+# No forced application closure, raw folder deletion or deletion of an in-use profile.
 
 function Test-BISFOperatorSealSettings {
     param($Config)
@@ -66,7 +66,7 @@ function Get-BISFOperatorSealTaskArguments {
     '-NoProfile -NonInteractive -File "{0}" -Mode Finalize -ConfigPath "{1}"' -f $ScriptPath,$ConfigPath
 }
 function Test-BISFOperatorSealTaskOwnership {
-    param([string]$ScriptRoot,[string]$ConfigPath)
+    param([string]$ScriptRoot,[string]$ConfigPath,[switch]$AllowExisting)
     # Enumerate successfully before treating the reserved root task as absent.
     # Filtering after enumeration avoids using a missing-task lookup error as
     # an excuse to suppress Task Scheduler/RPC/access failures.
@@ -83,6 +83,7 @@ function Test-BISFOperatorSealTaskOwnership {
             $existing[0].Principal.UserId -notin @('SYSTEM','S-1-5-18')) {
             throw 'Refusing an existing operator-seal task that is not owned by this package.'
         }
+        if ($AllowExisting) { return $existing[0] }
         throw 'A previous BISF operator-seal task already exists. Resolve or cancel the previous sealing attempt before retrying.'
     }
 }
@@ -128,7 +129,7 @@ function Register-BISFOperatorSeal {
     Test-BISFOperatorSealStaging $ScriptRoot $ConfigPath $Config
     $statePath=Get-BISFOperatorSealStatePath $ScriptRoot
     $state=New-BISFOperatorSealState $Config $Target $ConfigPath $ExpectedHash
-    $registered=$false
+    $registered=$false;$started=$false
     try {
         Write-BISFState $statePath $state
         $exe=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
@@ -141,8 +142,13 @@ function Register-BISFOperatorSeal {
         $null=Register-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -Action $action -Principal $principal -Settings $settings -Description (Get-BISFOperatorSealTaskMarker $ScriptRoot $ConfigPath) -ErrorAction Stop
         $registered=$true
         Start-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -ErrorAction Stop
+        $started=$true
+        Wait-BISFOperatorSealReady -ScriptRoot $ScriptRoot -ConfigPath $ConfigPath -ExpectedGeneration $state.Generation
     } catch {
         $errorObject=$_
+        # An accepted worker may still be running. Never remove its state out
+        # from under it or sign the operator out without acknowledgement.
+        if ($started) { throw $errorObject }
         if ($registered) {
             try { Unregister-ScheduledTask -TaskName 'BISF-Local-OperatorSeal' -TaskPath '\' -Confirm:$false -ErrorAction Stop }
             catch { Write-Warning "Could not unregister failed operator-seal task: $($_.Exception.Message)" }
@@ -175,6 +181,13 @@ function Test-BISFOperatorSealCandidate {
     if ([string](Get-BISFCurrentUserSid) -ne 'S-1-5-18') {
         throw 'Operator seal Finalize must run as NT AUTHORITY\SYSTEM.'
     }
+    Test-BISFOperatorSealBinding $State $Config
+    $others=@(Get-BISFLoadedNonSystemProfiles '')
+    if ($others.Count -gt 0) { return $false }
+    (Get-BISFOperatorSealProfile $State $Config).Ready
+}
+function Test-BISFOperatorSealBinding {
+    param($State,$Config)
     if (-not $Config.Finalization.RemoveOperatorProfile -or $Config.FinalAction -ne 'Shutdown') {
         throw 'Operator seal was disabled or shutdown no longer approved.'
     }
@@ -187,9 +200,6 @@ function Test-BISFOperatorSealCandidate {
     }
     $root=Get-BISFProfilesRoot
     if ($root -ne $State.ProfilesRoot) { throw 'Windows profile root changed after staging.' }
-    $others=@(Get-BISFLoadedNonSystemProfiles '')
-    if ($others.Count -gt 0) { return $false }
-    (Get-BISFOperatorSealProfile $State $Config).Ready
 }
 function Get-BISFOperatorSealProfile {
     param($State,$Config)
@@ -225,6 +235,115 @@ function Get-BISFOperatorSealProfile {
     Test-BISFNoReparsePath $p.LocalPath
     [pscustomobject]@{Ready=(-not $busy);Profile=$p}
 }
+function Publish-BISFOperatorSealReady {
+    param([string]$ScriptRoot,$State,$Config)
+    if ([string](Get-BISFCurrentUserSid) -ne 'S-1-5-18') {
+        throw 'Only the SYSTEM finalizer can acknowledge operator-seal readiness.'
+    }
+    Test-BISFOperatorSealBinding $State $Config
+    # The operator is expected to be loaded here. Other loaded profiles and
+    # all static failures must be detected before requesting their sign-out.
+    $null=Get-BISFOperatorSealProfile $State $Config
+    if (@(Get-BISFLoadedNonSystemProfiles $State.OperatorSid).Count -gt 0) {
+        throw 'Other user profiles are loaded; automatic sign-out is refused.'
+    }
+    if ((Get-BISFJournalStatus $ScriptRoot).PreparationPending) {
+        throw 'Incomplete Prepare journal: worker readiness is refused.'
+    }
+    if (@(Get-BISFPendingRebootReasons).Count -gt 0) {
+        throw 'Pending reboot: worker readiness is refused.'
+    }
+    $worker=Get-Process -Id $PID -ErrorAction Stop
+    $ready=[pscustomobject]@{
+        Generation=$State.Generation;ProcessId=[int]$PID
+        StartedUtc=$worker.StartTime.ToUniversalTime().ToString('o')
+        AcknowledgedUtc=[datetime]::UtcNow.ToString('o')
+    }
+    $State | Add-Member -MemberType NoteProperty -Name WorkerReady -Value $ready -Force
+    Write-BISFState (Get-BISFOperatorSealStatePath $ScriptRoot) $State
+}
+function Test-BISFOperatorSealWorkerReady {
+    param($State)
+    if ($null -eq $State.PSObject.Properties['WorkerReady'] -or $null -eq $State.WorkerReady) {
+        throw 'SYSTEM finalizer has not acknowledged readiness.'
+    }
+    $ready=$State.WorkerReady
+    foreach ($field in 'Generation','ProcessId','StartedUtc','AcknowledgedUtc') {
+        if ($null -eq $ready.PSObject.Properties[$field]) { throw "Invalid worker acknowledgement: missing $field." }
+    }
+    if ($ready.Generation -ne $State.Generation -or [int]$ready.ProcessId -le 0) {
+        throw 'Worker acknowledgement does not match the staged generation.'
+    }
+    $started=[datetime]::MinValue;$acknowledged=[datetime]::MinValue
+    if (-not [datetime]::TryParse([string]$ready.StartedUtc,[ref]$started) -or
+        -not [datetime]::TryParse([string]$ready.AcknowledgedUtc,[ref]$acknowledged)) {
+        throw 'Invalid worker acknowledgement timestamps.'
+    }
+    $worker=Get-Process -Id ([int]$ready.ProcessId) -ErrorAction Stop
+    $exe=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    if ($worker.SessionId -ne 0 -or $worker.Path -ne $exe -or
+        $worker.StartTime.ToUniversalTime().Ticks -ne $started.ToUniversalTime().Ticks) {
+        throw 'The acknowledged SYSTEM worker is no longer the expected PowerShell process.'
+    }
+}
+function Wait-BISFOperatorSealReady {
+    param([string]$ScriptRoot,[string]$ConfigPath,[string]$ExpectedGeneration,
+        [ValidateRange(1,60)][int]$TimeoutSeconds=30)
+    # One bounded poll per second; the worker publishes readiness without
+    # acquiring the apply lock currently held by Prepare.
+    for ($attempt=0;$attempt -lt $TimeoutSeconds;$attempt++) {
+        $task=Test-BISFOperatorSealTaskOwnership $ScriptRoot $ConfigPath -AllowExisting
+        if ($null -eq $task) { throw 'The staged SYSTEM finalizer task is missing; automatic sign-out is refused.' }
+        $state=Read-BISFOperatorSealState $ScriptRoot
+        if ($state.Generation -ne $ExpectedGeneration) { throw 'Operator-seal generation changed while waiting for the SYSTEM worker.' }
+        if ($null -ne $state.PSObject.Properties['WorkerReady']) {
+            Test-BISFOperatorSealWorkerReady $state
+            if ([string]$task.State -ne 'Running') { throw 'The acknowledged SYSTEM finalizer is no longer running; automatic sign-out is refused.' }
+            return $state
+        }
+        if ([string]$task.State -eq 'Disabled') { throw 'The SYSTEM finalizer task is disabled; automatic sign-out is refused.' }
+        Start-Sleep -Seconds 1
+    }
+    throw "SYSTEM finalizer did not acknowledge readiness within $TimeoutSeconds seconds; automatic sign-out was not requested. Inspect the Finalize log and retained operator-seal state."
+}
+function Invoke-BISFOperatorSignOut {
+    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
+    param([string]$ScriptRoot,[string]$ConfigPath,$Context)
+    if (-not $PSCmdlet.ShouldProcess($ScriptRoot,'Sign out the preparation operator; SYSTEM will finish cleanup and shut down')) { return }
+    foreach ($field in 'Generation','SID','SessionId','WorkerProcessId','WorkerStartedUtc') {
+        if ($null -eq $Context -or $null -eq $Context.PSObject.Properties[$field]) { throw "Automatic sign-out context is missing $field." }
+    }
+    $ScriptRoot=[IO.Path]::GetFullPath($ScriptRoot)
+    $ConfigPath=Resolve-BISFPath $ConfigPath $ScriptRoot
+    Test-BISFProtectedLocation $ScriptRoot
+    Test-BISFProtectedLocation $ConfigPath
+    $config=Read-BISFConfig $ConfigPath $ScriptRoot
+    $config | Add-Member NoteProperty Path $ConfigPath
+    Test-BISFOperatorSealSettings $config
+    $state=Read-BISFOperatorSealState $ScriptRoot
+    if ($state.Generation -ne $Context.Generation -or $state.OperatorSid -ne $Context.SID) {
+        throw 'Operator-seal state no longer matches the successful preparation; automatic sign-out is refused.'
+    }
+    Test-BISFOperatorSealBinding $state $config
+    $null=Get-BISFOperatorSealProfile $state $config
+    if ((Get-BISFJournalStatus $ScriptRoot).PreparationPending -or @(Get-BISFPendingRebootReasons).Count -gt 0) {
+        throw 'Preparation is incomplete or Windows requires a reboot; automatic sign-out is refused.'
+    }
+    if (@(Get-BISFLoadedNonSystemProfiles $state.OperatorSid).Count -gt 0) {
+        throw 'Another user profile became loaded; automatic sign-out is refused.'
+    }
+    # CIM/profile queries may take time. Verify the acknowledged worker after
+    # those calls, immediately before the final session check and native request.
+    $task=Test-BISFOperatorSealTaskOwnership $ScriptRoot $ConfigPath -AllowExisting
+    if ($null -eq $task -or [string]$task.State -ne 'Running') { throw 'SYSTEM finalizer is not running; automatic sign-out is refused.' }
+    Test-BISFOperatorSealWorkerReady $state
+    if ($state.WorkerReady.ProcessId -ne $Context.WorkerProcessId -or
+        $state.WorkerReady.StartedUtc -ne $Context.WorkerStartedUtc) {
+        throw 'The SYSTEM finalizer changed after preparation; automatic sign-out is refused.'
+    }
+    Write-Host 'BIS-F Local: preparation complete. Requesting automatic Windows sign-out. SYSTEM will remove the operator profile, finish cleanup and shut down after all checks pass.'
+    Request-BISFOperatorSignOut -ExpectedSid $Context.SID -ExpectedSessionId ([int]$Context.SessionId)
+}
 function Invoke-BISFOperatorSealFinalizer {
     [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
     param([string]$ScriptRoot,[string]$ConfigPath)
@@ -241,7 +360,9 @@ function Invoke-BISFOperatorSealFinalizer {
     $lock=$null
     try {
         $deadline=[datetime]::UtcNow.AddMinutes([int]$state.TimeoutMinutes)
-        Write-BISFLog $logger Info Finalize 'SYSTEM finalizer started; waiting for the administrator to sign out normally. No forced logoff will be used.'
+        Write-BISFLog $logger Info Finalize 'SYSTEM finalizer started; validating readiness for automatic operator sign-out.'
+        Publish-BISFOperatorSealReady -ScriptRoot $ScriptRoot -State $state -Config $config
+        Write-BISFLog $logger Info Finalize 'SYSTEM readiness acknowledged; waiting for the operator profile to unload after Windows sign-out. Applications will not be forced closed.'
         $ready=$false
         while ([datetime]::UtcNow -lt $deadline) {
             if (Test-BISFOperatorSealCandidate $state $config) { $ready=$true; break }

@@ -32,10 +32,17 @@ DISM, ResetBase, task cancellation, marker deletion, or automatic retries.
 
 ## Seal and capture
 
-Use a normal administrative operator with RID >=1000. When deferred operator
-removal is selected, verify the protected SYSTEM handoff and sign out normally;
-disconnecting RDP is insufficient. Observe actual shutdown externally. Capture
-only a successful powered-off master after inspecting its disk evidence.
+Use a normal administrative operator with RID >=1000, signed directly into the
+console or RDP desktop under that account. Save work and close other applications.
+With `RemoveOperatorProfile=true`, successful Prepare waits for the exact protected
+SYSTEM worker to acknowledge readiness. After releasing its lock and rechecking
+the worker/session, BISF requests the current operator's normal Windows sign-out
+automatically; no new config flag or launch switch is required. The worker alone
+waits for profile unload, removes/verifies the profile, finishes selected log cleanup
+and shuts down. Unsaved applications can block sign-out; disconnecting RDP is
+insufficient. A failed/declined run or preview never requests sign-out. Observe actual
+shutdown externally. Capture only a successful powered-off master after inspecting
+its disk evidence.
 Never force logoff or poweroff to turn a failed seal into a capture candidate.
 
 ## Failure and rollback
@@ -50,13 +57,23 @@ directory blocks further cleanup and shutdown; never remove it as a fallback
 to make the failed seal appear successful. Never
 run finalization on an MCS clone as a repair step.
 
+For a retained earlier operator-seal attempt, do not overwrite its package or
+assume extracting/rerunning the update recovers it. A successfully started worker
+can outlive an acknowledgement timeout. Inspect its exact task/action, retained
+state, Finalize log and worker process. If recovery requires stopping that attempt,
+confirm the owned worker has exited before replacing program files. Retain the
+evidence and use the saved image when uncertain; do not erase task/state merely
+to make preflight accept another run.
+
 ## Release and pilot
 
 Require reviewed evidence for both supported OS targets: option matrix, native
 failure cases, offline disk inspection, real MCS provisioning, broker/HDX/WEM,
 profile attachment, domain/activation, repeated boots and application regression.
 Record any blocked or untested item as such. A mocked test or service inventory
-cannot replace an external check.
+cannot replace an external check. Native console and RDP testing of automatic
+sign-out, worker lifetime, profile unload and actual shutdown has not been run
+in this update's development environment.
 
 A controlled pilot uses an isolated catalog and test accounts, a known-good
 image for rollback, representative applications and recorded baseline logon/SMB

@@ -1,6 +1,42 @@
 # BISF-Local — Work mode continuation handoff
 
-Updated: 2026-10-15. This is a source-based development handoff, not permission to run destructive actions on any Windows master.
+Updated: 2026-10-21. This is a source-based development handoff, not permission to run destructive actions on any Windows master.
+
+## Current automatic preparation handoff
+
+Successful applying `Prepare` with `Finalization.RemoveOperatorProfile=true` now
+waits for the protected SYSTEM worker to validate readiness and atomically acknowledge
+the exact staged generation. After the runner releases its preparation lock, the
+entrypoint revalidates the worker, state/config/master and current interactive
+session, then requests normal current-user Windows sign-out through the native API.
+SYSTEM alone waits for full profile unload, removes/verifies the operator profile,
+performs selected log cleanup and requests shutdown. No new config flag or launch
+switch is required, and existing configuration selections remain honored.
+
+Applications are not forced closed; unsaved work may block or cancel sign-out.
+Preview, failed/declined Prepare, an unacknowledged worker and session-owner mismatch
+never request sign-out. The finalizer still refuses deletion/shutdown on busy
+profiles, failed provider removal, pending reboot or incomplete preparation.
+
+A retained earlier operator-seal attempt is not recovered by extracting this update
+or rerunning it. Preserve state/logs and inspect the exact task/worker; do not replace
+its program files while the old worker is running. If an administrator stops a failed
+attempt under the recovery procedure, confirm the worker has exited before replacing
+code, retain diagnostic evidence and restore the saved image when uncertain. Do not
+automatically erase old task/state or weaken the retained-state guard.
+
+Native Windows console and RDP sign-out, scheduled-worker lifetime, actual profile
+unload and actual shutdown have NOT been run in this update's development environment.
+Use `TEST-RESULTS.md` for current automated evidence and `ACCEPTANCE-TESTING.md` for
+native release gates. The dated GitHub/CI observations below remain historical;
+they are not evidence that the current auto-sign-out changes passed Windows CI.
+
+## Historical handoff — 2026-10-15 (retained evidence)
+
+The following original handoff is retained as historical context. Its manual-sign-out
+instructions, package defaults, branch status and test counts describe that earlier
+snapshot; current operation follows the section above and the current user manual.
+
 
 ## Continuation review (supersedes the earlier source-verification summary)
 

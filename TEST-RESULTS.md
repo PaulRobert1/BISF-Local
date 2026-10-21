@@ -1,5 +1,52 @@
 # Verification record
 
+## Automatic operator sign-out and shutdown update - 2026-10-21
+
+Base: uploaded AutoPermissions build `8d6c5b9ef1a966156f2498f906a4e75be95e3195`.
+Successful applying Prepare now waits for the exact protected SYSTEM worker to
+acknowledge readiness, releases its logger and apply lock, then requests normal
+Windows sign-out from the original operator's interactive session. The existing
+worker remains responsible for profile unload/deletion verification, final log
+cleanup and shutdown. Configuration values and the XML schema are unchanged.
+
+**142 focused tests passed, 0 failed:** entrypoint routing (15), full workflow
+safety/results (45), existing finalization safety (36), acknowledgement and final
+revalidation (31), and native session boundary decisions (15). These tests never
+invoke a real Windows sign-out or shutdown. Native operations use test doubles;
+the C# interop declarations also compile without calling their Windows APIs.
+
+The full Pester run on PowerShell Core 7.5.4/Linux with Pester 5.7.1 reported
+**348 passed / 31 failed / 379 total**, with no failed containers. All **57 added
+tests pass**. The remaining 31 failing names are a multiset subset of the prior
+55 platform failures: there are **no newly failing tests**. Twenty-four existing
+finalization tests now pass because their Windows command signatures and registry
+boundaries are correctly mocked in the test harness. Product checks were not
+relaxed. The full suite is **not green** on this Linux host; the report includes
+every remaining failing name and error:
+[automatic-signout-20261021.json](docs/testing/automatic-signout-20261021.json).
+
+Red/green checks reproduced missing automatic routing, session validation and
+worker acknowledgement before implementation. Review also identified a worker
+that could exit during final profile queries; a regression reproduced this and
+the liveness check now follows those queries immediately before the session check
+and sign-out request. An accepted task with failed readiness retains its state
+and does not authorize sign-out. Pending reboot, another loaded profile,
+configuration/identity changes, a stale or dead worker, failed cleanup and preview
+modes continue preventing the corresponding sign-out/deletion/shutdown actions.
+
+The rebuilt x64 console EXE retains `requireAdministrator`/`uiAccess=false` and
+now describes automatic sign-out in its help. Manifest, packaged defaults, runtime
+source audit and `git diff --check` passed. Consecutive launcher builds were
+byte-identical. EXE SHA256:
+`a797b809b83c864a074ffe7ece66b52b2802a07e43bd466a1d912c78561187d4`.
+
+**Not run:** native Windows PowerShell 5.1, console/RDP sign-out on Windows Server
+2025 or Windows 11, live UAC/ACL operations, actual SYSTEM-task lifetime, real
+profile unload/deletion or physical/VM shutdown. Normal sign-out uses
+`ExitWindowsEx(EWX_LOGOFF, planned application-maintenance reason)` and may be
+blocked or canceled by applications. Acceptance rows remain NOT RUN; this report
+does not claim a completed native master-image sealing cycle.
+
 ## Automatic installation permissions update - 2026-10-21
 
 Base: supplied archive at commit `d457ab624d53a3dce6b9d8c20118cb3ea7ca42fe`.

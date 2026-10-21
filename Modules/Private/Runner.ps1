@@ -28,7 +28,7 @@ function Get-BISFPlan {
         }
         if ($Config.Citrix.VDA.Enabled -and $Config.Citrix.VDA.StopBeforeShutdown) { $steps.Add([pscustomobject]@{Id='VDAStop';Description='Stop Citrix Desktop Service immediately before shutdown; preserve startup type'}) }
         if ($Config.Finalization.RemoveOperatorProfile) {
-            $steps.Add([pscustomobject]@{Id='OperatorFinalize';Description='Stage SYSTEM profile cleanup, then require normal operator sign-out before shutdown'})
+            $steps.Add([pscustomobject]@{Id='OperatorFinalize';Description='Start SYSTEM profile cleanup, automatically sign out the operator, then shut down after final cleanup'})
         } elseif ($Config.FinalAction -eq 'Shutdown') {
             $steps.Add([pscustomobject]@{Id='Shutdown';Description='Request computer shutdown'})
         }
@@ -50,7 +50,7 @@ function Invoke-BISFLocal {
     $logger=$null; $lock=$null; $state=$null; $previousCM=$null; $previousVDA=$null; $citrix=$null
     $exitCode=0; $errorMessage=$null; $applying=$false; $stateTouched=$false
     $completionTouched=$false; $journal=$null; $shutdownRequested=$false; $journalStatus=$null
-    $profilePlan=$null; $operatorTarget=$null
+    $profilePlan=$null; $operatorTarget=$null; $operatorSession=$null; $operatorSignOut=$null
     $currentStep='Preflight'
     try {
         $ScriptRoot=[IO.Path]::GetFullPath($ScriptRoot)
@@ -114,7 +114,10 @@ function Invoke-BISFLocal {
         if ($Mode -ne 'Personalize' -and $config.Finalization.RemoveOperatorProfile) {
             $currentStep='OperatorFinalize'
             $operatorTarget=Get-BISFOperatorSealTarget $config $ScriptRoot $ConfigPath -ProtectedPaths $protected
-            Write-BISFLog $logger Info OperatorFinalize ("Operator SID={0}; local profile={1}; planned SYSTEM deletion only after normal sign-out." -f $operatorTarget.SID,$operatorTarget.Path)
+            if ($Mode -eq 'Prepare' -and -not $WhatIfPreference) {
+                $operatorSession=Get-BISFOperatorSession -ExpectedSid $operatorTarget.SID
+            }
+            Write-BISFLog $logger Info OperatorFinalize ("Operator SID={0}; local profile={1}; automatic sign-out follows successful preparation and SYSTEM readiness; profile deletion follows unload." -f $operatorTarget.SID,$operatorTarget.Path)
             $currentStep='Preflight'
         }
         if ($null -ne $inventory.PSObject.Properties['ProductType'] -and $null -ne $inventory.PSObject.Properties['Version']) {
@@ -275,13 +278,17 @@ function Invoke-BISFLocal {
                 if ($config.Finalization.RemoveOperatorProfile) {
                     $currentStep='OperatorFinalize'
                     # Last fallible file log before the operator may sign out.
-                    Write-BISFLog $logger Info OperatorFinalize 'Starting one-shot protected SYSTEM task. Sign out normally. If the user profile stays loaded or cleanup fails, the image will NOT shut down.'
-                    Register-BISFOperatorSeal $ScriptRoot $ConfigPath $config $operatorTarget -ExpectedHash $hash
-                    $results.Add([pscustomobject]@{Id='OperatorFinalize';Status='Staged';Message='SYSTEM finalizer started. Sign out normally to permit profile deletion and shutdown.'})
+                    Write-BISFLog $logger Info OperatorFinalize 'Starting protected SYSTEM task and waiting for readiness before automatic operator sign-out.'
+                    $seal=Register-BISFOperatorSeal $ScriptRoot $ConfigPath $config $operatorTarget -ExpectedHash $hash
+                    $operatorSignOut=[pscustomobject]@{
+                        Generation=$seal.Generation;SID=$operatorTarget.SID;SessionId=$operatorSession.SessionId
+                        WorkerProcessId=$seal.WorkerReady.ProcessId;WorkerStartedUtc=$seal.WorkerReady.StartedUtc
+                    }
+                    $results.Add([pscustomobject]@{Id='OperatorFinalize';Status='Staged';Message='SYSTEM finalizer acknowledged readiness. Automatic sign-out follows release of the preparation lock.'})
                     if ($config.LogCleanup.WindowsEventLogs -or $config.LogCleanup.BISFLogs) {
                         $results.Add([pscustomobject]@{Id='LogCleanup';Status='Staged';Message='Log cleanup deferred to the SYSTEM finalizer after operator sign-out.'})
                     }
-                    Write-Host 'BIS-F Local: SYSTEM finalizer staged. Sign out (do not disconnect) after reviewing the result. No automatic logoff will be performed.'
+                    Write-Host 'BIS-F Local: SYSTEM finalizer ready. Windows sign-out will be requested automatically after preparation returns; shutdown follows successful profile and log cleanup.'
                 }
                 foreach ($step in $plan) {
                     if ($step.Id -in @('Lifecycle','Complete')) { $results.Add([pscustomobject]@{Id=$step.Id;Status='Completed';Message=$step.Description}) }
@@ -290,6 +297,7 @@ function Invoke-BISFLocal {
             }
         }
     } catch {
+        $operatorSignOut=$null
         $errorMessage=$_.Exception.Message
         if ($applying) { $exitCode=2 } else { $exitCode=1 }
         $results.Add([pscustomobject]@{Id=$currentStep;Status='Failed';Message=$errorMessage})
@@ -319,6 +327,6 @@ function Invoke-BISFLocal {
         Exit-BISFLock $lock
     }
     Write-Host ("BIS-F Local: Mode={0}, ExitCode={1}, Completed={2}, Failed={3}" -f $Mode,$exitCode,@($results | Where-Object Status -eq 'Completed').Count,@($results | Where-Object Status -eq 'Failed').Count)
-    [pscustomobject]@{ExitCode=$exitCode;Mode=$Mode;Results=$results.ToArray();Error=$errorMessage;Citrix=$citrix}
+    [pscustomobject]@{ExitCode=$exitCode;Mode=$Mode;Results=$results.ToArray();Error=$errorMessage;Citrix=$citrix;OperatorSignOut=$operatorSignOut}
 }
 

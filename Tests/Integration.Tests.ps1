@@ -7,6 +7,7 @@ BeforeAll {
     }
     if (-not (Get-Command Stop-Computer -ErrorAction SilentlyContinue)) { function Stop-Computer { [CmdletBinding(SupportsShouldProcess)]param() } }
     if (-not (Get-Command Start-Service -ErrorAction SilentlyContinue)) { function Start-Service { param($Name) } }
+    if (-not (Get-Command Get-BISFOperatorSession -ErrorAction SilentlyContinue)) { function Get-BISFOperatorSession { param($ExpectedSid) } }
 }
 Describe 'Full workflow safety and results' {
     BeforeEach {
@@ -24,6 +25,7 @@ Describe 'Full workflow safety and results' {
         Mock Get-BISFPendingRebootReasons { @() }
         Mock Get-BISFLoadedNonSystemProfiles { @() }
         Mock Get-BISFCurrentUserSid { 'S-1-5-21-111-222-333-1002' }
+        Mock Get-BISFOperatorSession { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';SessionId=3} }
         Mock Get-BISFCitrixReadiness { [pscustomobject]@{VDA=$null;WEM=$null} }
         Mock Test-BISFProtectedLocation {}
         Mock Write-BISFState { $script:trace.Add('state:'+$State.Status) }
@@ -94,7 +96,10 @@ Describe 'Full workflow safety and results' {
         ($script:trace -join ',') | Should -Be 'profiles'
         Should -Invoke Invoke-BISFUserProfileCleanup -Times 1
     }
-    It 'stages SYS operator profile cleanup without immediate shutdown or forced logoff' {
+    It 'returns acknowledged sign-out context only after preparation and journal commit' {
+        # Existing durable lifecycle state makes this Prepare acquire a journal.
+        Mock Test-Path { $true } -ParameterFilter { $LiteralPath -eq (Join-Path $root 'state/lifecycle.json') }
+        Mock Read-BISFState { [pscustomobject]@{Status='Prepared';Completion=$null} }
         [xml]$xml=Get-Content $cfg -Raw
         $xml.BISF.Cleanup.UserProfiles='true'
         $xml.BISF.Finalization.RemoveOperatorProfile='true'
@@ -108,13 +113,78 @@ Describe 'Full workflow safety and results' {
             Entries=@([pscustomobject]@{SID='S-1-5-21-111-222-333-1001';LocalPath='C:\Users\Operator';Status='Protected';Reason='Current user'})
         } }
         Mock Invoke-BISFUserProfileCleanup { $script:trace.Add('other-profiles') }
-        Mock Register-BISFOperatorSeal { $script:trace.Add('stage') }
+        Mock Register-BISFOperatorSeal {
+            if ($script:pending) { throw 'Preparation journal was not committed before staging' }
+            $script:trace.Add('stage')
+            [pscustomobject]@{Generation='11111111-2222-3333-4444-555555555555';WorkerReady=[pscustomobject]@{ProcessId=4321;StartedUtc='2026-10-21T12:00:00.0000000Z'}}
+        }
         Mock Stop-Computer { throw 'Must not shut down before administrator signs out' }
         $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
         $r.ExitCode | Should -Be 0
-        ($script:trace -join ',') | Should -Be 'other-profiles,stage'
+        ($script:trace -join ',') | Should -Be 'state:Failed,other-profiles,stage'
+        $r.OperatorSignOut.Generation | Should -Be '11111111-2222-3333-4444-555555555555'
+        $r.OperatorSignOut.SID | Should -Be 'S-1-5-21-111-222-333-1001'
+        $r.OperatorSignOut.SessionId | Should -Be 3
+        $r.OperatorSignOut.WorkerProcessId | Should -Be 4321
+        $r.OperatorSignOut.WorkerStartedUtc | Should -Be '2026-10-21T12:00:00.0000000Z'
+        Should -Invoke Get-BISFOperatorSession -Times 1 -ParameterFilter { $ExpectedSid -eq 'S-1-5-21-111-222-333-1001' }
         $r.Results.Status | Should -Contain 'Staged'
         Should -Invoke Stop-Computer -Times 0
+    }
+    It 'returns no sign-out context if acknowledged staging fails' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';Entries=@()} }
+        Mock Invoke-BISFUserProfileCleanup {}
+        Mock Register-BISFOperatorSeal { throw 'SYSTEM worker acknowledgement unavailable' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $r.Error | Should -Match 'acknowledgement unavailable'
+        $r.OperatorSignOut | Should -BeNullOrEmpty
+        Should -Invoke Stop-Computer -Times 0
+    }
+    It 'returns no sign-out context when the preparation journal cannot be committed' {
+        # Existing durable lifecycle state makes this Prepare acquire a journal.
+        Mock Test-Path { $true } -ParameterFilter { $LiteralPath -eq (Join-Path $root 'state/lifecycle.json') }
+        Mock Read-BISFState { [pscustomobject]@{Status='Prepared';Completion=$null} }
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';Entries=@()} }
+        Mock Invoke-BISFUserProfileCleanup {}
+        Mock Clear-BISFJournal { throw 'Preparation journal commit failed' }
+        Mock Register-BISFOperatorSeal { throw 'Must not stage before journal commit' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 2
+        $r.Error | Should -Match 'journal commit failed'
+        $r.OperatorSignOut | Should -BeNullOrEmpty
+        Should -Invoke Register-BISFOperatorSeal -Times 0
+        Should -Invoke Stop-Computer -Times 0
+    }
+    It 'checks the invoking session before any profile mutation or staging' {
+        [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.FinalAction='Shutdown'
+        $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
+        Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';Entries=@()} }
+        Mock Get-BISFOperatorSession { throw 'Invoking session does not match operator' }
+        Mock Invoke-BISFUserProfileCleanup { throw 'Must not mutate before session validation' }
+        Mock Register-BISFOperatorSeal { throw 'Must not stage before session validation' }
+        $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
+        $r.ExitCode | Should -Be 1
+        $r.Error | Should -Match 'session does not match'
+        $r.OperatorSignOut | Should -BeNullOrEmpty
+        Should -Invoke Invoke-BISFUserProfileCleanup -Times 0
+        Should -Invoke Register-BISFOperatorSeal -Times 0
     }
     It 'keeps operator finalizer and servicing read-only in Validate/WhatIf' {
         [xml]$xml=Get-Content $cfg -Raw
@@ -127,8 +197,13 @@ Describe 'Full workflow safety and results' {
         Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';CurrentSid='S-1-5-21-111-222-333-1001';ExcludedSIDs=@();Entries=@()} }
         Mock Invoke-BISFComponentCleanup { throw 'Must not run servicing in previews' }
         Mock Register-BISFOperatorSeal { throw 'Must not stage SYSTEM worker in previews' }
-        (Invoke-BISFLocal $cfg $root Validate).ExitCode | Should -Be 0
-        (Invoke-BISFLocal $cfg $root Prepare -WhatIf).ExitCode | Should -Be 0
+        $validated=Invoke-BISFLocal $cfg $root Validate
+        $previewed=Invoke-BISFLocal $cfg $root Prepare -WhatIf
+        $validated.ExitCode | Should -Be 0
+        $previewed.ExitCode | Should -Be 0
+        $validated.OperatorSignOut | Should -BeNullOrEmpty
+        $previewed.OperatorSignOut | Should -BeNullOrEmpty
+        Should -Invoke Get-BISFOperatorSession -Times 0
         Should -Invoke Invoke-BISFComponentCleanup -Times 0
         Should -Invoke Register-BISFOperatorSeal -Times 0
         $script:trace.Count | Should -Be 0
@@ -187,7 +262,11 @@ Describe 'Full workflow safety and results' {
         $xml.Save($cfg)
         Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
         Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';CurrentSid='S-1-5-21-111-222-333-1001';ExcludedSIDs=@();Entries=@()} }
-        Mock Register-BISFOperatorSeal { $script:trace.Add('stage') }
+        Mock Register-BISFOperatorSeal {
+            if ($script:pending) { throw 'Preparation journal was not committed before staging' }
+            $script:trace.Add('stage')
+            [pscustomobject]@{Generation='11111111-2222-3333-4444-555555555555';WorkerReady=[pscustomobject]@{ProcessId=4321;StartedUtc='2026-10-21T12:00:00.0000000Z'}}
+        }
         Mock Invoke-BISFLogCleanup { throw 'Operator profile has not been removed yet' }
         $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
         $r.ExitCode | Should -Be 0

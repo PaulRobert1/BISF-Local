@@ -4,6 +4,19 @@ BeforeAll {
     foreach ($n in 'Configuration','Logging','Operations','Lifecycle','Profiles','Maintenance','LogCleanup','Finalization','Runner') {
         . "$root/Modules/Private/$n.ps1"
     }
+    # Supply absent Windows signatures solely so the existing safety mocks bind.
+    if (-not (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)) {
+        function Get-CimInstance { [CmdletBinding()]param([string]$ClassName,[string]$Filter); throw 'Unexpected unmocked CIM call in test' }
+    }
+    if (-not (Get-Command Get-ScheduledTask -ErrorAction SilentlyContinue)) {
+        function Get-ScheduledTask { [CmdletBinding()]param([string]$TaskName,[string]$TaskPath); throw 'Unexpected unmocked task inventory in test' }
+    }
+    if (-not (Get-Command Unregister-ScheduledTask -ErrorAction SilentlyContinue)) {
+        function Unregister-ScheduledTask { [CmdletBinding(SupportsShouldProcess)]param([string]$TaskName,[string]$TaskPath); throw 'Unexpected unmocked task removal in test' }
+    }
+    if (-not (Get-Command Stop-Computer -ErrorAction SilentlyContinue)) {
+        function Stop-Computer { [CmdletBinding(SupportsShouldProcess)]param(); throw 'Unexpected unmocked shutdown in test' }
+    }
 }
 Describe 'Two-phase operator seal configuration and trust boundaries' {
     BeforeEach {
@@ -205,6 +218,8 @@ Describe 'Finalization shutdown boundary' {
         Mock Get-BISFProfilesRoot { $script:boundaryRoot }
         Mock Read-BISFOperatorSealState { [pscustomobject]@{OperatorSid='S-1-5-21-111-222-333-1001';OperatorPath=$script:boundaryPath;ProfilesRoot=$script:boundaryRoot;TimeoutMinutes=1} }
         Mock New-BISFLogger { [pscustomobject]@{Enabled=$false;LogFile=$null} }
+        # Readiness is covered separately; this group exercises the real deletion boundary.
+        Mock Publish-BISFOperatorSealReady {}
         Mock Test-BISFOperatorSealCandidate { $true }
         Mock Get-BISFJournalStatus { [pscustomobject]@{PreparationPending=$false;PersonalizationPending=$false} }
         Mock Get-BISFPendingRebootReasons { @() }
@@ -212,6 +227,8 @@ Describe 'Finalization shutdown boundary' {
             if ($script:profilesRemaining) { $script:boundaryProfile }
         }
         Mock Remove-BISFCimUserProfile { $script:trace.Add('delete'); $script:profilesRemaining=$false; [IO.Directory]::Delete($script:boundaryPath,$true) }
+        # Model absent ProfileList registrations while preserving real filesystem checks.
+        Mock Get-Item { throw [System.Management.Automation.ItemNotFoundException]::new('Profile registry entry absent') } -ParameterFilter { $LiteralPath -like 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' }
         Mock Unregister-ScheduledTask { $script:trace.Add('unregister') }
         Mock Test-BISFProtectedLocation {}
         Mock Remove-Item { $script:trace.Add('state-delete') }

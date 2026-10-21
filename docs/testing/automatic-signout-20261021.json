@@ -1,0 +1,217 @@
+{
+  "date": "2026-10-21",
+  "source_commit": "8d6c5b9ef1a966156f2498f906a4e75be95e3195",
+  "feature": "Automatic normal operator sign-out after acknowledged SYSTEM finalization",
+  "runtime": "PowerShell Core 7.5.4 on Ubuntu 24.04.3 LTS; Pester 5.7.1",
+  "baseline": {
+    "total": 322,
+    "passed": 267,
+    "failed": 55,
+    "failed_containers": 0
+  },
+  "updated": {
+    "total": 379,
+    "passed": 348,
+    "failed": 31,
+    "failed_containers": 0
+  },
+  "new_tests": 57,
+  "new_tests_passed": 57,
+  "introduced_failures": [],
+  "previously_platform_blocked_finalization_tests_now_passing": [
+    "Two-phase operator seal configuration and trust boundaries.refuses to overwrite an existing reserved task without trusting its owner",
+    "Two-phase operator seal configuration and trust boundaries.refuses an operator profile containing the detected WEM cache",
+    "SYSTEM finalizer operator profile safety rules.never permits finalization from an interactive administrator account",
+    "SYSTEM finalizer operator profile safety rules.waits instead of deleting while any non-system profile is loaded",
+    "SYSTEM finalizer operator profile safety rules.refuses finalization on a provisioned clone with a changed machine identity",
+    "SYSTEM finalizer operator profile safety rules.accepts only an eligible unloaded profile at the original path",
+    "SYSTEM finalizer operator profile safety rules.permits a normal RID >=1000 operator even when its profile directory is named Administrator",
+    "SYSTEM finalizer operator profile safety rules.refuses an operator whose profile becomes special or points at a template directory",
+    "SYSTEM finalizer operator profile safety rules.waits while an unloaded profile retains a nonzero reference count",
+    "SYSTEM finalizer operator profile safety rules.fails on changed configuration or disabled finalization",
+    "Finalization shutdown boundary.deletes the verified profile and cleans task/state BEFORE accepting shutdown",
+    "Finalization shutdown boundary.refuses shutdown when provider registration disappears but profile files remain",
+    "Finalization shutdown boundary.previews Finalize without reading staged state or applying any mutation",
+    "Finalization shutdown boundary.performs explicitly enabled log cleanup after profile deletion and before shutdown",
+    "Finalization shutdown boundary.refuses shutdown if log cleanup fails after an operator profile was removed",
+    "Finalization shutdown boundary.refuses shutdown when profile provider fails to delete",
+    "Finalization shutdown boundary.revalidates the actual deletion object when <Field> changes after the candidate check",
+    "Finalization shutdown boundary.revalidates the actual deletion object when <Field> changes after the candidate check",
+    "Finalization shutdown boundary.revalidates the actual deletion object when <Field> changes after the candidate check",
+    "Finalization shutdown boundary.revalidates the actual deletion object when <Field> changes after the candidate check",
+    "Finalization shutdown boundary.revalidates the actual deletion object when <Field> changes after the candidate check",
+    "Finalization shutdown boundary.refuses shutdown when preparation is incomplete",
+    "Finalization shutdown boundary.refuses shutdown if servicing leaves a pending reboot",
+    "Finalization shutdown boundary.refuses shutdown when scheduled task deregistration fails"
+  ],
+  "existing_failures": [
+    {
+      "name": "Read-only MCS test clone verification report.reports meaningful local service evidence without claiming VDA registered",
+      "error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "name": "Read-only MCS test clone verification report.recognizes a Windows 11 client clone using ProductType not just build 26100",
+      "error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "name": "Read-only MCS test clone verification report.does not claim full Citrix health if the local VDA readiness query fails",
+      "error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "name": "Read-only MCS test clone verification report.reports a pending reboot but never performs image modifications on the clone",
+      "error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "name": "Citrix final shutdown boundary.stops immediately before power with no intervening log writes",
+      "error": "InvalidResult: <repository>/Tests/Integration.Tests.ps1\nLine |\n 589 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 0\n     | Expected 0, but got 1.\n\n"
+    },
+    {
+      "name": "Citrix final shutdown boundary.restores a running VDA after a failed shutdown request",
+      "error": "InvalidResult: <repository>/Tests/Integration.Tests.ps1\nLine |\n 596 | $r.ExitCode | Should -Be 2\n     | Expected 2, but got 1.\n\n"
+    },
+    {
+      "name": "Citrix final shutdown boundary.attempts recovery even when service stop partially fails",
+      "error": "InvalidResult: <repository>/Tests/Integration.Tests.ps1\nLine |\n 602 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2\n     | Expected 2, but got 1.\n\n"
+    },
+    {
+      "name": "Citrix final shutdown boundary.preserves originally stopped state on recovery",
+      "error": "InvalidResult: <repository>/Tests/Integration.Tests.ps1\nLine |\n 609 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2\n     | Expected 2, but got 1.\n\n"
+    },
+    {
+      "name": "Citrix final shutdown boundary.does not stop the VDA if earlier cleanup fails",
+      "error": "InvalidResult: <repository>/Tests/Integration.Tests.ps1\nLine |\n 616 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2\n     | Expected 2, but got 1.\n\n"
+    },
+    {
+      "name": "Citrix final shutdown boundary.protects the detected WEM cache from temp cleanup",
+      "error": "InvalidResult: <repository>/Tests/Integration.Tests.ps1\nLine |\n 625 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 0\n     | Expected 0, but got 1.\n\n"
+    },
+    {
+      "name": "Citrix final shutdown boundary.does not restore after accepted shutdown even if journal finalization fails",
+      "error": "InvalidResult: <repository>/Tests/Integration.Tests.ps1\nLine |\n 635 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2\n     | Expected 2, but got 1.\n\n"
+    },
+    {
+      "name": "Opt-in log cleanup XML and strict selection.refuses log clearing without a readable target event channel",
+      "error": "Exception: Could not find Command Get-WinEvent\n\n"
+    },
+    {
+      "name": "Checkbox editor configuration writes.preserves the original file if Windows refuses atomic replacement",
+      "error": "InvalidResult: <repository>/Tests/LogCleanupEditor.Tests.ps1\nLine |\n  52 | { Set-BISFLogCleanupOptions $cfg $root $hash $true $true } | Should -Throw\n     | Expected an exception to be thrown, but no exception was thrown.\n\n"
+    },
+    {
+      "name": "Read-only pre-capture health inventory.reports free space for the local system drive using CIM only",
+      "error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "name": "Read-only pre-capture health inventory.refuses a system drive whose capacity cannot be measured",
+      "error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "name": "Read-only pre-capture health inventory.treats an unloaded profile with outstanding references as busy",
+      "error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "name": "Read-only pre-capture health inventory.fails closed on unknown lifecycle state for another profile",
+      "error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "name": "Read-only pre-capture health inventory.reports other loaded user profiles while ignoring the current user and special accounts",
+      "error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "name": "Windows component store cleanup through Microsoft Servicing task.locates the exact built-in Servicing task, not a custom task",
+      "error": "Exception: Could not find Command Get-ScheduledTask\n\n"
+    },
+    {
+      "name": "Windows component store cleanup through Microsoft Servicing task.refuses to run a disabled or already-running servicing task",
+      "error": "Exception: Could not find Command Get-ScheduledTask\n\n"
+    },
+    {
+      "name": "Windows component store cleanup through Microsoft Servicing task.rejects queued and unknown tasks before requesting another run: <State>",
+      "error": "Exception: Could not find Command Get-ScheduledTask\n\n"
+    },
+    {
+      "name": "Windows component store cleanup through Microsoft Servicing task.rejects queued and unknown tasks before requesting another run: <State>",
+      "error": "Exception: Could not find Command Get-ScheduledTask\n\n"
+    },
+    {
+      "name": "Windows component store cleanup through Microsoft Servicing task.fails closed if the task name or task location was changed",
+      "error": "Exception: Could not find Command Get-ScheduledTask\n\n"
+    },
+    {
+      "name": "Windows component store cleanup through Microsoft Servicing task.rejects a cancelled or unverifiable new run even when Ready reports zero",
+      "error": "Exception: Could not find Command Get-ScheduledTask\n\n"
+    },
+    {
+      "name": "Windows component store cleanup through Microsoft Servicing task.surfaces an error result and refuses a successful seal",
+      "error": "Exception: Could not find Command Get-ScheduledTask\n\n"
+    },
+    {
+      "name": "Windows component store cleanup through Microsoft Servicing task.waits for a new run instead of accepting a recent previous success or a queued task",
+      "error": "Exception: Could not find Command Get-ScheduledTask\n\n"
+    },
+    {
+      "name": "Windows component store cleanup through Microsoft Servicing task.times out without proceeding if servicing never starts",
+      "error": "Exception: Could not find Command Get-ScheduledTask\n\n"
+    },
+    {
+      "name": "System drive Recycle Bin cleanup opt in.calls Clear-RecycleBin only for the Windows system drive when explicitly invoked",
+      "error": "Exception: Could not find Command Clear-RecycleBin\n\n"
+    },
+    {
+      "name": "Exported module under production strict mode.can execute a default empty preparation with disabled logging",
+      "error": "InvalidResult: <repository>/Tests/Module.Tests.ps1\nLine |\n  20 | $r.ExitCode | Should -Be 0\n     | Expected 0, but got 1.\n\n"
+    },
+    {
+      "name": "Citrix MCS user profile inventory and safe deletion.stops ordinary cleanup when provider removal leaves profile files behind",
+      "error": "InvalidResult: <repository>/Tests/Profiles.Tests.ps1\nLine |\n  39 | { Invoke-BISFUserProfileCleanup $plan $null } | Should -Throw '*profile directory remains*'\n     | Expected an exception with message like '*profile directory remains*' to\n     | be thrown, but the message was 'Cannot find drive. A drive with the name\n     | 'HKLM' does not exist.'. from\n     | <repository>/Modules/Private/Profiles.ps1:125 char:19     +             $null=Get-Item -LiteralPath $key -ErrorAction Stop     +                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n"
+    },
+    {
+      "name": "Citrix MCS user profile inventory and safe deletion.calls the Windows profile provider, never raw folder deletion",
+      "error": "Get-Item: <repository>/Modules/Private/Profiles.ps1:125\nLine |\n 125 |              $null=Get-Item -LiteralPath $key -ErrorAction Stop\n     |                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n     | Cannot find drive. A drive with the name 'HKLM' does not exist.\n\n"
+    }
+  ],
+  "focused": {
+    "passed": 142,
+    "failed": 0,
+    "includes": [
+      "EntryPoint: 15",
+      "Full workflow safety and results: 45",
+      "Finalization: 36",
+      "AutoFinalization: 31",
+      "Session: 15"
+    ]
+  },
+  "additional_checks": [
+    "Existing runtime source audit passed without exceptions",
+    "C# Windows interop declarations compiled without executing native calls",
+    "EXE x64 console/UAC manifest check passed",
+    "Packaged-defaults check passed",
+    "Consecutive launcher builds were byte-identical",
+    "git diff --check passed"
+  ],
+  "red_green_evidence": [
+    "Missing entrypoint automatic dispatch and failed request propagation reproduced before implementation",
+    "Missing SYSTEM acknowledgement and early startup refusal reproduced before implementation",
+    "Missing preparation session binding and result context reproduced before implementation",
+    "Worker exit during final profile query reproduced before liveness-check ordering fix",
+    "Native session guards and planned normal-logoff reason tested before implementation"
+  ],
+  "limits": [
+    "Native Windows PowerShell 5.1 execution, UAC and ACL behavior were not exercised here",
+    "No real ExitWindowsEx call, Windows sign-out, profile deletion or computer shutdown was invoked by tests",
+    "Console and RDP acceptance on Windows Server 2025 and Windows 11 remains required",
+    "Normal sign-out can be blocked or cancelled by an application; SYSTEM timeout then prevents shutdown",
+    "31 full-suite failures remain a subset of the previous 55 Linux/platform failures; full suite is not green"
+  ],
+  "launcher": {
+    "bytes": 11351,
+    "sha256": "a797b809b83c864a074ffe7ece66b52b2802a07e43bd466a1d912c78561187d4",
+    "manifest": "requireAdministrator; uiAccess=false"
+  },
+  "configuration_values_unchanged": true,
+  "new_configuration_switch_required": false,
+  "references": [
+    "https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-exitwindowsex",
+    "https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/nf-wtsapi32-wtsquerysessioninformationw"
+  ]
+}

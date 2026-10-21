@@ -7,7 +7,7 @@ BISF Local prepares a Windows master image by running the cleanup options you se
 ## 1. Set up
 
 1. Back up or snapshot the master. Finish Windows updates and required restarts.
-2. Copy the **entire package** to `C:\Program Files (x86)\BISF-Local` or `C:\Program Files\BISF-Local`. Keep the EXE, scripts, modules, XML and schema together. When updating, preserve your custom configuration and existing `state` and `logs` contents.
+2. Copy the **entire package** to `C:\Program Files (x86)\BISF-Local` or `C:\Program Files\BISF-Local`. Keep the EXE, scripts, modules, XML and schema together. When updating, preserve your custom configuration and existing `state` and `logs` contents. If an earlier operator-seal task or state remains, use the failure guidance below before replacing any program files.
 3. Run **BISF-Local.exe** and accept the standard Windows administrator prompt if shown. Normal Prepare initializes permissions inside its own installation before loading the preparation runtime. No separate permission-repair command is needed. Direct script use still requires elevated **64-bit Windows PowerShell 5.1**; PowerShell 7 is not supported for preparation.
 4. Keep other users signed out and prevent new logons during preparation.
 
@@ -36,7 +36,7 @@ BISF-Local.exe -Mode Prepare
 
 **No arguments runs Prepare and applies the enabled cleanup.** Windows requests administrator approval when elevation is needed. Before the preparation runtime is loaded, the package checks and repairs its own permissions, preserving ordinary-user read access to code and keeping state and logs private. Original permissions are backed up when a repair is needed. Windows parent folders and external configuration/log locations are not rewritten. A remaining trust or environment error stops preparation and identifies its cause.
 
-After a successful preparation, sign out normally: the SYSTEM task removes the eligible operator profile, finishes log cleanup and shuts down. Use `BISF-Local.exe -Mode Validate` for checks only. Validate and WhatIf do not repair permissions. The EXE uses installed Windows PowerShell 5.1, forwards arguments and returns its exit code. It downloads no dependencies and preserves execution policy. Configure cleanup first as described below. Use `BISF-Local.exe --help` for usage.
+With operator-profile removal enabled, successful preparation waits for a healthy SYSTEM finalizer to acknowledge readiness, then requests your normal Windows sign-out automatically. The SYSTEM task waits for the profile to unload, removes and verifies it, finishes selected log cleanup and shuts down. No new configuration flag or switch is needed; your existing selected options are honored. Use `BISF-Local.exe -Mode Validate` for checks only. Validate and WhatIf do not repair permissions. The EXE uses installed Windows PowerShell 5.1, forwards arguments and returns its exit code. It downloads no dependencies and preserves execution policy. Configure cleanup first as described below. Use `BISF-Local.exe --help` for usage.
 
 ## 2. Choose the cleanup
 
@@ -51,7 +51,7 @@ Edit the existing `GlobalConfig.xml`; keep its element order. Temp, user-profile
 | `Cleanup.RecycleBin` | Empties the invoking user's system-drive Recycle Bin. |
 | `LogCleanup.WindowsEventLogs` | Clears enabled Administrative/Operational channels, including vendor channels; preserves Security and disabled/Analytic/Debug channels. |
 | `LogCleanup.BISFLogs` | Leave false to retain detailed execution logs on the master. |
-| `Finalization.RemoveOperatorProfile` | Removes the operator's eligible profile after normal sign-out, then shuts down. |
+| `Finalization.RemoveOperatorProfile` | After successful Prepare and SYSTEM readiness, requests normal sign-out automatically, removes the unloaded operator profile and shuts down. |
 | `Explorer.RemoveQuickAccess` | Removes Quick Access/Home from Explorer; opens This PC. |
 | `Explorer.ClassicContextMenu` | Requests the classic right-click menu at Explorer sign-in. |
 | `FinalAction` | `None` leaves Windows running; `Shutdown` requests shutdown after successful preparation. |
@@ -82,7 +82,7 @@ Run these commands one at a time. Resolve errors and review the preview before a
 
 For immediate shutdown without operator-profile removal, keep the operator session unlocked until completion. A locked session can cause Windows to refuse shutdown; BISF reports failure rather than forcing it.
 
-`Validate` and `-WhatIf` do not apply image changes; enabled diagnostic logging can write logs. Review every profile and cleanup path shown. To use another local configuration, add `-ConfigPath 'C:\ProtectedFolder\MyConfig.xml'` to each command.
+`Validate` and `-WhatIf` do not apply image changes or request sign-out; enabled diagnostic logging can write logs. A failed or declined preparation also does not request sign-out. Review every profile and cleanup path shown. To use another local configuration, add `-ConfigPath 'C:\ProtectedFolder\MyConfig.xml'` to each command.
 
 ## 4. Remove the operator profile if required
 
@@ -94,9 +94,13 @@ Use a regular local or domain administrator account with an eligible profile, no
 - `Citrix.VDA.StopBeforeShutdown=false`
 - `Personalization.Enabled=false` and both `ConfigurationManager` reset options `false`
 
-After successful `Prepare`, follow the instruction to **sign out**. Disconnecting RDP is insufficient. Do not change the configuration or package while the task waits.
+Save your work and close other applications before applying `Prepare`. Sign in directly as the preparation administrator: using different administrator credentials inside another user's desktop is refused. The same checks apply to console and RDP sessions.
 
-The SYSTEM task waits for profiles to unload, removes and verifies the operator profile, performs selected final cleanup, then requests shutdown. The default sign-out timeout is 30 minutes. Do not run `Finalize` manually.
+After successful `Prepare`, BISF waits up to 30 seconds for the protected SYSTEM worker to acknowledge readiness. After releasing the preparation lock, it rechecks the worker and your current session and requests **normal Windows sign-out automatically**. You do not need a separate sign-out command. Do not change the configuration or package while the task waits.
+
+The request does not force applications closed. Unsaved work can block or cancel sign-out, and disconnecting RDP alone leaves the profile loaded. The SYSTEM task waits for all required profiles and references to unload, removes and verifies the operator profile, performs selected final cleanup, then requests shutdown. The default unload timeout is 30 minutes. A readiness failure or blocked unload causes no forced sign-out or shutdown. Do not run `Finalize` manually.
+
+Native console and RDP acceptance of this automatic handoff has not been run in the current development environment. Follow `ACCEPTANCE-TESTING.md` on disposable Windows images before production use.
 
 ## 5. Capture and check a clone
 
@@ -116,8 +120,10 @@ Logs are under `.\logs` by default, unless changed or selected for cleanup.
 
 | Exit code | Meaning |
 | --- | --- |
-| `0` | The requested operation succeeded; a staged operator seal still needs sign-out and finalizer completion. |
+| `0` | The requested operation succeeded; with operator sealing, sign-out was requested and SYSTEM completion must still be observed. An accepted request does not prove profile removal or shutdown. |
 | `1` | Configuration, preflight, identity or locking error. |
 | `2` | An operation failed or a required action was declined. |
 
 Resolve the reported cause. Preserve logs and any `state` files or scheduled tasks. Do not delete failure state, force shutdown, or manually delete leftover profile folders to make a failed seal appear successful. Cleanup cannot be undone; restore the backup after a partial failure when necessary.
+
+If a previous operator-seal attempt is pending, an accepted SYSTEM worker may still be running even after a readiness timeout. Do not extract an update over the installation or assume rerunning recovers it. Preserve `state`, logs and task results. An administrator must inspect the exact owned task and worker, use the failure/rollback procedure and confirm any stopped worker has exited before replacing program files. Do not delete pending state to bypass the refusal; restore the saved image when recovery is uncertain.

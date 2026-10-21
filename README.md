@@ -1,6 +1,6 @@
 # BIS-F Local PowerShell edition
 
-**Current package defaults:** running `BISF-Local.exe` or `Invoke-BISF.ps1` without a mode runs **Prepare**. The EXE requests administrator approval when needed; applying Prepare initializes permissions inside the installation automatically before loading the preparation runtime. Temp, user-profile, Recycle Bin, Windows event-log and operator-profile cleanup are enabled, with shutdown after normal operator sign-out. BISF execution logs are retained. Disable unwanted actions in `GlobalConfig.xml`. Configuration Manager resets, clone personalization, separate VDA stopping and unverifiable component cleanup remain off. Use `-Mode Validate` for checks only or `-Mode Prepare -WhatIf` for preview. Omitted legacy XML options still default to false in the parser.
+**Current package defaults:** running `BISF-Local.exe` or `Invoke-BISF.ps1` without a mode runs **Prepare**. The EXE requests administrator approval when needed; applying Prepare initializes permissions inside the installation automatically before loading the preparation runtime. Temp, user-profile, Recycle Bin, Windows event-log and operator-profile cleanup are enabled. After successful preparation, a healthy SYSTEM finalizer acknowledges readiness, then BISF requests the current operator's normal Windows sign-out automatically; profile removal, final cleanup and shutdown follow only after unloading. BISF execution logs are retained. Disable unwanted actions in `GlobalConfig.xml`. Configuration Manager resets, clone personalization, separate VDA stopping and unverifiable component cleanup remain off. Use `-Mode Validate` for checks only or `-Mode Prepare -WhatIf` for preview. Omitted legacy XML options still default to false in the parser.
 
 
 For setup and everyday operation, see the [user manual](USER-MANUAL.md).
@@ -21,7 +21,7 @@ Windows PowerShell host. Existing policy and network/security settings are prese
 
 **Draft acceptance gate:** the complete sign-out, SYSTEM profile removal, selected
 log cleanup, shutdown and clone workflow still requires disposable Windows Server
-2025 and Windows 11 testing. See [ACCEPTANCE-TESTING.md](ACCEPTANCE-TESTING.md) for
+2025 and Windows 11 testing. The automatic sign-out handoff has not been exercised natively in either a Windows console or RDP session in this update. See [ACCEPTANCE-TESTING.md](ACCEPTANCE-TESTING.md) for
 the per-platform evidence matrix and failure cases. Do not use SWCTXMASTER05 for
 destructive testing or mark PR #2 ready based on mocked CI alone.
 [REVIEW-2026-10-15.md](REVIEW-2026-10-15.md) records the independent findings
@@ -45,7 +45,7 @@ script, XML) rather than copying a single module onto an older installation.
 | `Servicing.TimeoutMinutes` | 75 | Refuse further operations if servicing does not finish inside this bound |
 | `Preflight.MinimumSystemDriveFreeGB` | 0 | Fail preflight when system-drive free space is below this threshold |
 | `Preflight.BlockOtherLoadedProfiles` | false if omitted, true in new XML | Refuse preparation if other non-system profiles remain loaded or referenced; repeat checks during preparation and before final sealing |
-| `Finalization.RemoveOperatorProfile` | true | Two-phase SYSTEM finalizer (normal sign-out, then delete operator profile and shut down) |
+| `Finalization.RemoveOperatorProfile` | true | After successful Prepare and SYSTEM readiness, request normal operator sign-out automatically; SYSTEM then deletes the unloaded profile and shuts down |
 | `Finalization.TimeoutMinutes` | 30 | Maximum period the SYSTEM task waits for a clean operator sign-out |
 
 ### Safe Windows Update and disk cleanup
@@ -86,7 +86,7 @@ option in the SYSTEM worker.
 
 Enabled Administrative and Operational event channels, including vendor channels, are cleared at final sealing. Security and disabled/Analytic/Debug channels are preserved. Windows permission-protected channels are retained and reported as warnings; other clearing failures still block shutdown. Each result is recorded in the BISF execution log. Windows can generate new events during shutdown.
 
-`LogCleanup.WindowsEventLogs=true`, `LogCleanup.BISFLogs=false`: detailed BISF execution logs remain on the master. Log cleanup requires `FinalAction=Shutdown`. With operator-profile removal enabled, final cleanup and automatic shutdown follow normal operator sign-out.
+`LogCleanup.WindowsEventLogs=true`, `LogCleanup.BISFLogs=false`: detailed BISF execution logs remain on the master. Log cleanup requires `FinalAction=Shutdown`. With operator-profile removal enabled, successful Prepare requests normal operator sign-out automatically after SYSTEM readiness; final cleanup and shutdown follow verified profile unloading and removal.
 
 `Explorer.RemoveQuickAccess=true` removes Quick Access/Home navigation registrations and opens Explorer at This PC. `Explorer.ClassicContextMenu=true` requests the classic context menu using the per-user shell registration. Both apply to the operator and through Active Setup at Explorer sign-in for other users. Keep the package at its protected installation path. Windows shell behavior can vary by build; setting either option false skips application and does not undo existing settings.
 
@@ -129,7 +129,14 @@ by `GlobalConfig.xsd`. Also set `Personalization.Enabled=false`,
 `ConfigurationManager.CloneTrustedRootKeyReset=false` and
 `Citrix.VDA.StopBeforeShutdown=false`.
 
+No new XML option or launch switch is required. Existing configurations retain their
+selected values: this automatic handoff applies when `Finalization.RemoveOperatorProfile=true`
+and its existing prerequisites are met. Validate, WhatIf, a declined operation and a
+failed preparation never request operator sign-out. Close or save other applications
+before applying Prepare; applications with unsaved work can block normal sign-out.
+
 **Process:**
+
 1. Capture a VM checkpoint/backup while retaining a recovery route; complete
    Windows Update servicing and reboots beforehand.
 2. Use a normal elevated **domain/local admin account with RID >=1000**
@@ -144,17 +151,21 @@ by `GlobalConfig.xsd`. Also set `Personalization.Enabled=false`,
 5. Run `Invoke-BISF.ps1 -Mode Prepare` only after explicit operator review.
    If preparation succeeds it writes a protected one-shot state file,
    registers and **starts** a SYSTEM scheduled task named
-   `BISF-Local-OperatorSeal` with **no automatic trigger**, and prints
-   the instruction to sign out.
-6. **Sign out**, do not merely disconnect RDP. The task waits until no
-   nonsystem Windows user profiles are loaded or referenced. Unknown nonsystem
-   lifecycle flags are an error. It validates it is running
-   as SYSTEM on the *same master*, checks the config SHA256 and target SID,
-   verifies the operator profile is now unloaded, and rechecks eligibility.
-7. It removes the operator profile through `Remove-CimInstance`, verifies
-   that it is no longer registered, unregisters its task, removes its
-   staging state, and only then asks Windows to shut down. If any step
-   fails or the timeout expires, **it will not request shutdown**.
+   `BISF-Local-OperatorSeal` with **no automatic trigger**. The worker validates
+   SYSTEM identity, the same master, approved config hash, eligible target profile
+   and preparation/reboot readiness, then atomically acknowledges this generation.
+   Preparation waits up to 30 seconds for that acknowledgement and a live worker.
+6. After the preparation logger and lock are released, the entrypoint rechecks the
+   staged worker and the current interactive session, then requests **normal Windows
+   sign-out automatically** through the local Windows API. It does not force
+   applications closed. A disconnected RDP session is not a completed sign-out;
+   blocked sign-out or lingering references keep the worker waiting.
+7. Once no nonsystem Windows user profiles are loaded or referenced, the SYSTEM
+   worker acquires the preparation lock, rechecks all deletion guards and removes
+   the operator profile through `Remove-CimInstance`. It verifies registration and
+   the original profile directory are absent, unregisters its task, removes staging
+   state, performs selected final log cleanup, and only then requests shutdown.
+   Any failure or unload timeout prevents a not-yet-requested shutdown.
 
 Preflight rejects retained operator state and checks the module directory,
 schema and imported files before ordinary cleanup begins; registration repeats
@@ -171,14 +182,20 @@ and mismatched provider SIDs fail closed. Session scans are repeated around
 preparation operations, but do not lock out Windows logons: maintain exclusive
 access through the normal Citrix maintenance process for the entire seal.
 
-No task-triggered logoff, forced session termination, unguarded file-tree
-deletion, scheduled startup after imaging, or automatic deletion on MCS
+The interactive preparation process requests only its own normal sign-out; the
+SYSTEM task never forces a session to end. No forced application closure, unguarded
+file-tree deletion, scheduled startup after imaging, or automatic deletion on MCS
 clones is performed. A timeout or failed stage may leave a protected
 `state\operator-seal.json` and/or scheduled task for an administrator to
 investigate. **Do not delete those files/tasks blindly.** Review the
 `Finalize` log under your configured logging path and restore the test
-snapshot when uncertain. A shutdown request can fail after profile
-deletion; that cannot be rolled back by this tool.
+snapshot when uncertain. An accepted worker may still be running even if its
+readiness acknowledgement timed out. Do not overwrite the installed package,
+extract an update over it or rerun to clear an earlier attempt. Preserve the state
+and logs; an administrator must inspect the exact owned task and worker, stop a
+failed attempt under the recovery procedure and confirm the worker has exited
+before replacing program files. Retained state is not removed automatically. A
+shutdown request can fail after profile deletion; that cannot be rolled back by this tool.
 
 This workflow is **not** validated yet on a real MCS master or Windows 11
 template. Mocked Pester tests cannot certify Task Scheduler lifetime,
