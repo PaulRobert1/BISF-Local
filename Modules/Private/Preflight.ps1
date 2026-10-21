@@ -178,10 +178,8 @@ function Test-BISFPreflight {
         if ($others.Count -gt 0) { throw 'Other loaded local user profiles exist. Log off other users and retry image preparation.' }
     }
     if ($ids -contains 'Servicing') {
-        foreach ($cmd in 'Get-ScheduledTask','Get-ScheduledTaskInfo','Start-ScheduledTask') {
-            $null=Get-Command $cmd -Module ScheduledTasks -CommandType Cmdlet,Function -ErrorAction Stop
-        }
-        $null=Get-BISFComponentCleanupTask
+        # Capability-only check: import the fixed inbox module, never start servicing.
+        $null=Get-BISFComponentCleanupCapability
     }
     if ($ids -contains 'RecycleBin') {
         $null=Get-Command 'Clear-RecycleBin' -CommandType Cmdlet -ErrorAction Stop

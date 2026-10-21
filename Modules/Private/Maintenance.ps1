@@ -1,5 +1,5 @@
 # BIS-F Local — opt-in image maintenance and read-only pre-capture diagnostics.
-# Uses only PowerShell/CIM and Microsoft-built-in Windows scheduled tasks.
+# Uses only PowerShell/CIM and the inbox Microsoft DISM PowerShell cmdlet.
 
 function Get-BISFPendingRebootReasons {
     $reasons=New-Object 'System.Collections.Generic.List[string]'
@@ -54,47 +54,87 @@ function Get-BISFProfileManagementServices {
         Where-Object { $_.Name -match '^(frxsvc|ctxprofile)$' -or $_.DisplayName -match '^Citrix Profile Management' } |
         Select-Object Name,DisplayName,State,StartMode)
 }
-function Get-BISFComponentCleanupTask {
-    $task=@(Get-ScheduledTask -TaskPath '\Microsoft\Windows\Servicing\' -TaskName 'StartComponentCleanup' -ErrorAction Stop)
-    if ($task.Count -ne 1 -or $task[0].TaskName -ne 'StartComponentCleanup' -or
-        $task[0].TaskPath -ne '\Microsoft\Windows\Servicing\') {
-        throw 'Expected one Microsoft Windows Servicing StartComponentCleanup task.'
+function Get-BISFDismModulePath {
+    $system=[Environment]::GetFolderPath([Environment+SpecialFolder]::System)
+    if ([string]::IsNullOrWhiteSpace($system) -or -not [IO.Path]::IsPathRooted($system)) {
+        throw 'Cannot locate the Windows system directory for the inbox DISM module.'
     }
-    if ([string]$task[0].State -ne 'Ready') {
-        throw "Servicing StartComponentCleanup task not ready: $($task[0].State)"
+    Join-Path $system 'WindowsPowerShell/v1.0/Modules/Dism/Dism.psd1'
+}
+function Get-BISFComponentCleanupCapability {
+    $manifest=Get-BISFDismModulePath
+    if (-not (Test-Path -LiteralPath $manifest -PathType Leaf -ErrorAction Stop)) {
+        throw 'Required inbox DISM PowerShell module is missing.'
     }
-    $task[0]
+    Test-BISFNoReparsePath $manifest
+    $expectedBase=[IO.Path]::GetFullPath((Split-Path $manifest -Parent)).TrimEnd([char[]]'\/')
+    $modules=@(Import-Module -Name $manifest -PassThru -Force -ErrorAction Stop)
+    # The exact manifest is imported above, but PowerShell can report its trusted
+    # script or binary RootModule as Path instead of the manifest itself.
+    if ($modules.Count -ne 1 -or $modules[0].Name -ne 'Dism' -or
+        -not ([IO.Path]::GetFullPath([string]$modules[0].ModuleBase).TrimEnd([char[]]'\/')).Equals($expectedBase,[StringComparison]::OrdinalIgnoreCase) -or
+        -not ([IO.Path]::GetDirectoryName([IO.Path]::GetFullPath([string]$modules[0].Path)).TrimEnd([char[]]'\/')).Equals($expectedBase,[StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Loaded module does not match the fixed inbox DISM source.'
+    }
+    $commands=@(Get-Command -Name 'Dism\Repair-WindowsImage' -CommandType Cmdlet -ErrorAction Stop)
+    if ($commands.Count -ne 1 -or [string]$commands[0].CommandType -ne 'Cmdlet' -or
+        $commands[0].Name -ne 'Repair-WindowsImage' -or $commands[0].ModuleName -ne 'Dism') {
+        throw 'Required inbox DISM Repair-WindowsImage cmdlet is unavailable.'
+    }
+    $command=$commands[0]
+    # Exported binary cmdlets may report the DLL rather than the manifest path.
+    if ($null -eq $command.Module -or
+        -not ([IO.Path]::GetFullPath([string]$command.Module.ModuleBase).TrimEnd([char[]]'\/')).Equals($expectedBase,[StringComparison]::OrdinalIgnoreCase) -or
+        -not ([IO.Path]::GetDirectoryName([IO.Path]::GetFullPath([string]$command.Module.Path)).TrimEnd([char[]]'\/')).Equals($expectedBase,[StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Repair-WindowsImage is not from the fixed inbox DISM directory.'
+    }
+    foreach ($required in 'Online','StartComponentCleanup','NoRestart','LimitAccess') {
+        if ($null -eq $command.Parameters -or -not $command.Parameters.ContainsKey($required)) {
+            throw "Inbox DISM Repair-WindowsImage lacks required $required capability; this Windows image cannot use component cleanup."
+        }
+    }
+    $command
+}
+function Get-BISFComponentCleanupElapsedMinutes {
+    param([Diagnostics.Stopwatch]$Stopwatch)
+    $Stopwatch.Elapsed.TotalMinutes
 }
 function Invoke-BISFComponentCleanup {
-    param([int]$TimeoutMinutes,$Logger)
-    # The built-in task honors Windows Servicing's component-management rules,
-    # unlike deleting files under WinSxS/SoftwareDistribution. No ResetBase.
-    $task=Get-BISFComponentCleanupTask
-    $previous=Get-ScheduledTaskInfo -TaskName 'StartComponentCleanup' -TaskPath '\Microsoft\Windows\Servicing\' -ErrorAction Stop
-    if ($null -eq $previous.LastRunTime) { throw 'Cannot establish the previous servicing run time.' }
-    $begin=[datetime]::Now.AddSeconds(-5)
-    Write-BISFLog $Logger Info Servicing 'Starting built-in Microsoft Windows Servicing StartComponentCleanup scheduled task.'
-    Start-ScheduledTask -TaskName 'StartComponentCleanup' -TaskPath '\Microsoft\Windows\Servicing\' -ErrorAction Stop
-    $deadline=[datetime]::UtcNow.AddMinutes($TimeoutMinutes)
-    $started=$false
-    while ([datetime]::UtcNow -lt $deadline) {
-        $current=Get-ScheduledTask -TaskName 'StartComponentCleanup' -TaskPath '\Microsoft\Windows\Servicing\' -ErrorAction Stop
-        $info=Get-ScheduledTaskInfo -TaskName 'StartComponentCleanup' -TaskPath '\Microsoft\Windows\Servicing\' -ErrorAction Stop
-        if ($null -ne $info.LastRunTime -and [datetime]$info.LastRunTime -ge $begin -and
-            [datetime]$info.LastRunTime -gt [datetime]$previous.LastRunTime) { $started=$true }
-        if ($started -and [string]$current.State -eq 'Ready') {
-            if ([int]$info.LastTaskResult -ne 0) {
-                throw "Servicing component cleanup returned Task Scheduler result $($info.LastTaskResult)."
-            }
-            # LastRunTime/Ready/result 0 is also observed after cancellation of
-            # a queued COM-handler run. It is not per-instance completion proof.
-            # Until a durable instance-specific completion contract is qualified,
-            # keep this opt-in operation fail-closed, even after observing Running.
-            throw 'Servicing component cleanup completion cannot be verified from Task Scheduler summary state; refusing further image preparation. Review the servicing result manually. No automatic retry or cancellation was performed.'
-        }
-        Start-Sleep -Seconds 10
+    param([ValidateRange(1,2147483647)][int]$TimeoutMinutes,$Logger)
+    # Never infer completion from Task Scheduler summaries or remove servicing
+    # files directly. DISM returns synchronously; no ResetBase or repair source.
+    $null=Get-BISFComponentCleanupCapability
+    if (@(Get-BISFPendingRebootReasons).Count -gt 0) {
+        throw 'A pending reboot blocks component cleanup; reboot the master and retry.'
     }
-    throw "Servicing component cleanup exceeded $TimeoutMinutes minutes; refusing further image preparation."
+    Write-BISFLog $Logger Info Servicing ("Starting synchronous inbox DISM component cleanup. Servicing is not interrupted; the {0}-minute completion budget is checked only after DISM returns. No automatic restart or Windows Update access is allowed." -f $TimeoutMinutes)
+    $watch=[Diagnostics.Stopwatch]::StartNew()
+    try {
+        $result=@(Dism\Repair-WindowsImage -Online -StartComponentCleanup -NoRestart -LimitAccess -ErrorAction Stop)
+        $watch.Stop()
+        $elapsed=Get-BISFComponentCleanupElapsedMinutes $watch
+        if ($elapsed -gt $TimeoutMinutes) {
+            throw "Servicing component cleanup exceeded the $TimeoutMinutes-minute completion budget after returning; refusing further image preparation. The operation was not interrupted or cancelled."
+        }
+        if ($result.Count -ne 1 -or $null -eq $result[0]) {
+            throw 'DISM component cleanup did not return exactly one completion result.'
+        }
+        $image=$result[0]
+        $online=$image.PSObject.Properties['Online']
+        $restart=$image.PSObject.Properties['RestartNeeded']
+        if ($null -eq $online -or $null -eq $restart -or
+            $online.Value -isnot [bool] -or $restart.Value -isnot [bool]) {
+            throw 'DISM component cleanup returned malformed Online/RestartNeeded completion evidence.'
+        }
+        if (-not $online.Value) { throw 'DISM component cleanup did not confirm the online Windows image.' }
+        if ($restart.Value) { throw 'DISM component cleanup requires a reboot; further preparation and shutdown are refused.' }
+        # This operation-specific gate always applies, even when the generic
+        # Preflight.BlockPendingReboot setting was disabled by the operator.
+        if (@(Get-BISFPendingRebootReasons).Count -gt 0) {
+            throw 'A pending reboot appeared after DISM component cleanup; further preparation and shutdown are refused.'
+        }
+        Write-BISFLog $Logger Info Servicing ("DISM component cleanup completed successfully in {0:N2} minutes; the online image reported no restart requirement." -f $elapsed)
+    } finally { $watch.Stop() }
 }
 function Invoke-BISFRecycleBinCleanup {
     param($Logger)

@@ -2,6 +2,27 @@
 
 Updated: 2026-10-21. This is a source-based development handoff, not permission to run destructive actions on any Windows master.
 
+## Current Windows Update cleanup update
+
+The user requested Windows Update cleanup enabled by default in GlobalConfig.
+The supplied `Servicing.ComponentCleanup` is now true; its existing schema and
+legacy omission default remain unchanged. Servicing is the first preparation
+step and uses the fixed inbox DISM module's documented `Repair-WindowsImage`
+cmdlet with Online, StartComponentCleanup, NoRestart and LimitAccess. Preflight
+checks the installed cmdlet's required capabilities. The former optional task
+path, which could never verify success, has been replaced with synchronous
+completion and explicit online/restart-result checks plus pending-reboot checks.
+Failure, unknown result, restart requirement or completion-budget overrun stops
+later cleanup and the automatic sign-out handoff. TimeoutMinutes remains 75 by
+default and is checked after return; active servicing is never interrupted.
+
+No ResetBase, external executable, update installation/download, service reset
+or manual Windows Update database/cache deletion was added. Preserve current
+source-audit restrictions. When keeping a customized old XML, explicitly set
+its existing ComponentCleanup value to true to adopt the new packaged default.
+Native DISM cleanup and the full master shutdown cycle remain untested here;
+current evidence belongs in TEST-RESULTS.md and its machine-readable report.
+
 ## Current automatic preparation handoff
 
 Successful applying `Prepare` with `Finalization.RemoveOperatorProfile=true` now

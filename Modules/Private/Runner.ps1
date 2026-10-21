@@ -9,7 +9,7 @@ function Get-BISFPlan {
         $steps.Add([pscustomobject]@{Id='Complete';Description='Record successful clone personalization'})
     } else {
         if ($Config.Servicing.ComponentCleanup) {
-            $steps.Add([pscustomobject]@{Id='Servicing';Description='Run built-in Windows Servicing component cleanup (no ResetBase)'})
+            $steps.Add([pscustomobject]@{Id='Servicing';Description='Clean up superseded Windows update components through DISM and wait for completion'})
         }
         foreach ($id in 'WindowsTemp','CurrentUserTemp') {
             if ($Config.Cleanup.$id) { $steps.Add([pscustomobject]@{Id=$id;Description="Remove old temporary files: $id"}) }

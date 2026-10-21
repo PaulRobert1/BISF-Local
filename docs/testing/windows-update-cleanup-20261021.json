@@ -1,0 +1,312 @@
+{
+  "date": "2026-10-21",
+  "source_base_commit": "6b80b03a8acc002218b6ca4b3a4fe2761d670e0e",
+  "feature": "Windows Update component cleanup enabled by default before automatic sign-out and shutdown",
+  "runtime": "PowerShell Core 7.5.4 on Ubuntu 24.04.3 LTS; Pester 5.7.1",
+  "baseline": {
+    "Passed": 348,
+    "Failed": 31,
+    "Skipped": 0,
+    "Total": 379,
+    "FailedContainers": 0
+  },
+  "updated": {
+    "Passed": 384,
+    "Failed": 16,
+    "Skipped": 0,
+    "Total": 400,
+    "FailedContainers": 0,
+    "DurationSeconds": 33.2991176
+  },
+  "introduced_failures": [],
+  "existing_failures": [
+    {
+      "Name": "Read-only MCS test clone verification report.reports meaningful local service evidence without claiming VDA registered",
+      "Error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "Name": "Read-only MCS test clone verification report.recognizes a Windows 11 client clone using ProductType not just build 26100",
+      "Error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "Name": "Read-only MCS test clone verification report.does not claim full Citrix health if the local VDA readiness query fails",
+      "Error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "Name": "Read-only MCS test clone verification report.reports a pending reboot but never performs image modifications on the clone",
+      "Error": "Exception: Could not find Command Get-CimInstance\n\n"
+    },
+    {
+      "Name": "Citrix final shutdown boundary.stops immediately before power with no intervening log writes",
+      "Error": "InvalidResult: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Tests/Integration.Tests.ps1\nLine |\n 605 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 0\n     | Expected 0, but got 1.\n\n"
+    },
+    {
+      "Name": "Citrix final shutdown boundary.restores a running VDA after a failed shutdown request",
+      "Error": "InvalidResult: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Tests/Integration.Tests.ps1\nLine |\n 612 | $r.ExitCode | Should -Be 2\n     | Expected 2, but got 1.\n\n"
+    },
+    {
+      "Name": "Citrix final shutdown boundary.attempts recovery even when service stop partially fails",
+      "Error": "InvalidResult: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Tests/Integration.Tests.ps1\nLine |\n 618 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2\n     | Expected 2, but got 1.\n\n"
+    },
+    {
+      "Name": "Citrix final shutdown boundary.preserves originally stopped state on recovery",
+      "Error": "InvalidResult: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Tests/Integration.Tests.ps1\nLine |\n 625 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2\n     | Expected 2, but got 1.\n\n"
+    },
+    {
+      "Name": "Citrix final shutdown boundary.does not stop the VDA if earlier cleanup fails",
+      "Error": "InvalidResult: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Tests/Integration.Tests.ps1\nLine |\n 632 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2\n     | Expected 2, but got 1.\n\n"
+    },
+    {
+      "Name": "Citrix final shutdown boundary.protects the detected WEM cache from temp cleanup",
+      "Error": "InvalidResult: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Tests/Integration.Tests.ps1\nLine |\n 641 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 0\n     | Expected 0, but got 1.\n\n"
+    },
+    {
+      "Name": "Citrix final shutdown boundary.does not restore after accepted shutdown even if journal finalization fails",
+      "Error": "InvalidResult: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Tests/Integration.Tests.ps1\nLine |\n 651 | (Invoke-BISFLocal $cfg $root Prepare -Confirm:$false).ExitCode | Should -Be 2\n     | Expected 2, but got 1.\n\n"
+    },
+    {
+      "Name": "Opt-in log cleanup XML and strict selection.refuses log clearing without a readable target event channel",
+      "Error": "Exception: Could not find Command Get-WinEvent\n\n"
+    },
+    {
+      "Name": "Checkbox editor configuration writes.preserves the original file if Windows refuses atomic replacement",
+      "Error": "InvalidResult: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Tests/LogCleanupEditor.Tests.ps1\nLine |\n  52 | { Set-BISFLogCleanupOptions $cfg $root $hash $true $true } | Should -Throw\n     | Expected an exception to be thrown, but no exception was thrown.\n\n"
+    },
+    {
+      "Name": "Exported module under production strict mode.can execute a default empty preparation with disabled logging",
+      "Error": "InvalidResult: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Tests/Module.Tests.ps1\nLine |\n  20 | $r.ExitCode | Should -Be 0\n     | Expected 0, but got 1.\n\n"
+    },
+    {
+      "Name": "Citrix MCS user profile inventory and safe deletion.stops ordinary cleanup when provider removal leaves profile files behind",
+      "Error": "InvalidResult: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Tests/Profiles.Tests.ps1\nLine |\n  39 | { Invoke-BISFUserProfileCleanup $plan $null } | Should -Throw '*profile directory remains*'\n     | Expected an exception with message like '*profile directory remains*' to\n     | be thrown, but the message was 'Cannot find drive. A drive with the name\n     | 'HKLM' does not exist.'. from\n     | /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Modules/Private/Profiles.ps1:125 char:19     +             $null=Get-Item -LiteralPath $key -ErrorAction Stop     +                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n"
+    },
+    {
+      "Name": "Citrix MCS user profile inventory and safe deletion.calls the Windows profile provider, never raw folder deletion",
+      "Error": "Get-Item: /workspace/scratch/606621e949fd/BISF-Local-windows-update-cleanup/Modules/Private/Profiles.ps1:125\nLine |\n 125 |              $null=Get-Item -LiteralPath $key -ErrorAction Stop\n     |                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n     | Cannot find drive. A drive with the name 'HKLM' does not exist.\n\n"
+    }
+  ],
+  "removed_baseline_failure_occurrences": {
+    "total": 15,
+    "maintenance_inventory_and_recycle_bin_tests_now_portable": 6,
+    "obsolete_scheduled_task_tests_replaced": 9
+  },
+  "focused": {
+    "passed": 255,
+    "failed": 0,
+    "groups": {
+      "Maintenance": 36,
+      "PackagedDefaults": 3,
+      "Configuration": 20,
+      "Preflight": 34,
+      "EntryPoint": 15,
+      "AutoFinalization": 31,
+      "Finalization": 36,
+      "Session": 15,
+      "Static": 18,
+      "Integration full workflow safety and results": 47
+    }
+  },
+  "containers": [
+    {
+      "Path": "AutoFinalization.Tests.ps1",
+      "Passed": 31,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 31,
+      "Result": "Passed"
+    },
+    {
+      "Path": "Citrix.Tests.ps1",
+      "Passed": 38,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 38,
+      "Result": "Passed"
+    },
+    {
+      "Path": "CloneHealth.Tests.ps1",
+      "Passed": 0,
+      "Failed": 4,
+      "Skipped": 0,
+      "Total": 4,
+      "Result": "Failed"
+    },
+    {
+      "Path": "Configuration.Tests.ps1",
+      "Passed": 20,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 20,
+      "Result": "Passed"
+    },
+    {
+      "Path": "EntryPoint.Tests.ps1",
+      "Passed": 15,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 15,
+      "Result": "Passed"
+    },
+    {
+      "Path": "ExplorerCustomizations.Tests.ps1",
+      "Passed": 3,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 3,
+      "Result": "Passed"
+    },
+    {
+      "Path": "Finalization.Tests.ps1",
+      "Passed": 36,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 36,
+      "Result": "Passed"
+    },
+    {
+      "Path": "Installation.Tests.ps1",
+      "Passed": 21,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 21,
+      "Result": "Passed"
+    },
+    {
+      "Path": "Integration.Tests.ps1",
+      "Passed": 49,
+      "Failed": 7,
+      "Skipped": 0,
+      "Total": 56,
+      "Result": "Failed"
+    },
+    {
+      "Path": "Lifecycle.Tests.ps1",
+      "Passed": 19,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 19,
+      "Result": "Passed"
+    },
+    {
+      "Path": "LogCleanup.Tests.ps1",
+      "Passed": 12,
+      "Failed": 1,
+      "Skipped": 0,
+      "Total": 13,
+      "Result": "Failed"
+    },
+    {
+      "Path": "LogCleanupEditor.Tests.ps1",
+      "Passed": 6,
+      "Failed": 1,
+      "Skipped": 0,
+      "Total": 7,
+      "Result": "Failed"
+    },
+    {
+      "Path": "Maintenance.Tests.ps1",
+      "Passed": 36,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 36,
+      "Result": "Passed"
+    },
+    {
+      "Path": "Module.Tests.ps1",
+      "Passed": 1,
+      "Failed": 1,
+      "Skipped": 0,
+      "Total": 2,
+      "Result": "Failed"
+    },
+    {
+      "Path": "Operations.Tests.ps1",
+      "Passed": 9,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 9,
+      "Result": "Passed"
+    },
+    {
+      "Path": "PackagedDefaults.Tests.ps1",
+      "Passed": 3,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 3,
+      "Result": "Passed"
+    },
+    {
+      "Path": "Preflight.Tests.ps1",
+      "Passed": 34,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 34,
+      "Result": "Passed"
+    },
+    {
+      "Path": "Profiles.Tests.ps1",
+      "Passed": 18,
+      "Failed": 2,
+      "Skipped": 0,
+      "Total": 20,
+      "Result": "Failed"
+    },
+    {
+      "Path": "Session.Tests.ps1",
+      "Passed": 15,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 15,
+      "Result": "Passed"
+    },
+    {
+      "Path": "Static.Tests.ps1",
+      "Passed": 18,
+      "Failed": 0,
+      "Skipped": 0,
+      "Total": 18,
+      "Result": "Passed"
+    }
+  ],
+  "red_green_evidence": [
+    "Packaged defaults failed before the XML edit and passed after enabling ComponentCleanup.",
+    "Replacement servicing capability and synchronous-operation tests failed before implementation; final Maintenance suite passes 36 tests.",
+    "Legitimate imported root script/binary module paths failed the original manifest-only origin check and passed after the reviewed correction.",
+    "A simulated legacy DISM command reproduced mock parameter-binding failures; the test-only compatibility stub now passes 36 tests and restores the original module."
+  ],
+  "configuration_change": {
+    "path": "Servicing.ComponentCleanup",
+    "previous": false,
+    "current": true,
+    "legacy_omitted_default": false,
+    "other_values_unchanged": true,
+    "schema_unchanged": true
+  },
+  "completion_contract": "Fixed inbox DISM PowerShell cleanup; synchronous return; exactly one result with Boolean Online=true and RestartNeeded=false; pre/post pending-reboot checks; elapsed budget after return without interruption.",
+  "additional_checks": [
+    "Unchanged runtime SourceAudit passed",
+    "Packaged default checker passed",
+    "git diff --check passed",
+    "Independent runtime/config/documentation review: no remaining concrete blockers"
+  ],
+  "launcher": {
+    "unchanged_from_base": true,
+    "sha256": "a797b809b83c864a074ffe7ece66b52b2802a07e43bd466a1d912c78561187d4"
+  },
+  "runtime_sha256": {
+    "Modules/Private/Maintenance.ps1": "159da0913282f4f72ac7e1423350899a7949574defdfb17a7c83952369bc91f8",
+    "Modules/Private/Preflight.ps1": "4a63a2a8a2d6cdcf894785fbb7aad3a03723312b6183ab49c5e79be0e44848b0",
+    "Modules/Private/Runner.ps1": "dd706a790c9892c1d1556bf9e915ac4548a91a00f823a86b4c5f6322c2614916"
+  },
+  "limits": [
+    "The full Linux suite remains non-green: all 16 remaining failing-name occurrences were already present in the baseline.",
+    "Real Windows PowerShell 5.1 DISM module capabilities, native result shape, superseded-component cleanup and reboot behavior were not run.",
+    "Real console/RDP sign-out, SYSTEM task lifetime, profile deletion and shutdown were not run.",
+    "TimeoutMinutes is checked after the synchronous operation returns; it does not cancel active servicing.",
+    "An installed DISM cmdlet lacking the required cleanup parameters is rejected before image cleanup."
+  ],
+  "references": [
+    "https://learn.microsoft.com/en-us/powershell/module/dism/repair-windowsimage?view=windowsserver2025-ps",
+    "https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/clean-up-the-winsxs-folder?view=windows-11"
+  ]
+}

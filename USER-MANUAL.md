@@ -40,7 +40,7 @@ With operator-profile removal enabled, successful preparation waits for a health
 
 ## 2. Choose the cleanup
 
-Edit the existing `GlobalConfig.xml`; keep its element order. Temp, user-profile, Recycle Bin, event-log and operator-profile cleanup default to `true`; `FinalAction` defaults to `Shutdown`. BISF execution logs are retained (`LogCleanup.BISFLogs=false`). Both Explorer options below default to `true`. Set unwanted options to `false` before running. Configuration Manager resets, clone personalization, the separate VDA-stop option, and component cleanup remain disabled. These cannot all be combined with operator-profile finalization.
+Edit the existing `GlobalConfig.xml`; keep its element order. Windows Update component cleanup, temp, user-profile, Recycle Bin, event-log and operator-profile cleanup default to `true`; `FinalAction` defaults to `Shutdown`. BISF execution logs are retained (`LogCleanup.BISFLogs=false`). Both Explorer options below default to `true`. Set unwanted options to `false` before running. Configuration Manager resets, clone personalization and the separate VDA-stop option remain disabled. These cannot all be combined with operator-profile finalization.
 
 | Setting | What it does |
 | --- | --- |
@@ -49,6 +49,8 @@ Edit the existing `GlobalConfig.xml`; keep its element order. Temp, user-profile
 | `Cleanup.MinimumAgeDays` | Sets the temporary-file age threshold; default 7 days. This does not limit profile deletion by age. |
 | `Cleanup.UserProfiles` | Removes eligible unloaded local profiles through Windows. |
 | `Cleanup.RecycleBin` | Empties the invoking user's system-drive Recycle Bin. |
+| `Servicing.ComponentCleanup` | Enabled by default. Removes superseded Windows update components through the inbox DISM PowerShell cmdlet before other cleanup and automatic sign-out. |
+| `Servicing.TimeoutMinutes` | Completion-time budget, default 75 minutes. Active servicing is allowed to finish; an over-budget return blocks further preparation. |
 | `LogCleanup.WindowsEventLogs` | Clears enabled Administrative/Operational channels, including vendor channels; preserves Security and disabled/Analytic/Debug channels. |
 | `LogCleanup.BISFLogs` | Leave false to retain detailed execution logs on the master. |
 | `Finalization.RemoveOperatorProfile` | After successful Prepare and SYSTEM readiness, requests normal sign-out automatically, removes the unloaded operator profile and shuts down. |
@@ -58,7 +60,9 @@ Edit the existing `GlobalConfig.xml`; keep its element order. Temp, user-profile
 
 Profiles displayed as **Account Unknown** are eligible when Windows reports a valid user SID and a safe, unloaded profile. System, loaded, excluded and protected profiles are preserved; missing or unsafe paths are refused. Review the preview before deletion.
 
-Keep `Servicing.ComponentCleanup=false`. Perform component servicing separately: the optional scheduled-task integration currently refuses sealing because it cannot reliably prove completion.
+Windows Update cleanup now uses `Dism\Repair-WindowsImage -Online -StartComponentCleanup -NoRestart -LimitAccess` and waits for the actual call to return. Preflight checks the installed inbox DISM cmdlet and its required parameters. If that Windows build lacks `-StartComponentCleanup`, preparation stops before image cleanup with an actionable compatibility error. The operation removes superseded update components; it does not install updates or use ResetBase. See [Microsoft's cmdlet documentation](https://learn.microsoft.com/en-us/powershell/module/dism/repair-windowsimage?view=windowsserver2025-ps).
+
+Complete update installation and required reboots before preparation. Cleanup errors, unknown results, a restart requirement or exceeding the completion-time budget block sign-out and shutdown. The budget is checked when the synchronous operation returns; BISF never interrupts an active servicing operation. If you keep an older customized XML, set its existing `Servicing.ComponentCleanup` value to `true` to enable this new package default; missing legacy settings remain disabled.
 
 Keep pending-reboot and other-loaded-profile checks enabled. Leave `Personalization.Enabled`, both `ConfigurationManager` reset options, and `Citrix.VDA.StopBeforeShutdown` false while operator-profile finalization is enabled.
 

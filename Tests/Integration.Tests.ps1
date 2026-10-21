@@ -96,11 +96,12 @@ Describe 'Full workflow safety and results' {
         ($script:trace -join ',') | Should -Be 'profiles'
         Should -Invoke Invoke-BISFUserProfileCleanup -Times 1
     }
-    It 'returns acknowledged sign-out context only after preparation and journal commit' {
+    It 'completes servicing before profile cleanup and acknowledged automatic sign-out handoff' {
         # Existing durable lifecycle state makes this Prepare acquire a journal.
         Mock Test-Path { $true } -ParameterFilter { $LiteralPath -eq (Join-Path $root 'state/lifecycle.json') }
         Mock Read-BISFState { [pscustomobject]@{Status='Prepared';Completion=$null} }
         [xml]$xml=Get-Content $cfg -Raw
+        $xml.BISF.Servicing.ComponentCleanup='true'
         $xml.BISF.Cleanup.UserProfiles='true'
         $xml.BISF.Finalization.RemoveOperatorProfile='true'
         $xml.BISF.FinalAction='Shutdown'
@@ -112,6 +113,7 @@ Describe 'Full workflow safety and results' {
             ExcludedSIDs=@()
             Entries=@([pscustomobject]@{SID='S-1-5-21-111-222-333-1001';LocalPath='C:\Users\Operator';Status='Protected';Reason='Current user'})
         } }
+        Mock Invoke-BISFComponentCleanup { $script:trace.Add('servicing') }
         Mock Invoke-BISFUserProfileCleanup { $script:trace.Add('other-profiles') }
         Mock Register-BISFOperatorSeal {
             if ($script:pending) { throw 'Preparation journal was not committed before staging' }
@@ -121,7 +123,7 @@ Describe 'Full workflow safety and results' {
         Mock Stop-Computer { throw 'Must not shut down before administrator signs out' }
         $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
         $r.ExitCode | Should -Be 0
-        ($script:trace -join ',') | Should -Be 'state:Failed,other-profiles,stage'
+        ($script:trace -join ',') | Should -Be 'state:Failed,servicing,other-profiles,stage'
         $r.OperatorSignOut.Generation | Should -Be '11111111-2222-3333-4444-555555555555'
         $r.OperatorSignOut.SID | Should -Be 'S-1-5-21-111-222-333-1001'
         $r.OperatorSignOut.SessionId | Should -Be 3
@@ -129,6 +131,7 @@ Describe 'Full workflow safety and results' {
         $r.OperatorSignOut.WorkerStartedUtc | Should -Be '2026-10-21T12:00:00.0000000Z'
         Should -Invoke Get-BISFOperatorSession -Times 1 -ParameterFilter { $ExpectedSid -eq 'S-1-5-21-111-222-333-1001' }
         $r.Results.Status | Should -Contain 'Staged'
+        Should -Invoke Invoke-BISFComponentCleanup -Times 1 -ParameterFilter { $TimeoutMinutes -eq 75 }
         Should -Invoke Stop-Computer -Times 0
     }
     It 'returns no sign-out context if acknowledged staging fails' {
@@ -208,17 +211,30 @@ Describe 'Full workflow safety and results' {
         Should -Invoke Register-BISFOperatorSeal -Times 0
         $script:trace.Count | Should -Be 0
     }
-    It 'stops later profile deletion if Windows servicing fails' {
+    It 'blocks profile deletion and automatic handoff after servicing <Failure>' -ForEach @(
+        @{Failure='failure';FailureMessage='servicing failed'},
+        @{Failure='reboot requirement';FailureMessage='servicing requires a reboot'},
+        @{Failure='time budget expiry';FailureMessage='servicing exceeded time budget'}
+    ) {
         [xml]$xml=Get-Content $cfg -Raw
         $xml.BISF.Servicing.ComponentCleanup='true'
         $xml.BISF.Cleanup.UserProfiles='true'
+        $xml.BISF.Finalization.RemoveOperatorProfile='true'
+        $xml.BISF.FinalAction='Shutdown'
         $xml.Save($cfg)
+        Mock Get-BISFOperatorSealTarget { [pscustomobject]@{SID='S-1-5-21-111-222-333-1001';Path='C:\Users\Operator';Root='C:\Users'} }
         Mock Get-BISFUserProfilePlan { [pscustomobject]@{Root='C:\Users';CurrentSid='S-1-5-21-111-222-333-1001';ExcludedSIDs=@();Entries=@()} }
-        Mock Invoke-BISFComponentCleanup { throw 'servicing failure' }
-        Mock Invoke-BISFUserProfileCleanup { throw 'Should not delete profiles after servicing fails' }
+        Mock Invoke-BISFComponentCleanup { throw $FailureMessage }
+        Mock Invoke-BISFUserProfileCleanup { throw 'Must not delete profiles after unsuccessful servicing' }
+        Mock Register-BISFOperatorSeal { throw 'Must not stage automatic sign-out after unsuccessful servicing' }
         $r=Invoke-BISFLocal $cfg $root Prepare -Confirm:$false
         $r.ExitCode | Should -Be 2
+        $r.Error | Should -Be $FailureMessage
+        $r.OperatorSignOut | Should -BeNullOrEmpty
+        $r.Results | Where-Object Id -eq Servicing | Select-Object -ExpandProperty Status | Should -Contain 'Failed'
         Should -Invoke Invoke-BISFUserProfileCleanup -Times 0
+        Should -Invoke Register-BISFOperatorSeal -Times 0
+        Should -Invoke Stop-Computer -Times 0
     }
     It 'previews log cleanup without deleting data in Validate and Prepare WhatIf' {
         [xml]$xml=Get-Content $cfg -Raw

@@ -1,6 +1,6 @@
 # BIS-F Local PowerShell edition
 
-**Current package defaults:** running `BISF-Local.exe` or `Invoke-BISF.ps1` without a mode runs **Prepare**. The EXE requests administrator approval when needed; applying Prepare initializes permissions inside the installation automatically before loading the preparation runtime. Temp, user-profile, Recycle Bin, Windows event-log and operator-profile cleanup are enabled. After successful preparation, a healthy SYSTEM finalizer acknowledges readiness, then BISF requests the current operator's normal Windows sign-out automatically; profile removal, final cleanup and shutdown follow only after unloading. BISF execution logs are retained. Disable unwanted actions in `GlobalConfig.xml`. Configuration Manager resets, clone personalization, separate VDA stopping and unverifiable component cleanup remain off. Use `-Mode Validate` for checks only or `-Mode Prepare -WhatIf` for preview. Omitted legacy XML options still default to false in the parser.
+**Current package defaults:** running `BISF-Local.exe` or `Invoke-BISF.ps1` without a mode runs **Prepare**. The EXE requests administrator approval when needed; applying Prepare initializes permissions inside the installation automatically before loading the preparation runtime. Windows Update component cleanup, temp, user-profile, Recycle Bin, Windows event-log and operator-profile cleanup are enabled. Windows Update cleanup runs first and waits for completion. After successful preparation, a healthy SYSTEM finalizer acknowledges readiness, then BISF requests the current operator's normal Windows sign-out automatically; profile removal, final cleanup and shutdown follow only after unloading. BISF execution logs are retained. Disable unwanted actions in `GlobalConfig.xml`. Configuration Manager resets, clone personalization and separate VDA stopping remain off. Use `-Mode Validate` for checks only or `-Mode Prepare -WhatIf` for preview. Omitted legacy XML options still default to false in the parser.
 
 
 For setup and everyday operation, see the [user manual](USER-MANUAL.md).
@@ -29,10 +29,9 @@ and regression evidence.
 
 ## Additional master-image maintenance and shutdown finalization
 
-These features are deliberately **off by default**, except the read-only
-`BlockOtherLoadedProfiles` readiness check in the *new* default configuration.
-Older XML lacking these elements remains compatible and gets non-destructive
-defaults. You must deploy the **entire updated package** (XSD, modules, entry
+The shipped configuration enables the cleanup and finalization options shown
+below. Older XML lacking optional elements remains compatible and retains its
+disabled defaults. You must deploy the **entire updated package** (XSD, modules, entry
 script, XML) rather than copying a single module onto an older installation.
 
 | Configuration setting | Default | Effect if enabled |
@@ -41,8 +40,8 @@ script, XML) rather than copying a single module onto an older installation.
 | `Cleanup.CurrentUserTemp` | true | Age-based files under operator profile's Temp |
 | `Cleanup.UserProfiles` | true | Unloaded, non-system user profiles via Windows profile provider |
 | `Cleanup.RecycleBin` | true | Empty **invoking user's** system-drive Recycle Bin through `Clear-RecycleBin` |
-| `Servicing.ComponentCleanup` | false | Run Windows' built-in `\Microsoft\Windows\Servicing\StartComponentCleanup` maintenance task; fail closed when completion cannot be verified |
-| `Servicing.TimeoutMinutes` | 75 | Refuse further operations if servicing does not finish inside this bound |
+| `Servicing.ComponentCleanup` | true | Clean superseded Windows update components with the inbox DISM PowerShell cmdlet and wait for its result before proceeding |
+| `Servicing.TimeoutMinutes` | 75 | Completion-time budget checked after the synchronous call returns; an over-budget result blocks further preparation without interrupting servicing |
 | `Preflight.MinimumSystemDriveFreeGB` | 0 | Fail preflight when system-drive free space is below this threshold |
 | `Preflight.BlockOtherLoadedProfiles` | false if omitted, true in new XML | Refuse preparation if other non-system profiles remain loaded or referenced; repeat checks during preparation and before final sealing |
 | `Finalization.RemoveOperatorProfile` | true | After successful Prepare and SYSTEM readiness, request normal operator sign-out automatically; SYSTEM then deletes the unloaded profile and shuts down |
@@ -50,18 +49,34 @@ script, XML) rather than copying a single module onto an older installation.
 
 ### Safe Windows Update and disk cleanup
 
-Windows component-store maintenance is **not** the same as clearing
-`SoftwareDistribution` or deleting WinSxS directories. When enabled, BISF
-invokes the Microsoft-installed scheduled task
-`\Microsoft\Windows\Servicing\StartComponentCleanup`. A new LastRunTime,
-Ready state and result zero cannot distinguish successful completion from a
-cancelled COM-handler run. BISF therefore refuses further image operations when
-completion is unverifiable, as well as on failure or timeout. See the servicing
-limitation below; there is currently no verified automatic success path.
-This task may honor an update retention period and is not
-guaranteed to reclaim all space. The script does not run DISM.exe, change
-Windows Update services, perform `/ResetBase`, delete rollback packages
-or remove update caches manually. It does not reset WSUS policy.
+Windows Update cleanup is enabled in `GlobalConfig.xml` through the existing
+`Servicing.ComponentCleanup=true` setting. BISF invokes the inbox DISM PowerShell
+cmdlet synchronously:
+
+```powershell
+Dism\Repair-WindowsImage -Online -StartComponentCleanup -NoRestart -LimitAccess -ErrorAction Stop
+```
+
+This cleans superseded Windows update components. The installed inbox cmdlet and
+its required parameters are checked during preflight; older modules lacking
+`-StartComponentCleanup` are reported before image cleanup. Successful return,
+an explicit online result with no restart required, and clear pending-reboot
+checks are required before the next preparation step. A failure, unknown result
+or required reboot prevents automatic sign-out and shutdown. The existing
+75-minute `TimeoutMinutes` setting is a completion-time budget: the synchronous
+call is allowed to finish, then an over-budget result stops further preparation.
+Active Windows servicing is never interrupted to meet the budget.
+
+The operation uses no ResetBase, does not install updates or clear the Windows
+Update database, and preserves update-service and WSUS settings. It does not
+delete WinSxS or SoftwareDistribution files manually. Windows determines which
+components are eligible; no fixed amount of reclaimed space is promised. See
+[Microsoft's Repair-WindowsImage reference](https://learn.microsoft.com/en-us/powershell/module/dism/repair-windowsimage?view=windowsserver2025-ps)
+and [component-store cleanup guidance](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/clean-up-the-winsxs-folder?view=windows-11).
+
+When preserving an older customized XML, change its existing
+`Servicing.ComponentCleanup` value to `true` to enable this package default.
+Explicit false values and omitted legacy sections continue to skip the operation.
 
 With RecycleBin enabled, `Clear-RecycleBin` applies only to the operator's
 current system-drive Recycle Bin. Temporary-file cleanup is already
@@ -108,7 +123,7 @@ Configure:
   <RecycleBin>false</RecycleBin>
 </Cleanup>
 <Servicing>
-  <ComponentCleanup>false</ComponentCleanup>
+  <ComponentCleanup>true</ComponentCleanup>
   <TimeoutMinutes>75</TimeoutMinutes>
 </Servicing>
 <Preflight>
@@ -138,7 +153,8 @@ before applying Prepare; applications with unsaved work can block normal sign-ou
 **Process:**
 
 1. Capture a VM checkpoint/backup while retaining a recovery route; complete
-   Windows Update servicing and reboots beforehand.
+   Windows Update installation and required reboots beforehand. Superseded
+   component cleanup runs during BISF preparation when enabled.
 2. Use a normal elevated **domain/local admin account with RID >=1000**
    whose local profile is eligible for removal; the built-in RID-500
    Administrator and system accounts are not automatically eligible.
@@ -672,12 +688,13 @@ versions are informational and FSLogix is inventoried locally. Required service,
 path, privilege, profile, pending-reboot and shutdown guards still apply. This
 policy does not guarantee that every future agent layout or OS API will work.
 
-**Servicing limitation:** `ComponentCleanup` remains opt-in and uses the built-in
-Microsoft task. BISF now refuses to continue after a success-looking aggregate
-result because cancelled runs can also report Ready/result 0. Even a genuinely
-successful run currently requires manual review; no verified automatic success
-path is claimed. Run servicing separately, review its result, then leave
-`ComponentCleanup=false` for preparation. BISF does not switch to DISM, use
-ResetBase, cancel tasks automatically or erase failure state to continue sealing.
+**Servicing compatibility:** the previous scheduled-task cleanup path has been
+replaced by synchronous inbox DISM PowerShell cleanup. Preflight requires the
+installed `Repair-WindowsImage` cmdlet to expose `StartComponentCleanup`, `Online`,
+`NoRestart` and `LimitAccess`. An unsupported module, a cleanup failure, uncertain
+result, reboot requirement or elapsed-budget overrun blocks further preparation.
+Native servicing and the complete cleanup-to-sign-out/shutdown sequence still
+require the disposable Windows acceptance checks; mocked tests do not qualify
+every Windows build.
 
 Production release and rollback procedure: [PRODUCTION-RUNBOOK.md](PRODUCTION-RUNBOOK.md). The full acceptance gate remains open.

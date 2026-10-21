@@ -1,5 +1,59 @@
 # Verification record
 
+## Windows Update cleanup enabled by default - 2026-10-21
+
+Base: published AutoShutdown package at commit 6b80b03a8acc002218b6ca4b3a4fe2761d670e0e.
+The supplied GlobalConfig.xml now sets Servicing.ComponentCleanup=true. Other
+configuration values, the schema and the automatic sign-out/finalizer are unchanged.
+Legacy XML with the section omitted still defaults to disabled. The previous
+scheduled-task servicing path has been replaced by synchronous inbox DISM
+PowerShell cleanup with fixed Online, StartComponentCleanup, NoRestart and
+LimitAccess arguments. Preflight verifies installed capabilities before cleanup.
+
+**255 focused tests passed, 0 failed:** Maintenance (36), packaged defaults (3),
+configuration (20), preflight (34), entrypoint (15), automatic finalization (31),
+existing finalization (36), session boundaries (15), unchanged source audit (18)
+and full workflow safety/results (47).
+
+The final full Pester run reported **384 passed / 16 failed / 400 total**, zero
+skipped and zero failed containers, in 33.299 seconds on PowerShell Core 7.5.4 /
+Ubuntu 24.04.3 LTS with Pester 5.7.1. Compared with the AutoShutdown baseline
+(348 passed / 31 failed / 379 total), there are **no newly failing test names**
+(multiset comparison). Six existing Maintenance inventory/Recycle Bin tests now
+run with Windows command signatures supplied by the test harness. Nine obsolete
+scheduled-task servicing cases were replaced with synchronous-DISM coverage;
+they are not being counted as unchanged tests that now pass. The remaining 16
+failures are existing Windows command/identity/registry and locked-file semantics
+limitations. The full Linux suite is not green. All failing names/errors and
+per-container counts are recorded in
+[windows-update-cleanup-20261021.json](docs/testing/windows-update-cleanup-20261021.json).
+
+Red/green checks covered the default configuration and the absent replacement
+servicing behavior. Review caught the legitimate imported root-module Path being
+a script or binary rather than the manifest: regression cases reproduced the
+failure and passed after correction while outside-directory roots remain refused.
+A separate legacy-DISM test-harness check reproduced unsupported mock parameters,
+then passed all 36 Maintenance tests and verified restoration of the original
+module. Independent final review found no remaining concrete blocker.
+
+The operation requires exactly one explicit online/no-restart result and clear
+reboot checks before other cleanup, staging or automatic sign-out. Native errors,
+unknown results, restart requirements and completion-budget overruns prevent
+continuation. The 75-minute budget is checked only after DISM returns; active
+servicing is never forcibly interrupted. Validate and WhatIf do not run cleanup.
+No ResetBase, update installation/download, service reset, manual update-database
+deletion or external-execution audit exception was introduced.
+
+The packaged-default checker and git diff --check passed. The EXE is unchanged
+from the AutoShutdown build; its SHA256 remains
+`a797b809b83c864a074ffe7ece66b52b2802a07e43bd466a1d912c78561187d4`.
+
+**Not run:** real Windows PowerShell 5.1 inbox DISM capability/result checks,
+actual Windows Update component cleanup or reboot behavior, live console/RDP
+sign-out, SYSTEM worker lifetime, profile removal or master shutdown. Native
+acceptance remains open. Unsupported installed DISM modules are reported during
+preflight before image cleanup; no fallback executable is invoked.
+
 ## Automatic operator sign-out and shutdown update - 2026-10-21
 
 Base: uploaded AutoPermissions build `8d6c5b9ef1a966156f2498f906a4e75be95e3195`.

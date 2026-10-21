@@ -1,4 +1,4 @@
-BISF-Local automatic preparation and sign-out update - 2026-10-21
+BISF-Local Windows Update cleanup and automatic shutdown - 2026-10-21
 
 1. If an earlier operator-seal attempt is pending, do not replace the package
    yet. Preserve state and logs and inspect the exact owned SYSTEM task/worker.
@@ -8,13 +8,16 @@ BISF-Local automatic preparation and sign-out update - 2026-10-21
 
 2. With no active earlier worker, copy the package's program files together
    into the existing BISF-Local directory. Keep your edited GlobalConfig.xml
-   and preserve existing state and logs.
+   and preserve existing state and logs. The supplied XML now enables Windows
+   Update cleanup with Servicing.ComponentCleanup=true. If keeping an older
+   customized XML, set that existing value to true to enable the new default.
 
 3. Save work, close other applications and run BISF-Local.exe from the signed-in
    preparation administrator's desktop. Accept the normal UAC prompt if shown.
 
 Normal launch initializes permissions inside its installation and then runs
-Prepare. After successful preparation, the protected SYSTEM worker validates
+Prepare. Windows Update cleanup runs first through the installed DISM PowerShell
+cmdlet and waits for completion. After successful preparation, the SYSTEM worker validates
 readiness and acknowledges this attempt. BISF releases its preparation lock,
 rechecks that worker and the current session, then requests normal Windows
 sign-out automatically. SYSTEM waits for profile unload, removes and verifies
@@ -22,7 +25,8 @@ the operator profile, performs selected final cleanup and shuts down.
 
 No separate ACL command, manual sign-out, new configuration flag or switch is
 required. Your existing cleanup selections are honored; the supplied XML values
-are unchanged. Automatic sign-out applies with RemoveOperatorProfile=true and
+enable ComponentCleanup in addition to the previous cleanup defaults.
+Automatic sign-out applies with RemoveOperatorProfile=true and
 its existing prerequisites. Applications with unsaved work can block sign-out;
 BISF does not force them closed. A disconnected RDP session is not sign-out.
 
@@ -32,6 +36,14 @@ without timely acknowledgement retains diagnostic state; loaded profiles or an
 unload timeout prevent shutdown.
 Installation initialization does not rewrite Windows parents or external paths.
 
+Windows Update cleanup removes superseded update components. It uses no ResetBase
+and does not download or install updates. Preflight reports an installed DISM
+module that lacks StartComponentCleanup before image cleanup. Finish update
+installation and required reboots before running BISF. A cleanup error, unknown
+result or restart requirement prevents further preparation and shutdown.
+Servicing.TimeoutMinutes (75 by default) is checked after the synchronous call
+returns; active Windows servicing is never interrupted to enforce that budget.
+
 See USER-MANUAL.md and TEST-RESULTS.md for operation and verification evidence.
-Native Windows console/RDP sign-out, SYSTEM task lifetime, profile unload and
-actual shutdown have NOT been exercised in this development environment.
+Native Windows Update cleanup, console/RDP sign-out, SYSTEM task lifetime,
+profile unload and actual shutdown have NOT been exercised in this development environment.

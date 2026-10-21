@@ -4,17 +4,26 @@ Status: NOT APPROVED FOR PRODUCTION. See issue #3 for evidence and outstanding g
 
 ## Servicing policy
 
-The supported release workflow uses `Servicing.ComponentCleanup=false` during
-BISF Prepare. Complete Windows servicing and required restarts separately before
-preparation; record the maintenance operation, its completion evidence, and the
-absence of pending reboot indicators. A prior Task Scheduler aggregate result of
-zero is not proof that a newly requested cleanup completed. Do not disable BISF
-reboot or session guards to bypass a maintenance failure.
+The current candidate enables `Servicing.ComponentCleanup=true` in its supplied
+configuration. Windows Update cleanup runs first in Prepare using the inbox
+`Dism\Repair-WindowsImage -Online -StartComponentCleanup -NoRestart -LimitAccess`
+cmdlet. Preflight checks the installed module and required parameters before
+image cleanup. A normal synchronous return with explicit online context and
+`RestartNeeded=false`, followed by clear pending-reboot checks, is required to
+continue toward automatic sign-out and shutdown. The former scheduled-task
+summary-state completion path has been removed.
 
-The optional built-in StartComponentCleanup integration remains fail-closed.
-It cannot currently establish successful completion of the requested instance,
-and therefore is not an approved successful preparation path. Do not substitute
-DISM, ResetBase, task cancellation, marker deletion, or automatic retries.
+Complete update installation and required restarts before preparation. This
+operation removes superseded components; it does not install updates, use
+ResetBase, reset Windows Update services or delete update databases. Preserve
+the default DISM log under `%WINDIR%\Logs\Dism\dism.log` as servicing evidence.
+`Servicing.TimeoutMinutes` is an elapsed completion budget, default 75 minutes.
+The synchronous call is allowed to finish before an over-budget result blocks
+the next step; BISF never cancels active servicing to meet that budget. Errors,
+unknown completion results and required restarts also prevent finalization.
+Qualify the native cmdlet and result contract on the exact disposable Windows
+build before production use. Do not disable reboot/session checks or delete
+pending state to bypass a maintenance failure.
 
 ## Before sealing
 

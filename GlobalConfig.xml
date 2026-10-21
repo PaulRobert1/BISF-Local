@@ -14,9 +14,11 @@
     <!-- Clears only the invoking user's Recycle Bin when explicitly enabled. -->
     <RecycleBin>true</RecycleBin>
   </Cleanup>
-  <!-- Uses Microsoft's built-in Servicing StartComponentCleanup scheduled task. -->
+  <!-- Enabled by default: clean superseded Windows update components through
+       the inbox DISM PowerShell cmdlet; wait for completion before finalization. -->
   <Servicing>
-    <ComponentCleanup>false</ComponentCleanup>
+    <ComponentCleanup>true</ComponentCleanup>
+    <!-- Completion-time budget; active Windows servicing is never interrupted. -->
     <TimeoutMinutes>75</TimeoutMinutes>
   </Servicing>
   <!-- Enabled final seal cleanup: enabled Administrative/Operational event logs
