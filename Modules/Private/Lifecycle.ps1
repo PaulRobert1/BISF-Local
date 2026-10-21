@@ -65,15 +65,17 @@ function Read-BISFState {
     $s
 }
 function Test-BISFAclRules {
-    param([string]$Owner, [object[]]$Rules, [bool]$Ancestor)
+    param([string]$Owner, [object[]]$Rules, [bool]$Ancestor, [string]$Path, [string]$RequestedPath)
     $trusted = @('S-1-5-18','S-1-5-32-544','S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464')
-    if ($Owner -notin $trusted) { throw "Untrusted filesystem owner: $Owner. Use an Administrators or SYSTEM-owned directory." }
+    $location=if ([string]::IsNullOrWhiteSpace($Path)) { 'Location' } else { "Location '$Path'" }
+    $scope=if ($Ancestor) { 'Ancestor' } else { 'Target' }
+    if ($Owner -notin $trusted) { throw "Untrusted filesystem owner: $Owner. $location; scope=$scope; requested='$RequestedPath'. Use an Administrators or SYSTEM-owned directory." }
     # Ancestors: deny deletion/replacement or ACL/owner changes; creating siblings is OK.
     $mask = 65536 -bor 64 -bor 262144 -bor 524288
     if (-not $Ancestor) { $mask = $mask -bor 2 -bor 4 -bor 16 -bor 256 }
     foreach ($r in $Rules) {
         if ($r.Allow -and -not $r.InheritOnly -and $r.Sid -notin $trusted -and (($r.Rights -band $mask) -ne 0)) {
-            throw "Location is writable by untrusted principal $($r.Sid)."
+            throw ("{0} is writable by untrusted principal {1}. Rights={2} (0x{3:X8}); blocked=0x{4:X8}; scope={5}; requested='{6}'." -f $location,$r.Sid,([Security.AccessControl.FileSystemRights]$r.Rights),$r.Rights,($r.Rights -band $mask),$scope,$RequestedPath)
         }
     }
 }
@@ -90,7 +92,7 @@ function Test-BISFProtectedLocation {
             $rules=@($acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier]) | ForEach-Object {
                 [pscustomobject]@{Sid=$_.IdentityReference.Value;Rights=[int]$_.FileSystemRights;Allow=($_.AccessControlType -eq 'Allow');InheritOnly=(($_.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0)}
             })
-            Test-BISFAclRules $owner $rules (-not $isTarget)
+            Test-BISFAclRules $owner $rules (-not $isTarget) -Path $current -RequestedPath $Path
             $isTarget=$false
         }
         $current=[IO.Path]::GetDirectoryName($current)

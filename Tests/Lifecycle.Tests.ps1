@@ -69,6 +69,53 @@ Describe 'Protected locations and startup ownership' {
         $r=[pscustomobject]@{Sid='S-1-5-32-545';Rights=64;Allow=$true;InheritOnly=$false}
         { Test-BISFAclRules 'S-1-5-18' @($r) $true } | Should -Throw '*writable*'
     }
+    It 'accepts Users read-execute plus synchronize for targets and ancestors' {
+        $r=[pscustomobject]@{Sid='S-1-5-32-545';Rights=1179817;Allow=$true;InheritOnly=$false}
+        { Test-BISFAclRules 'S-1-5-18' @($r) $false } | Should -Not -Throw
+        { Test-BISFAclRules 'S-1-5-18' @($r) $true } | Should -Not -Throw
+    }
+    It 'identifies the actual ACL object and requested path in a write-grant failure' {
+        $r=[pscustomobject]@{Sid='S-1-5-32-545';Rights=64;Allow=$true;InheritOnly=$false}
+        $message=''
+        try { Test-BISFAclRules 'S-1-5-18' @($r) $true -Path 'C:\Install' -RequestedPath 'C:\Install\BISF-Local\state' }
+        catch { $message=$_.Exception.Message }
+        $message | Should -Match ([regex]::Escape("Location 'C:\Install'"))
+        $message | Should -Match ([regex]::Escape("requested='C:\Install\BISF-Local\state'"))
+        $message | Should -Match 'S-1-5-32-545'
+        $message | Should -Match 'scope=Ancestor'
+        $message | Should -Match 'blocked=0x00000040'
+    }
+    It 'identifies the path when the owner is untrusted' {
+        $message=''
+        try { Test-BISFAclRules 'S-1-5-21-123' @() $false -Path 'C:\BISF-Local\GlobalConfig.xml' }
+        catch { $message=$_.Exception.Message }
+        $message | Should -Match 'Untrusted filesystem owner'
+        $message | Should -Match ([regex]::Escape('C:\BISF-Local\GlobalConfig.xml'))
+    }
+    It 'reports the failing ancestor instead of only the requested child' {
+        $parent=Join-Path $TestDrive 'acl-parent'
+        $child=Join-Path $parent 'BISF-Local'
+        $null=New-Item -ItemType Directory -Path $child -Force
+        Mock Get-Acl {
+            $rights=1179817
+            if ($LiteralPath -eq $parent) { $rights=64 }
+            $a=[pscustomobject]@{TestRights=$rights}
+            $a | Add-Member ScriptMethod GetOwner { param($type) [pscustomobject]@{Value='S-1-5-18'} }
+            $a | Add-Member ScriptMethod GetAccessRules {
+                param($explicit,$inherited,$type)
+                [pscustomobject]@{
+                    IdentityReference=[pscustomobject]@{Value='S-1-5-32-545'}
+                    FileSystemRights=$this.TestRights; AccessControlType='Allow'; PropagationFlags=0
+                }
+            }
+            $a
+        }
+        $message=''
+        try { Test-BISFProtectedLocation $child } catch { $message=$_.Exception.Message }
+        $message | Should -Match ([regex]::Escape("Location '$parent'"))
+        $message | Should -Match ([regex]::Escape("requested='$child'"))
+        $message | Should -Match 'scope=Ancestor'
+    }
     It 'quotes host arguments without bypassing policy' {
         $a=Get-BISFTaskArguments 'C:\Program Files\BISF\Invoke-BISF.ps1' 'C:\Program Files\BISF\GlobalConfig.xml'
         $a | Should -Be '-NoProfile -NonInteractive -File "C:\Program Files\BISF\Invoke-BISF.ps1" -Mode Personalize -ConfigPath "C:\Program Files\BISF\GlobalConfig.xml"'

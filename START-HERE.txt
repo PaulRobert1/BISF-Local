@@ -1,0 +1,25 @@
+BISF-Local automatic startup update - 2026-10-21
+
+1. Copy this package's contents into your existing BISF-Local directory,
+   replacing the EXE, scripts, modules and other program files together.
+   Keep your edited GlobalConfig.xml if it differs from the supplied one.
+   Preserve existing state and logs. Do not delete an unfinished sealing state.
+
+2. Run BISF-Local.exe. Accept the normal Windows administrator prompt if shown.
+
+Normal launch now initializes permissions inside the BISF installation and then
+continues with Prepare. No separate ACL command, repair script or new switch is
+required. Original ACLs are backed up when existing permissions need repair.
+The supplied GlobalConfig.xml is unchanged from your uploaded package.
+
+The existing cleanup workflow still applies: after successful preparation,
+sign out normally when instructed so the SYSTEM worker can remove the operator
+profile, complete final cleanup and shut down.
+
+Validate and Prepare -WhatIf remain available and do not repair permissions.
+Installation initialization does not rewrite Windows parent directories or
+external configuration/log locations. A remaining failure names the problem.
+
+See TEST-RESULTS.md for verification evidence and the remaining native Windows
+checks. This environment could not execute the actual Windows UAC prompt or
+native Windows ACL APIs; automated startup and ACL-policy tests use safe doubles.

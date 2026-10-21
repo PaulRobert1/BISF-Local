@@ -1,5 +1,7 @@
 # Native Windows PowerShell 5.1 regression test. Never runs the real framework module.
 $ErrorActionPreference='Stop'
+$principal=New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if(-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){throw 'Run this native launcher test from elevated Windows PowerShell 5.1; redirected child output requires an already elevated token.'}
 $root=Split-Path $PSScriptRoot -Parent
 $dir=Join-Path ([IO.Path]::GetTempPath()) ('BISF entry test '+[guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path (Join-Path $dir 'Modules')|Out-Null
@@ -15,6 +17,13 @@ function Invoke-BISFLocal {
 }
 Export-ModuleMember -Function Invoke-BISFLocal
 '@|Set-Content (Join-Path $dir 'Modules\BISF.Local.psm1')
+@'
+function Initialize-BISFInstallation {
+ param($ScriptRoot,$ConfigPath)
+ if(-not [IO.Path]::IsPathRooted($ScriptRoot) -or -not [IO.File]::Exists($ConfigPath)){throw 'Invalid installation paths'}
+}
+Export-ModuleMember -Function Initialize-BISFInstallation
+'@|Set-Content (Join-Path $dir 'Modules\BISF.Installation.psm1')
 $cases=@(
  @{Name='Default';Args=$null;Config='GlobalConfig.xml';Mode='Prepare'},
  @{Name='Explicit';Args=('-Mode Validate -ConfigPath "'+$dir+'\custom config.xml"');Config='custom config.xml';Mode='Validate'}

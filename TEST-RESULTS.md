@@ -1,5 +1,42 @@
 # Verification record
 
+## Automatic installation permissions update - 2026-10-21
+
+Base: supplied archive at commit `d457ab624d53a3dce6b9d8c20118cb3ea7ca42fe`.
+This update adds automatic installation ACL initialization before normal Prepare
+loads the main runtime, an administrator manifest in the EXE, and actionable ACL
+error details. The supplied XML/XSD and cleanup/finalization behavior are unchanged.
+
+Fresh development verification used PowerShell Core 7.5.4 on Ubuntu 24.04.3 LTS
+with Pester 5.7.1. **65 focused tests passed, 0 failed**: installation policy and
+repair decisions (21), real entry-script startup against harmless stub modules
+(7), lifecycle/ACL diagnostics (19), and runtime source audit (18). New behavior
+was exercised with failing tests before implementation. Windows ACL and native
+hard-link-query boundaries are mocked; ordinary test filesystem operations are real.
+
+The full original suite had **235 passed / 55 failed / 290 total** on this Linux
+host. The updated suite had **267 passed / 55 failed / 322 total**, no failed
+containers. The complete multiset of 55 failing test names is unchanged; all 32
+added tests pass. This is **not a claim that the full Windows suite passed**.
+Existing failures involve Windows-only commands, registry/WindowsIdentity APIs,
+and Windows locked-file semantics. See
+[the machine-readable result and all failing test names](docs/testing/automatic-permissions-20261021.json).
+
+The rebuilt AMD64 PE32+ console launcher contains manifest resource type 24,
+ID 1, with `requireAdministrator` and `uiAccess=false`. The resource regression
+fails against the original EXE and passes against the rebuilt EXE. Consecutive
+builds were byte-identical; imports remain the same 16 KERNEL32 functions.
+The packaging/defaults checks and build-script syntax check passed.
+
+EXE SHA256: `1de435a3836b643ed90a20dfa7eaf68adaa757ad001d45e737bb0b042727d782`.
+
+Independent code review found and rechecked fixes for code read access, private
+backup-file inheritance, private-directory propagation and null DACL handling.
+No blockers remained in the reviewed scope. Actual Windows PowerShell 5.1,
+desktop UAC, native ACL writes/PInvoke and master-image sealing **were not run**
+for this update. Wine launcher execution was unavailable because Wine is absent.
+The added Windows acceptance rows in ACCEPTANCE-TESTING.md remain NOT RUN.
+
 ## Latest continuation verification — 2026-10-15
 
 Runtime commit `a26ca25a65596a33b428c02de466df35ee15bcec` passed the full

@@ -31,6 +31,8 @@ maintenance process. Session scans do not prevent a new Windows logon.
 
 | Case | Procedure | Required observation |
 | --- | --- | --- |
+| Automatic installation permissions | On a disposable package under Program Files (x86), grant Users Modify to the package and an explicit code-file ACE; launch BISF-Local.exe normally | Normal Windows UAC occurs if required; installation backs up and repairs package permissions automatically, then continues to preflight. Users retain code read/execute; state/log data stay private. A second launch is idempotent. Verify UAC cancellation starts no preparation. NOT RUN for this update |
+| Permission repair boundaries | Use disposable reparse/hard-link files, unsafe parent ACLs, retained operator state and an external config/log path; separately run Validate and Prepare -WhatIf | Unsafe paths fail without broad parent or external ACL changes. Preview modes never repair ACLs. Retained sealing state is preserved. NOT RUN for this update |
 | Defaults | Run Validate and Prepare -WhatIf with shipped XML | No profile/temp/recycle/event deletion, servicing, task registration, state mutation or shutdown; diagnostic files only when logging is enabled |
 | Checkbox editing | Open, save each checkbox combination, cancel, edit XML externally while dialog is open, try malformed XML and a locked destination | Only chosen flags change; cancel changes nothing; stale/invalid/locked saves preserve the original; no cleanup or shutdown; custom path and legacy XML work |
 | Log scope | On fresh snapshots test all four WindowsEventLogs/BISFLogs combinations with explicit Shutdown, both with and without deferred operator cleanup | Only Application/System/Setup and matching BISF-generated files are selected; Security, vendor channels/files, other files and remote locations survive; events created during shutdown are allowed |
@@ -61,8 +63,10 @@ rolled back. Never capture an image from a failed or timed-out seal.
   Change master identity in a disposable
   copied VM, or introduce pending reboot before final deletion. Refuse deletion
   and shutdown; never run the finalizer on an MCS clone to repair an image.
-- Supply unsafe ACLs, a redirected module/schema/config/state/log path, retained
-  operator state, or a conflicting task. Refuse preparation before mutations.
+- Supply unsafe ACLs inside the package: applying Prepare may repair those installation
+  permissions before preflight; Validate and WhatIf must only report them. Supply an
+  unsafe parent/external ACL, a redirected module/schema/config/state/log path, retained
+  operator state, or a conflicting task. Refuse image cleanup and finalization.
 - Make Task Scheduler enumeration fail. Preflight must report the error rather
   than treating an unreadable reserved task as absent and applying cleanup.
 - Deny profile-provider removal, state/task removal, selected event-log clearing,

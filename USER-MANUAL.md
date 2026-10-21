@@ -7,8 +7,8 @@ BISF Local prepares a Windows master image by running the cleanup options you se
 ## 1. Set up
 
 1. Back up or snapshot the master. Finish Windows updates and required restarts.
-2. Copy the **entire package** to `C:\Program Files\BISF-Local`. Keep the scripts, modules, XML and schema together. Use a local folder controlled by Administrators and SYSTEM, outside any profile being deleted.
-3. Open **64-bit Windows PowerShell 5.1 as administrator**. PowerShell 7 is not supported for preparation.
+2. Copy the **entire package** to `C:\Program Files (x86)\BISF-Local` or `C:\Program Files\BISF-Local`. Keep the EXE, scripts, modules, XML and schema together. When updating, preserve your custom configuration and existing `state` and `logs` contents.
+3. Run **BISF-Local.exe** and accept the standard Windows administrator prompt if shown. Normal Prepare initializes permissions inside its own installation before loading the preparation runtime. No separate permission-repair command is needed. Direct script use still requires elevated **64-bit Windows PowerShell 5.1**; PowerShell 7 is not supported for preparation.
 4. Keep other users signed out and prevent new logons during preparation.
 
 ```powershell
@@ -19,7 +19,13 @@ Preparation runs fully offline with local Windows APIs and installed agents. It 
 
 ## EXE launcher
 
-The package includes `BISF-Local.exe` (Windows x64). Keep it beside `Invoke-BISF.ps1` and the rest of the package. From an elevated command prompt, run:
+The package includes `BISF-Local.exe` (Windows x64). Keep it beside `Invoke-BISF.ps1` and the rest of the package. For ordinary preparation, run:
+
+```text
+BISF-Local.exe
+```
+
+Optional check and preview modes remain available:
 
 ```text
 BISF-Local.exe -Mode Validate
@@ -28,7 +34,9 @@ BISF-Local.exe
 BISF-Local.exe -Mode Prepare
 ```
 
-**No arguments runs Prepare and applies the enabled cleanup.** After a successful preparation, sign out normally: the SYSTEM task removes the eligible operator profile, finishes log cleanup and shuts down. Use `BISF-Local.exe -Mode Validate` for checks only. The EXE uses installed Windows PowerShell 5.1, forwards arguments and returns its exit code. It does not install the framework, automatically elevate, download dependencies, or bypass execution policy. Configure cleanup first as described below. Use `BISF-Local.exe --help` for usage.
+**No arguments runs Prepare and applies the enabled cleanup.** Windows requests administrator approval when elevation is needed. Before the preparation runtime is loaded, the package checks and repairs its own permissions, preserving ordinary-user read access to code and keeping state and logs private. Original permissions are backed up when a repair is needed. Windows parent folders and external configuration/log locations are not rewritten. A remaining trust or environment error stops preparation and identifies its cause.
+
+After a successful preparation, sign out normally: the SYSTEM task removes the eligible operator profile, finishes log cleanup and shuts down. Use `BISF-Local.exe -Mode Validate` for checks only. Validate and WhatIf do not repair permissions. The EXE uses installed Windows PowerShell 5.1, forwards arguments and returns its exit code. It downloads no dependencies and preserves execution policy. Configure cleanup first as described below. Use `BISF-Local.exe --help` for usage.
 
 ## 2. Choose the cleanup
 

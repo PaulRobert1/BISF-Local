@@ -1,6 +1,6 @@
 # BIS-F Local PowerShell edition
 
-**Current package defaults:** running `BISF-Local.exe` or `Invoke-BISF.ps1` without a mode now runs **Prepare**. Temp, user-profile, Recycle Bin, Windows/BISF log and operator-profile cleanup are enabled, with shutdown after normal operator sign-out. Disable unwanted actions in `GlobalConfig.xml`. Configuration Manager resets, clone personalization, separate VDA stopping and unverifiable component cleanup remain off. Use `-Mode Validate` for checks only or `-Mode Prepare -WhatIf` for preview. Omitted legacy XML options still default to false in the parser.
+**Current package defaults:** running `BISF-Local.exe` or `Invoke-BISF.ps1` without a mode runs **Prepare**. The EXE requests administrator approval when needed; applying Prepare initializes permissions inside the installation automatically before loading the preparation runtime. Temp, user-profile, Recycle Bin, Windows event-log and operator-profile cleanup are enabled, with shutdown after normal operator sign-out. BISF execution logs are retained. Disable unwanted actions in `GlobalConfig.xml`. Configuration Manager resets, clone personalization, separate VDA stopping and unverifiable component cleanup remain off. Use `-Mode Validate` for checks only or `-Mode Prepare -WhatIf` for preview. Omitted legacy XML options still default to false in the parser.
 
 
 For setup and everyday operation, see the [user manual](USER-MANUAL.md).
@@ -562,8 +562,13 @@ For automatic startup, script/module/schema/config/state files and their parent 
 must be local, free of reparse points and protected against modification by untrusted
 users. Owners must be SYSTEM, Administrators or TrustedInstaller. Use an appropriately
 secured deployment folder; copying files there alone does not prove the ACLs are suitable.
-The script checks permissions and refuses unsafe locations; it does not broadly rewrite
-your package ACLs. It sets restricted ACLs only on its own new state files/directory.
+Applying Prepare automatically initializes ACLs inside its dedicated installation,
+backing up original permissions when repair is needed. Code remains readable by Users;
+state and logging subtrees are private to Administrators and SYSTEM. Reparse points,
+hard-linked files and unsafe ancestor ACLs are refused. Parent folders and external
+configuration/log paths are not modified. Validate, WhatIf, Personalize and Finalize
+check trust without repairing permissions. ACL failures now identify the checked path,
+requested path, SID and offending rights.
 
 The reserved task is `\BISF-Local-Personalize`, runs as SYSTEM at startup and uses the
 built-in Windows PowerShell host. An unrelated task with that name is never overwritten.

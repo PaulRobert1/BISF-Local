@@ -5,7 +5,7 @@ Local PowerShell-only image preparation, preview and clone personalization.
 .DESCRIPTION
 Unofficial reduced-scope derivative of EUCweb BIS-F 7.1912.7.
 Modified 2026-10-12. GPL-3.0. See LICENSE, UPSTREAM.md and README.md.
-Configuration defaults to GlobalConfig.xml beside this script. Default mode Prepare applies enabled cleanup. Use -Mode Validate for checks only
+Configuration defaults to GlobalConfig.xml beside this script. Default mode Prepare initializes protected installation permissions and applies enabled cleanup. Use -Mode Validate for checks only
 or -Mode Prepare -WhatIf to preview without applying image operations.
 .EXAMPLE
 .\Invoke-BISF.ps1 -Mode Prepare -WhatIf
@@ -23,6 +23,15 @@ try {
     # Resolve the default only after entering the script; preserve explicit paths.
     if (-not $PSBoundParameters.ContainsKey('ConfigPath')) {
         $ConfigPath=Join-Path $PSScriptRoot 'GlobalConfig.xml'
+    }
+    if ($Mode -eq 'Prepare' -and -not $WhatIfPreference) {
+        # Bootstrap only this package before loading the preparation runtime.
+        # Preview modes and SYSTEM workers must never repair their own trust boundary.
+        if (-not $PSCmdlet.ShouldProcess($PSScriptRoot,'Initialize protected BISF installation permissions')) {
+            throw 'Installation permission setup was declined; preparation has not started.'
+        }
+        Import-Module (Join-Path $PSScriptRoot 'Modules/BISF.Installation.psm1') -Force -ErrorAction Stop
+        $null=Initialize-BISFInstallation -ScriptRoot $PSScriptRoot -ConfigPath $ConfigPath
     }
     Import-Module (Join-Path $PSScriptRoot 'Modules/BISF.Local.psm1') -Force -ErrorAction Stop
     if ($Mode -eq 'VerifyClone') {
